@@ -1,0 +1,181 @@
+---
+title: "Explore-phenology"
+author: "Aji John"
+date: "10/15/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(leaflet)
+library(lubridate)
+```
+
+## Visualization
+
+
+
+```{r}
+library(readr)
+MW_PhenoDat_2013_2018 <- read_csv("data/MW_PhenoDat_2013_2018.csv")
+head(MW_PhenoDat_2013_2018)
+```
+
+## Including Plots
+
+Visualize the sites
+
+```{r }
+MW_PhenoDat_2013_2018 %>% filter(Transect == "Reflection Lakes") %>%
+ group_by(Site_Num, Year,Month) %>% summarize(meanFlowering = mean(Flower)) %>%
+ ggplot() +
+ geom_point(aes(as.factor(Month),size=2,  meanFlowering,shape=as.factor(Site_Num))) +
+ facet_grid(.~Year)+
+ theme_minimal()
+ 
+```
+
+```{r }
+library(readr)
+MW_PhenoSite_2013_2018 <- read_csv("data/MW_SiteDat_2013_2018.csv")
+head(MW_PhenoSite_2013_2018)
+```
+
+Visualize the sites
+
+```{r }
+library(raster)
+library(leaflet)
+library(ggrepel)
+Sites_2013 <- MW_PhenoSite_2013_2018 %>% 
+  filter(Year == 2013 & Transect== "Reflection Lakes") %>% 
+  as.data.frame()
+
+AllSites_2018 <- MW_PhenoSite_2013_2018 %>% 
+  filter(Year == 2018 & Transect %in% c( "Reflection Lakes","Glacier Basin")) %>% 
+  as.data.frame()
+
+xy <- cbind(x=Sites_2013$longitude+0.008, 
+            y=Sites_2013$latitude-0.005)
+S <- SpatialPoints(xy)
+bbox(S)
+
+
+library(ggmap)
+pp_stamen <- get_stamenmap(bbox = bbox(S),
+                                zoom = 13)
+pp_stamen
+ggmap(pp_stamen) +
+  geom_point(data = Sites_2013,
+             mapping = aes(x = Sites_2013$longitude,
+                            y = Sites_2013$latitude,color=as.factor(Site_Num))) 
+
+
+
+```
+```{r }
+lj <- leaflet(Sites_2013) %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng=Sites_2013$longitude, lat=Sites_2013$latitude, popup=Sites_2013$Site_Num)
+  lj
+```
+
+
+```{r }
+
+xy <- cbind(x=AllSites_2018$longitude, 
+            y=AllSites_2018$latitude)
+S <- SpatialPoints(xy)
+bbox(S)
+
+
+library(ggmap)
+pp_stamen <- get_stamenmap(bbox = bbox(S),
+                                zoom = 15)
+pp_stamen
+ggmap(pp_stamen) +
+  geom_point(data = AllSites_2018,
+             mapping = aes(x = AllSites_2018$longitude,
+                            y = AllSites_2018$latitude,color=as.factor(Site_Num))) 
+
+
+
+```
+```{r }
+lj <- leaflet(AllSites_2018) %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+ setView(	-121.7603,46.8523, zoom = 10) %>% 
+  addMarkers(lng=AllSites_2018$longitude, lat=AllSites_2018$latitude, popup=AllSites_2018$Site_Num)
+lj
+```
+
+Read the species data for distribution
+
+```{r , echo=FALSE}
+species_Data <- read_csv('./data/SpeciesData.csv')
+species_Data %>% 
+  filter(Phenophase=='flwr' ) %>%
+  ggplot() +
+  geom_point(aes(Year,Opt)) +
+  facet_grid(.~Year)
+```
+
+
+Plot by site, sample year
+
+```{r , echo=FALSE}
+
+species_Data %>% 
+  filter(Phenophase=='flwr'  & Year==2015) %>%
+  ggplot() +
+  geom_point(aes(Opt,Height)) +
+  facet_grid(.~Site)
+
+
+```
+
+By Year,
+
+```{r , echo=FALSE}
+# Histogram overlaid with kernel density curve
+species_Data %>% 
+  filter(Phenophase=='flwr' ) %>% ggplot( aes(x=Opt)) + 
+    #geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
+    #                 binwidth=.5,
+       #            colour="black", fill="white") +
+    geom_density(alpha=.2, fill="#FF6666")   + # Overlay with transparent density plot 
+   geom_vline(aes(xintercept=mean(Opt, na.rm=T)),   # Ignore NA values for mean
+               color="red", linetype="dashed", size=1) +
+    facet_grid(.~Year)
+```
+
+By site, sample year
+
+```{r , echo=FALSE}
+# Histogram overlaid with kernel density curve
+species_Data %>% 
+  filter(Phenophase=='flwr' ) %>%  filter(str_detect(Site, "RL") & Year==2013) %>% ggplot( aes(x=Opt)) + 
+    #geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
+    #                 binwidth=.5,
+       #            colour="black", fill="white") +
+    geom_density(alpha=.2, fill="#FF6666")   + # Overlay with transparent density plot 
+   geom_vline(aes(xintercept=mean(Opt, na.rm=T)),   # Ignore NA values for mean
+               color="red", linetype="dashed", size=1) +
+    facet_wrap(Year~Site)
+```
+
+By site, sample year (warm)
+
+```{r , echo=FALSE}
+# Histogram overlaid with kernel density curve
+species_Data %>% 
+  filter(Phenophase=='flwr' ) %>%  filter(str_detect(Site, "RL") & Year==2015) %>% ggplot( aes(x=Opt)) + 
+    #geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
+    #                 binwidth=.5,
+       #            colour="black", fill="white") +
+    geom_density(alpha=.2, fill="#FF6666")   + # Overlay with transparent density plot 
+   geom_vline(aes(xintercept=mean(Opt, na.rm=T)),   # Ignore NA values for mean
+               color="red", linetype="dashed", size=1) +
+    facet_wrap(Year~Site)
+```
