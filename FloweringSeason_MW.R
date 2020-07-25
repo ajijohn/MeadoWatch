@@ -8,7 +8,7 @@
 ##     D. (in progress) estimate flowering season
 ## Last worked on by Janneke Hille Ris Lambers: July 23, 2020
 #######################################
-
+options(stringsAsFactors = FALSE)
 
 ###############################################################
 #########Read in Data, assemble important explanatory variables
@@ -17,15 +17,58 @@
 # Read in data: Phenodat is phenology data; stationdat is lat / long and includes snow disappearance info
 PhenoDat <- read.csv("data/MW_PhenoDat_2013_2019.csv", header=TRUE) #phenology data
 StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE) #information about station
+
+# Only the rows in both the files ( Year, Site_Code)
 MergePhenoStation <- merge(StationDat,PhenoDat, by=c("Year","Site_Code"))
 
 #Tidy Data into columns needed; order by year
+#Tidy Data into columns needed; order by year
+
+# Columns 
+colnames(MergePhenoStation)
+# [1] "Year"             "Site_Code"        "Transect.x"      
+# [4] "Site_Num.x"       "latitude"         "longitude"       
+# [7] "elevation"        "meltdate"         "SDD"             
+# [10] "Source"           "Transect.y"       "Date"            
+# [13] "Month"            "Day"              "Observer"        
+# [16] "QA.QC"            "Site_Num.y"       "Species"         
+# [19] "Snow"             "Bud"              "Bud_rank"        
+# [22] "Flower"           "Flower_rank"      "Fruit"           
+# [25] "Fruit_rank"       "Disperse"         "Disperse_rank"   
+# [28] "Herb"             "species.notes"    "site.notes"      
+# [31] "Data.Entry.Notes"
+
+# Selected  
+# "Year"             "Site_Code"        "Transect.x"      
+#  "Site_Num.x"       "latitude"         "longitude"
+# "SDD" 
+# "Date"  
+# "Observer"        
+#[ "QA.QC"
+# "Species"         
+# "Snow"             "Bud"     
+# "Flower"
+# "Fruit" 
+# "Disperse"   
+# "Herb"
+# Selecting relevant columns - see above
 PhenoSite_0 <- MergePhenoStation[,c(1:6, 9, 12, 15:16, 18:20, 22, 24, 26, 28)]
+# New columns are
+# [1] "Year"       "Site_Code"  "Transect.x" "Site_Num.x" "latitude"  
+# [6] "longitude"  "SDD"        "Date"       "Observer"   "QA.QC"     
+# [11] "Species"    "Snow"       "Bud"        "Flower"     "Fruit"     
+# [16] "Disperse"   "Herb"   
+# Reorder by Year
 PhenoSite_0 <- PhenoSite_0[order(PhenoSite_0[,1]),]
 
 #Calculate Julian Days of observations; DSS=days since snow; add to PhenoSite
-Yrs <- unique(PhenoSite_0$Year); DOY <- c()
+# Picking up unique years
+# 7 years - 2013 - 2019
+Yrs <- unique(PhenoSite_0$Year);
+# DOY - Day of the Year (DOY) assign to empty vector
+DOY <- c()
 
+# Convert the 'Date' - observed date to Julian (DOY)
 for(i in 1:length(Yrs)){
   tmpdates <- PhenoSite_0$Date[PhenoSite_0$Year==Yrs[i]]
   Jan1Jul <- as.Date(paste(Yrs[i],"-01-01", sep=""))
@@ -33,7 +76,17 @@ for(i in 1:length(Yrs)){
   DOY <- c(DOY,ObsJulDayYr)
 }
 
+# Adding the DOY column to merged reordered dataframe 
 PhenoSite_0 <- cbind(PhenoSite_0, DOY)
+# reorder from 18 columns
+# [1] "Year"       "Site_Code"  "Transect.x" "Site_Num.x" "latitude"  
+# [6] "longitude"  "SDD"        "Date"       "Observer"   "QA.QC"     
+# [11] "Species"    "Snow"       "Bud"        "Flower"     "Fruit"     
+# [16] "Disperse"   "Herb"       "DOY"  
+
+# to 10 columns 
+#[1] "Year"       "Transect.x" "Site_Code"  "Site_Num.x" "Date"      
+#[6] "DOY"        "SDD"        "QA.QC"      "Species"    "Flower" 
 PhenoSite <- PhenoSite_0[,c(1,3,2,4,8,18,7,10,11,14)] #reorganize data
 
 
@@ -186,13 +239,18 @@ for(i in 1:length(years)){ #loop for each year
       #print(paste("AICnull=",AICnull,"AICalt=",AICalt,"p(curve)=",pcurve))
 	
       #save parameters to plot all species in plot
-      tmp_pars <- c(years[i], plots[j], SDDplt, speciesinplot[k], model1$par[1:3])
+      tmp_pars <- c(years[i], as.character(plots[j]), SDDplt, as.character(speciesinplot[k]), model1$par[1:3])
       parameters <- rbind(parameters, tmp_pars)
     }
   }
 }
   
 #turn parameters into a data frame
+
+# Range - Width
+# Max - Height
+# Peak - Day of the year of Peak flowerimg
+
 dimnames(parameters) <- list(c(), c("year","plot","SDD","species","peak","range","max"))
 parameters <- data.frame(parameters)
 
