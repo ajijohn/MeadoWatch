@@ -7,21 +7,18 @@
 ##     C. (in progress) fit models across species; years
 ##     D. (in progress) estimate flowering season
 #######################################
-options(stringsAsFactors = FALSE)
+options(stringsAsFactors = FALSE) #needed to run a few commands
 
-###############################################################
-#########Read in Data, assemble important explanatory variables
-###############################################################
+#########################################################################
+#########Read in Data, assemble important explanatory variables #########
+#########################################################################
 
 # Read in data: Phenodat is phenology data; stationdat is lat / long and includes snow disappearance info
 PhenoDat <- read.csv("data/MW_PhenoDat_2013_2019.csv", header=TRUE) #phenology data
 StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE) #information about station
 
-# Only the rows in both the files ( Year, Site_Code)
+# Merge by the rows in both the files (Year, Site_Code)
 MergePhenoStation <- merge(StationDat,PhenoDat, by=c("Year","Site_Code"))
-
-#Tidy Data into columns needed; order by year
-#Tidy Data into columns needed; order by year
 
 # Columns 
 colnames(MergePhenoStation)
@@ -51,6 +48,8 @@ colnames(MergePhenoStation)
 # "Disperse"   
 # "Herb"
 # Selecting relevant columns - see above
+
+#Tidy Data into columns needed; order by year
 PhenoSite_0 <- MergePhenoStation[,c(1:6, 9, 12, 15:16, 18:20, 22, 24, 26, 28)]
 # New columns are
 # [1] "Year"       "Site_Code"  "Transect.x" "Site_Num.x" "latitude"  
@@ -89,9 +88,9 @@ PhenoSite_0 <- cbind(PhenoSite_0, DOY)
 PhenoSite <- PhenoSite_0[,c(1,3,2,4,8,18,7,10,11,14)] #reorganize data
 
 
-###############################################################
-#########Define Maximum Likelihood Models (to fit to data)
-###############################################################
+####################################################################
+#########Define Maximum Likelihood Models (to fit to data)##########
+####################################################################
 
 ##INDIVIDUAL SPECIES MODELS
 #Null model - assumes the probability of flowering does not vary with time
@@ -165,12 +164,12 @@ predphen <- function (xx, param){
 }
 
 
-#############################################################
-######### Fit model per plot / species year  ##############
-############################################################
+#################################################################################
+######### Fit curvefit model, once per plot / species, year and trail############
+#################################################################################
 
 #Define species of interest (for reference, RL and GB focal species listed)
-species <- c("ANOC","ARLA","ASLE","CAMI","CAPA","ERGR","ERMO","ERPE","LUAR","PEBR","VASI"); nspp <- length(species)
+species <- c("ANOC","ASLE","CAMI","CAPA","ERGR","ERMO","ERPE","LUAR","PEBR"); nspp <- length(species)
 #REFLECTION LAKES SPECIES ARE <- c("ANOC","CAPA","ERMO","ERPE","LIGR","LUAR","MIAL","PEBR","POBI","VASI")
 #GLACIER BASIN SPECIES ARE <- c("ANAR","ARLA","ASLE","CAMI", "ERGR","LUAR","MEPA","PEBR","POBI","VASI")
 #Exclude non focal species of interest
@@ -265,20 +264,14 @@ parameters$max <- as.numeric(parameters$max)
 #############################################################################
 ####  Create plots from plot/species fits; runs some simple stats  ##########
 #############################################################################
-<<<<<<< HEAD
+
 
 ###############
 ##Plot all curves for all species and all plots per year and per trail
-
-=======
-
-###############
-##Plot all curves for all species and all plots per year and per trail
-
->>>>>>> 367cedf730eb16df6673b8f98b99e87ee350a1d3
 #define plotting colors, sufficient for all focal species
-plotcol <- c("pink","orangered","yellow","purple","lightblue","grey","magenta","yellowgreen",
-             "navyblue","azure4","yellow4","yellowgreen","orchid","turquoise","salmon","maroon")
+plotcol <- c("yellowgreen","magenta","orange","purple","yellow","springgreen","pink","purple",
+             "navyblue","azure4","yellow4","orchid","turquoise","salmon","maroon","black")
+
 for(trail in 1:2){
   if(trail==1){parameters2 <- parameters[substr(parameters$plot,1,2)=="RL",]}
   if(trail==2){parameters2 <- parameters[substr(parameters$plot,1,2)=="GB",]}
@@ -355,9 +348,11 @@ for(trail in 1:2){
 }
 
 legend(x="topleft", legend=c("RL","GB"), pch=c(21,24), pt.bg="gray",cex=0.75)
+legend(x="bottomleft",legend=species, pch=21, pt.bg=plotcol[1:length(species)],cex=0.75)
 
 
-##One panel per year, one graph per plot per trail; all species plotted on that graph
+#####################
+#Plot one panel per year, one graph per plot per trail; all species plotted on that graph
 #plotting parameters
 years <- unique(parameters$year)
 
@@ -395,7 +390,7 @@ for(i in 1:length(years)){
   }
 }
 
-
+#############################
 ##One graphics window per year; all species specific plot curves on one graph
 #plotting parameters
 
@@ -431,6 +426,7 @@ for(i in 1:length(years)){
   }
 }
 
+##############################################
 ##Assess how parameters vary with SDD, trail and year
 #In same for loop, create graphs (one per species; parameter); run some tests
 
@@ -556,9 +552,16 @@ testparsAIC$AICtrail <- as.numeric(testparsAIC$AICtrail)
 testparsAIC$AICSDD <- as.numeric(testparsAIC$AICSDD)
 testparsAIC$AICall <- as.numeric(testparsAIC$AICall)
 
+##Examine results
+print("Best fitting model for peak flowering parameter")
+testparsAIC[testparsAIC$parameter=="peak",]
+print("Best fitting model for duration flowering parameter")
+testparsAIC[testparsAIC$parameter=="duration",]
+print("Best fitting model for maximum flowering parameter")
+testparsAIC[testparsAIC$parameter=="max",]
 
-##########Now fit model where peak flowering is based on SDD
-species <- c("ANOC","ARLA","ASLE","CAMI","CAPA","ERGR","ERMO","ERPE","LUAR","PEBR","VASI"); nspp <- length(species)
+##########Now fit model where peak flowering is based on SDD; for same species or more 
+#species <- c("ANOC","ARLA","ASLE","CAMI","CAPA","ERGR","ERMO","ERPE","LUAR","PEBR","VASI"); nspp <- length(species)
 #REFLECTION LAKES SPECIES ARE <- c("ANOC","CAPA","ERMO","ERPE","LIGR","LUAR","MIAL","PEBR","POBI","VASI")
 #GLACIER BASIN SPECIES ARE <- c("ANAR","ARLA","ASLE","CAMI", "ERGR","LUAR","MEPA","PEBR","POBI","VASI")
 #Exclude non focal species of interest
@@ -625,12 +628,44 @@ for(i in 1:length(species)){ #loop for each year
     if(unique(substr(yeartrail,5,6))=="RL"){trails <- "Reflection Lakes"}
     if(unique(substr(yeartrail,5,6))=="GB"){trails <- "Glacier Basin"}
   }
-  #print(species[i]); print(modelsnowmod); print(modelsnowmod$convergence)
-  ifelse(trails=="Glacier Basin", years <- seq(2015,2019), years <- seq(2013,2019))
-  
-  #Save parameters to 
-  
+ 
+  #Save parameters to parameters_snowmod
+  if(trails=="Reflection Lakes"){
+    tmppars <- c(modelsnowmod$par[1:2],rep(NA, times=(ntrlyr-2)),modelsnowmod$par[3:(2+ntrlyr)],
+                 rep(NA, times=(ntrlyr-2)),modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)])
+  }
+  if(trails=="Glacier Basin"){
+    tmppars <- c(modelsnowmod$par[1:2], modelsnowmod$par[3:(2+ntrlyr)], rep(NA, times=(ntrlyr+2)),
+                 modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)], rep(NA, times=(ntrlyr+2)))
+  }
+  if(trails=="both"){
+    tmppars <- modelsnowmod$par
+  }
+  tmppars2 <- c(species[i],tmppars)
+  parameters_snowmod <- rbind(parameters_snowmod,tmppars2)
 }
+
+#save origina;
+parameters_snowmod2 <- parameters_snowmod
+
+#parameterssnowmod a data frame
+dimnames(parameters_snowmod) <- list(c(), c("species","optimint","optimslope",
+                                           "dur-GB15","dur-GB16","dur-GB17","dur-GB18","dur-GB19",
+                                           "dur-RL13","dur-RL14","dur-RL15","dur-RL16","dur-RL17","dur-RL18","dur-RL19",
+                                           "max-GB15","max-GB16","max-GB17","max-GB18","max-GB19",
+                                           "max-RL13","max-RL14","max-RL15","max-RL16","max-RL17","max-RL18","max-RL19"))
+parameters_snowmod <- data.frame(parameters_snowmod)
+
+#change storage type to numeric - all except plot (since a few plots have a, b)
+parameters_snowmod$species <- as.factor(parameters_snowmod$species)
+
+for(i in 2:27){
+  parameters_snowmod[,i] <- as.numeric(parameters_snowmod[,i])
+}
+
+
+############### GRAPH - in progress
+##Now make a figure, one per trail / year - of predicted flowering in earliest, latest snowmelt of that year
 
 #Fits model per species using snow disappearance as prediction - across trails / plots / years
 #haven't tried this yet - needs trouble shooting
