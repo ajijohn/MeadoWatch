@@ -265,10 +265,17 @@ parameters$max <- as.numeric(parameters$max)
 #############################################################################
 ####  Create plots from plot/species fits; runs some simple stats  ##########
 #############################################################################
+<<<<<<< HEAD
 
 ###############
 ##Plot all curves for all species and all plots per year and per trail
 
+=======
+
+###############
+##Plot all curves for all species and all plots per year and per trail
+
+>>>>>>> 367cedf730eb16df6673b8f98b99e87ee350a1d3
 #define plotting colors, sufficient for all focal species
 plotcol <- c("pink","orangered","yellow","purple","lightblue","grey","magenta","yellowgreen",
              "navyblue","azure4","yellow4","yellowgreen","orchid","turquoise","salmon","maroon")
@@ -534,6 +541,7 @@ for(i in 1:length(species)){
   tmpoutput <- c(species[i],"max", tmpAIC)
   testparsAIC <- rbind(testparsAIC,tmpoutput)
 }
+
 
 #maketestparsAIC a data frame
 dimnames(testparsAIC) <- list(c(), c("species","parameter","AICnull","AICyear","AICSDD","AICtrail","AICall"))
