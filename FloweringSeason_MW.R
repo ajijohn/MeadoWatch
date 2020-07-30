@@ -6,7 +6,6 @@
 ##     B. Creates figures 
 ##     C. (in progress) fit models across species; years
 ##     D. (in progress) estimate flowering season
-## Last worked on by Janneke Hille Ris Lambers: July 23, 2020
 #######################################
 options(stringsAsFactors = FALSE)
 
@@ -181,10 +180,10 @@ PhenoSite_Focal <- PhenoSite[specieskeep,]
 #how many years?
 years <- unique(PhenoSite_Focal$Year)
 
-#where to save output
-parameters <- c() #save parameters and SDD from species & plot specific fits
+#where to save output & SDD of trail-species-plot-year specific fits
+parameters <- c() 
 
-##Now nested for loops to fit curves for all year, species, plots
+##Now nested for loops to fit curves for all years, focal species, plots within trails
 for(i in 1:length(years)){ #loop for each year
   #extract data for that year
   PhenoSite_Year <- PhenoSite_Focal[PhenoSite_Focal$Year==years[i],]
@@ -262,15 +261,17 @@ parameters$peak <- as.numeric(parameters$peak)
 parameters$range <- as.numeric(parameters$range)
 parameters$max <- as.numeric(parameters$max)
 
-#####################################################
-####  Create plots from plot/species fits  ##########
-#####################################################
 
-#define plotting colors by species
+#############################################################################
+####  Create plots from plot/species fits; runs some simple stats  ##########
+#############################################################################
+
+###############
+##Plot all curves for all species and all plots per year and per trail
+
+#define plotting colors, sufficient for all focal species
 plotcol <- c("pink","orangered","yellow","purple","lightblue","grey","magenta","yellowgreen",
-             "navyblue","azure4","yellow4","yellowgreen","orchid","turquoise","salmon")
-
-##Plot all curves for all plots per year and per trail
+             "navyblue","azure4","yellow4","yellowgreen","orchid","turquoise","salmon","maroon")
 for(trail in 1:2){
   if(trail==1){parameters2 <- parameters[substr(parameters$plot,1,2)=="RL",]}
   if(trail==2){parameters2 <- parameters[substr(parameters$plot,1,2)=="GB",]}
@@ -311,6 +312,7 @@ for(trail in 1:2){
   }
 }
 
+#######################
 ##Plot peak flowering estimates of all species by year, both trails on 1 plot
 X11(width=7.5, height=4)
 par(mfrow=c(1,1),omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)
@@ -348,7 +350,7 @@ for(trail in 1:2){
 legend(x="topleft", legend=c("RL","GB"), pch=c(21,24), pt.bg="gray",cex=0.75)
 
 
-##Plot curves by plots and years (all species per plot in one panel)
+##One panel per year, one graph per plot per trail; all species plotted on that graph
 #plotting parameters
 years <- unique(parameters$year)
 
@@ -387,7 +389,7 @@ for(i in 1:length(years)){
 }
 
 
-##Plot curves per species and year - all plot curves for one year on one graph
+##One graphics window per year; all species specific plot curves on one graph
 #plotting parameters
 
 #plot per year
@@ -422,28 +424,58 @@ for(i in 1:length(years)){
   }
 }
 
-##Plot SDD vs. optim, range, per species; different color by year
+##Assess how parameters vary with SDD, trail and year
+#In same for loop, create graphs (one per species; parameter); run some tests
+
+yearcol <- c("purple","grey","orange","lightblue","yellowgreen","pink","navyblue") #colors per year
+testparsAIC <- c() #output of simple exploratory models
+
 for(i in 1:length(species)){
-  yearcol <- c("purple","grey","orange","lightblue","yellowgreen","pink","navyblue")
-  
   parspecies <- parameters[parameters$species==species[i],]
+  
+  #set shape
+  pltshp <- rep(21, length=dim(parspecies)[1])
+  pltshp[substr(parspecies$plot,1,2)=="GB"] <- 24
   
   #setup plot
   X11(width=8.5, height=4.0)
   par(mfrow=c(1,3),omi=c(0,0,0,0), mai=c(0.35,0.335,0.3,0.0),tck=-0.02, mgp=c(1.25,0.25,0),xpd=TRUE)
   
   #SDD vs peak
-  plot(parspecies$SDD,parspecies$peak, xlab="SDD",ylab="peak", pch=21, bg=yearcol[parspecies$year-2012], cex=1.5)
+  plot(parspecies$SDD,parspecies$peak, xlab="SDD",ylab="peak", pch=pltshp, bg=yearcol[parspecies$year-2012], cex=1.5)
   title(paste(species[i],"- SDD vs. optim"))
-  legend(x="bottomright",c("'13","'14","'15","'16","'17","'18","'19"), pch=21, pt.bg=yearcol)
+  legend(x="bottomright",c("'13","'14","'15","'16","'17","'18","'19","GB","RL"), 
+         pch=c(21,21,21,21,21,21,21,24,21), pt.bg=c(yearcol,"gray","gray"))
 
-  #test - how strongly are peak and SDD correlated?
+  #test for plotting - how strongly are peak and SDD correlated?
   optimtest <- cor.test(parspecies$SDD,parspecies$peak)
   mtext(paste("cor=",round(optimtest$estimate,3),sep=""), side=3, adj=0.025, cex=0.75,line=-1)
   mtext(paste("p=",round(optimtest$p.value,3),sep=""), side=3, adj=0.025, cex=0.75,line=-2)
   
+  #test for output - does peak flowering depend on SDD, year, trail?
+  ntrails <- length(unique(substr(parspecies$plot,1,2)))
+  if(ntrails==1){
+    testall <- lm(parspecies$peak ~ parspecies$SDD + parspecies$year)
+    testSDD <- lm(parspecies$peak ~ parspecies$SDD)
+    testyear <- lm(parspecies$peak ~ parspecies$year)
+    testnull <- lm(parspecies$peak ~ 1)
+    tmpAIC <- c(AIC(testnull), AIC(testyear),AIC(testSDD),NA, AIC(testall))
+    }
+  if(ntrails==2){
+    testall <- lm(parspecies$peak ~ parspecies$SDD + parspecies$year + as.factor(substr(parspecies$plot,1,2)))
+    testtrail <- lm(parspecies$peak ~ as.factor(substr(parspecies$plot,1,2)))
+    testSDD <- lm(parspecies$peak ~ parspecies$SDD)
+    testyear <- lm(parspecies$peak ~ parspecies$year)
+    testnull <- lm(parspecies$peak ~ 1)
+    tmpAIC <- c(AIC(testnull), AIC(testyear),AIC(testSDD),AIC(testtrail), AIC(testall))
+  }
+
+  #save AIC
+  tmpoutput <- c(species[i],"peak", tmpAIC)
+  testparsAIC <- rbind(testparsAIC,tmpoutput)
+    
   #SDD vs duration / range  
-  plot(parspecies$SDD,parspecies$range, xlab="SDD",ylab="range", pch=21, bg=yearcol[parspecies$year-2012], cex=1.5)
+  plot(parspecies$SDD,parspecies$range, xlab="SDD",ylab="range", pch=pltshp, bg=yearcol[parspecies$year-2012], cex=1.5)
   title(paste(species[i],"- SDD vs. range"))
   
   #test - how strongly are range and SDD correlated?
@@ -451,16 +483,71 @@ for(i in 1:length(species)){
   mtext(paste("cor=",round(optimtest$estimate,3),sep=""), side=3, adj=0.025, cex=0.75,line=-1)
   mtext(paste("p=",round(optimtest$p.value,3),sep=""), side=3, adj=0.025, cex=0.75,line=-2)
   
+  #test for output - does duration flowering depend on SDD, year, trail?
+  if(ntrails==1){
+    testall <- lm(parspecies$range ~ parspecies$SDD + parspecies$year)
+    testSDD <- lm(parspecies$range ~ parspecies$SDD)
+    testyear <- lm(parspecies$range ~ parspecies$year)
+    testnull <- lm(parspecies$range ~ 1)
+    tmpAIC <- c(AIC(testnull), AIC(testyear),AIC(testSDD),NA, AIC(testall))
+  }
+  if(ntrails==2){
+    testall <- lm(parspecies$range ~ parspecies$SDD + parspecies$year + as.factor(substr(parspecies$plot,1,2)))
+    testtrail <- lm(parspecies$range ~ as.factor(substr(parspecies$plot,1,2)))
+    testSDD <- lm(parspecies$range ~ parspecies$SDD)
+    testyear <- lm(parspecies$range ~ parspecies$year)
+    testnull <- lm(parspecies$range ~ 1)
+    tmpAIC <- c(AIC(testnull), AIC(testyear),AIC(testSDD),AIC(testtrail), AIC(testall))
+  }
+  
+  #save AIC
+  tmpoutput <- c(species[i],"duration", tmpAIC)
+  testparsAIC <- rbind(testparsAIC,tmpoutput)
+
   #SDD vs max height parameter
-  plot(parspecies$SDD,parspecies$max, xlab="SDD",ylab="max", pch=21, bg=yearcol[parspecies$year-2012], cex=1.5)
+  plot(parspecies$SDD,parspecies$max, xlab="SDD",ylab="max", pch=pltshp, bg=yearcol[parspecies$year-2012], cex=1.5)
   title(paste(species[i],"- SDD vs. max height"))
   
   #test - how strongly are range and SDD correlated?
   optimtest <- cor.test(parspecies$SDD,parspecies$max)
   mtext(paste("cor=",round(optimtest$estimate,3),sep=""), side=3, adj=0.025, cex=0.75,line=-1)
   mtext(paste("p=",round(optimtest$p.value,3),sep=""), side=3, adj=0.025, cex=0.75,line=-2)
-}       
+
+  #test for output - does max flowering depend on SDD, year, trail?
+  if(ntrails==1){
+    testall <- lm(parspecies$max ~ parspecies$SDD + parspecies$year)
+    testSDD <- lm(parspecies$max ~ parspecies$SDD)
+    testyear <- lm(parspecies$max ~ parspecies$year)
+    testnull <- lm(parspecies$max ~ 1)
+    tmpAIC <- c(AIC(testnull), AIC(testyear),AIC(testSDD),NA, AIC(testall))
+  }
+  if(ntrails==2){
+    testall <- lm(parspecies$max ~ parspecies$SDD + parspecies$year + as.factor(substr(parspecies$plot,1,2)))
+    testtrail <- lm(parspecies$max ~ as.factor(substr(parspecies$plot,1,2)))
+    testSDD <- lm(parspecies$max ~ parspecies$SDD)
+    testyear <- lm(parspecies$max ~ parspecies$year)
+    testnull <- lm(parspecies$max ~ 1)
+    tmpAIC <- c(AIC(testnull), AIC(testyear),AIC(testSDD),AIC(testtrail), AIC(testall))
+  }
   
+  #save AIC
+  tmpoutput <- c(species[i],"max", tmpAIC)
+  testparsAIC <- rbind(testparsAIC,tmpoutput)
+}
+
+#maketestparsAIC a data frame
+dimnames(testparsAIC) <- list(c(), c("species","parameter","AICnull","AICyear","AICSDD","AICtrail","AICall"))
+testparsAIC <- data.frame(testparsAIC)
+
+#change storage type to numeric - all except plot (since a few plots have a, b)
+testparsAIC$species <- as.factor(testparsAIC$species)
+testparsAIC$parameter <- as.factor(testparsAIC$parameter)
+testparsAIC$AICnull <- as.numeric(testparsAIC$AICnull)
+testparsAIC$AICyear <- as.numeric(testparsAIC$AICyear)
+testparsAIC$AICtrail <- as.numeric(testparsAIC$AICtrail)
+testparsAIC$AICSDD <- as.numeric(testparsAIC$AICSDD)
+testparsAIC$AICall <- as.numeric(testparsAIC$AICall)
+
 
 ##########Now fit model where peak flowering is based on SDD
 species <- c("ANOC","ARLA","ASLE","CAMI","CAPA","ERGR","ERMO","ERPE","LUAR","PEBR","VASI"); nspp <- length(species)
