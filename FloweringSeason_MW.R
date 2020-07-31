@@ -666,21 +666,59 @@ for(i in 2:27){
 
 ############### GRAPH - in progress
 ##Now make a figure, one per trail / year - of predicted flowering in earliest, latest snowmelt of that year
+for(trail in 1:2){
+  if(i==1){
+    StationDatTrail <- StationDat[StationDat$Transect=="Reflection Lakes",]
+    parameters_snowmodtrail <- parameters_snowmod[is.na(parameters_snowmod$dur.RL13)==FALSE,]
+    parameters_snowmodtrail <- cbind(parameters_snowmodtrail[,1:3],parameters_snowmodtrail[,substr(dimnames(parameters_snowmodtrail)[[2]],5,6)=="RL"])
+    }
+  if(i==2){
+    StationDatTrail <- StationDat[StationDat$Transect=="Glacier Basin",]
+    parameters_snowmodtrail <- parameters_snowmod[is.na(parameters_snowmod$dur.GB15)==FALSE,]
+    parameters_snowmodtrail <- cbind(parameters_snowmodtrail[,1:3],parameters_snowmodtrail[,substr(dimnames(parameters_snowmodtrail)[[2]],5,6)=="GB"])
+  }
+  
+  #Now cycle through years
+  predDOY <- seq(105,255)
+  yrs <- unique(StationDatTrail$Year)
+  
+  for(j in 1:length(yrs)){
+    SDDs <- StationDatTrail$SDD[StationDatTrail$Year==yrs[j]]
+    firstSDD <- min(SDDs); lastSDD <- max(SDDs)
 
-#Fits model per species using snow disappearance as prediction - across trails / plots / years
-#haven't tried this yet - needs trouble shooting
-curvefit_snowmod <- function (param){ #curve fitting function for mle
-  intpeak  <- param[1]
-  slopepeak <- param[2]
-  rangep_all <- param[3:(2+ntrlyr)] #different range per trail, year
-  maxp_all   <- param[(3+ntrlyr):(2+2*ntrlyr)] #different max per trail, year
-  peakp <- intpeak + slopepeak*SDD
-  rangep <- rangep_all[trlyr]
-  maxp <- maxp_all[trlyr]
-  pred   <- maxp*(1/(rangep*sqrt(2*pi)))*exp(-0.5*((days-peakp)/rangep)^2)
-  llik     <- dbinom(phenophase,1,pred, log=TRUE)
-  return(-sum(llik))
-}
+    #Set plotting parameters
+    X11(width=7,height=5)
+    par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.3), xpd=NA, tck=-0.02,mgp=c(1.25,0.5,0))
+    plot(160,0.5,type="n", xlim=c(min(predDOY),max(predDOY)), ylim=c(0,1),
+         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
+    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
+    if(i==1){title(paste("Reflection Lakes",yrs[j],sep="-"))}
+    if(i==2){title(paste("Glacier Basin",yrs[j],sep="-"))}
+    
+    #now extract parameters per species, plot
+    parameters_smyear <- parameters_snowmodtrail[,c(1:3,(3+j),(3+j+length(yrs)))]
+    spp <- parameters_smyear$species
 
-
+    for(k in 1:length(spp)){
+      peakfirst <- parameters_smyear[k,2]+parameters_smyear[k,3]*firstSDD
+      peaklast <- parameters_smyear[k,2]+parameters_smyear[k,3]*lastSDD
+      durf <- parameters_smyear[k,4]
+      maxf <- parameters_smyear[k,5]
       
+      #estimate flowering curve first, last
+      param <- c(peakfirst,durf,max)
+      flfirst <- predphen(predDOY,param)
+      param <- c(peaklast,durf,max)
+      fllast <- predphen(predDOY,param)
+      
+      #now plot
+      lines(predDOY[flfirst[]>0.01],flfirst[flfirst[]>0.01],col=plotcol[k],lwd=2)
+      lines(predDOY[fllast[]>0.01],fllast[fllast[]>0.01],col=plotcol[k],lwd=2)
+    }
+  }
+}
+  
+  
+  
+
+
