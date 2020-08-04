@@ -20,44 +20,19 @@ StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE) #informatio
 # Merge by the rows in both the files (Year, Site_Code)
 MergePhenoStation <- merge(StationDat,PhenoDat, by=c("Year","Site_Code"))
 
-# Columns 
+# Check Columns 
 colnames(MergePhenoStation)
-# [1] "Year"             "Site_Code"        "Transect.x"      
-# [4] "Site_Num.x"       "latitude"         "longitude"       
-# [7] "elevation"        "meltdate"         "SDD"             
-# [10] "Source"           "Transect.y"       "Date"            
-# [13] "Month"            "Day"              "Observer"        
-# [16] "QA.QC"            "Site_Num.y"       "Species"         
-# [19] "Snow"             "Bud"              "Bud_rank"        
-# [22] "Flower"           "Flower_rank"      "Fruit"           
-# [25] "Fruit_rank"       "Disperse"         "Disperse_rank"   
-# [28] "Herb"             "species.notes"    "site.notes"      
-# [31] "Data.Entry.Notes"
 
-# Selected  
-# "Year"             "Site_Code"        "Transect.x"      
-#  "Site_Num.x"       "latitude"         "longitude"
-# "SDD" 
-# "Date"  
-# "Observer"        
-#[ "QA.QC"
-# "Species"         
-# "Snow"             "Bud"     
-# "Flower"
-# "Fruit" 
-# "Disperse"   
-# "Herb"
-# Selecting relevant columns - see above
-
-#Tidy Data into columns needed; order by year
+#Tidy Data into columns needed (see below)
 PhenoSite_0 <- MergePhenoStation[,c(1:6, 9, 12, 15:16, 18:20, 22, 24, 26, 28)]
-# New columns are
+# New columns include
 # [1] "Year"       "Site_Code"  "Transect.x" "Site_Num.x" "latitude"  
 # [6] "longitude"  "SDD"        "Date"       "Observer"   "QA.QC"     
 # [11] "Species"    "Snow"       "Bud"        "Flower"     "Fruit"     
 # [16] "Disperse"   "Herb"   
+
 # Reorder by Year
-PhenoSite_0 <- PhenoSite_0[order(PhenoSite_0[,1]),]
+PhenoSite_0 <- PhenoSite_0[order(PhenoSite_0$Year),]
 
 #Calculate Julian Days of observations; DSS=days since snow; add to PhenoSite
 # Picking up unique years
@@ -76,7 +51,8 @@ for(i in 1:length(Yrs)){
 
 # Adding the DOY column to merged reordered dataframe 
 PhenoSite_0 <- cbind(PhenoSite_0, DOY)
-# reorder from 18 columns
+
+# Reorder from 18 columns
 # [1] "Year"       "Site_Code"  "Transect.x" "Site_Num.x" "latitude"  
 # [6] "longitude"  "SDD"        "Date"       "Observer"   "QA.QC"     
 # [11] "Species"    "Snow"       "Bud"        "Flower"     "Fruit"     
@@ -88,9 +64,9 @@ PhenoSite_0 <- cbind(PhenoSite_0, DOY)
 PhenoSite <- PhenoSite_0[,c(1,3,2,4,8,18,7,10,11,14)] #reorganize data
 
 
-####################################################################
-#########Define Maximum Likelihood Models (to fit to data)##########
-####################################################################
+############################################################################
+#########Define Functions, including maximum likelihood functions ##########
+############################################################################
 
 ##INDIVIDUAL SPECIES MODELS
 #Null model - assumes the probability of flowering does not vary with time
@@ -128,32 +104,8 @@ curvefit_snowmod <- function (param){ #curve fitting function for mle
   return(-sum(llik))
 }
 
-#Fits data to all species within a trail & a season, plot & species effects
-#haven't tried this yet - needs trouble shooting
-curvefit_plotspmod <- function (param){ #curve fitting function for mle
-  peakp_ref  <- param[1:nspp] #species specific peak in reference plot
-  rangep_all <- param[(nspp+1):(nspp*2)] #species specific range in all plots
-  maxp_all   <- param[(2*nspp+1):(nspp*3)] #species maxp in all plots
-  peakp_plot <- param[(3*nspp+1):(3*nspp+nplt)] # plot effects, assume no interaction
-  maxp <- maxp_all[spp]
-  rangep <- rangep_all[spp]
-  peakp <- peakp_ref[spp]
-  peakp_add <- peakp_plot[plt]; peakp_add[is.na(peakp_add)] <- 0 #add plot level effects
-  peakp <- peakp + peakp_add
-  
-  pred   <- maxp*(1/(rangep*sqrt(2*pi)))*exp(-0.5*((days-peakp)/rangep)^2)
-  llik     <- dbinom(phenophase,1,pred, log=TRUE)
-  return(-sum(llik))
-}
 
-
-
-################################################################################
-#########Define function to plot phenological curve given optim, range, maxp ####
-#################################################################################
-
-
-#Predicts probability of observing phenological phase, given parameters (used for plotting)
+#Predicts probability of observing phenological phase, given a vector of days and parameters (used for plotting)
 predphen <- function (xx, param){ 
   days    <- xx
 	peakp  <- param[1]
@@ -165,7 +117,7 @@ predphen <- function (xx, param){
 
 
 #################################################################################
-######### Fit curvefit model, once per plot / species, year and trail############
+######### Fits curvefit model, once per plot / species, year and trail###########
 #################################################################################
 
 #Define species of interest (for reference, RL and GB focal species listed)
@@ -180,7 +132,7 @@ PhenoSite_Focal <- PhenoSite[specieskeep,]
 years <- unique(PhenoSite_Focal$Year)
 
 #where to save output & SDD of trail-species-plot-year specific fits
-parameters <- c() 
+spyrpltpars <- c() 
 
 ##Now nested for loops to fit curves for all years, focal species, plots within trails
 for(i in 1:length(years)){ #loop for each year
@@ -238,32 +190,30 @@ for(i in 1:length(years)){ #loop for each year
 	
       #save parameters to plot all species in plot
       tmp_pars <- c(years[i], as.character(plots[j]), SDDplt, as.character(speciesinplot[k]), model1$par[1:3])
-      parameters <- rbind(parameters, tmp_pars)
+      spyrpltpars <- rbind(spyrpltpars, tmp_pars)
     }
   }
 }
   
-#turn parameters into a data frame
-
-# Range - Width
-# Max - Height
-# Peak - Day of the year of Peak flowerimg
-
-dimnames(parameters) <- list(c(), c("year","plot","SDD","species","peak","range","max"))
-parameters <- data.frame(parameters)
+# turn spyrpltpars into a data frame
+# duration - Width
+# max - Height
+# peak - Day of the year of peak flowerimg
+dimnames(spyrpltpars) <- list(c(), c("year","plot","SDD","species","peak","duration","max"))
+spyrpltpars <- data.frame(spyrpltpars)
 
 #change storage type to numeric - all except plot (since a few plots have a, b)
-parameters$year <- as.numeric(parameters$year)
-parameters$species <- as.factor(parameters$species)
-parameters$SDD <- as.numeric(parameters$SDD)
-parameters$peak <- as.numeric(parameters$peak)
-parameters$range <- as.numeric(parameters$range)
-parameters$max <- as.numeric(parameters$max)
+spyrpltpars$year <- as.numeric(spyrpltpars$year)
+spyrpltpars$species <- as.factor(spyrpltpars$species)
+spyrpltpars$SDD <- as.numeric(spyrpltpars$SDD)
+spyrpltpars$peak <- as.numeric(spyrpltpars$peak)
+spyrpltpars$duration <- as.numeric(spyrpltpars$duration)
+spyrpltpars$max <- as.numeric(spyrpltpars$max)
 
 
-#############################################################################
-####  Create plots from plot/species fits; runs some simple stats  ##########
-#############################################################################
+#############################################
+####  Visualize plot/species fits  ##########
+#############################################
 
 
 ###############
@@ -273,18 +223,18 @@ plotcol <- c("yellowgreen","magenta","orange","purple","yellow","springgreen","p
              "navyblue","azure4","yellow4","orchid","turquoise","salmon","maroon","black")
 
 for(trail in 1:2){
-  if(trail==1){parameters2 <- parameters[substr(parameters$plot,1,2)=="RL",]}
-  if(trail==2){parameters2 <- parameters[substr(parameters$plot,1,2)=="GB",]}
+  if(trail==1){spyrpltpars2 <- spyrpltpars[substr(spyrpltpars$plot,1,2)=="RL",]}
+  if(trail==2){spyrpltpars2 <- spyrpltpars[substr(spyrpltpars$plot,1,2)=="GB",]}
   
   #how many years? differs per trail
-  years <- unique(parameters2$year)
+  years <- unique(spyrpltpars2$year)
   
   X11(width=4.5, height=9)
   par(mfrow=c(length(years),1),omi=c(0,0,0,0), mai=c(0.1,0.3,0.1,0.0),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)
 
   #plot per year
   for(i in 1:length(years)){
-    paryear <- parameters2[parameters2$year==years[i],]
+    paryear <- spyrpltpars2[spyrpltpars2$year==years[i],]
   
     plot(185,0.5, xlim=c(105,285), ylim=c(0,1.01),type="n",
          xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
@@ -318,22 +268,22 @@ X11(width=7.5, height=4)
 par(mfrow=c(1,1),omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)
 
 #create plot to add points to
-earlypk <- min(parameters$peak); latepk <- max(parameters$peak)
+earlypk <- min(spyrpltpars$peak); latepk <- max(spyrpltpars$peak)
 plot(2016,175, xlim=c(2012, 2020), ylim=c(earlypk,latepk),type="n",
  xaxp=c(2012,2020,8), yaxt="n", xlab="Year",ylab="Flowering")
 text(2011.5,srt=90, c(135,165,195,225),-0.1, labels=c("May","Jun","Jul","Aug"))
   
 
 for(trail in 1:2){
-  if(trail==1){parameters2 <- parameters[substr(parameters$plot,1,2)=="RL",]}
-  if(trail==2){parameters2 <- parameters[substr(parameters$plot,1,2)=="GB",]}
+  if(trail==1){spyrpltpars2 <- spyrpltpars[substr(spyrpltpars$plot,1,2)=="RL",]}
+  if(trail==2){spyrpltpars2 <- spyrpltpars[substr(spyrpltpars$plot,1,2)=="GB",]}
   
   #how many years? differs per trail
-  years <- unique(parameters2$year)
+  years <- unique(spyrpltpars2$year)
 
   #extract data per year, plot
   for(i in 1:length(years)){
-    paryear <- parameters2[parameters2$year==years[i],]
+    paryear <- spyrpltpars2[spyrpltpars2$year==years[i],]
  
     #now pull out all data for a species
     for(j in 1:length(species)){
@@ -351,81 +301,6 @@ legend(x="topleft", legend=c("RL","GB"), pch=c(21,24), pt.bg="gray",cex=0.75)
 legend(x="bottomleft",legend=species, pch=21, pt.bg=plotcol[1:length(species)],cex=0.75)
 
 
-#####################
-#Plot one panel per year, one graph per plot per trail; all species plotted on that graph
-#plotting parameters
-years <- unique(parameters$year)
-
-#one plot per year, a
-for(i in 1:length(years)){
-  paryear <- parameters[parameters$year==years[i],]
-  plts <-unique(paryear$plot); nplts <- length(plts)
-  
-  X11(width=9, height=7)
-  if(nplts<10){par(mfrow=c(3,3),omi=c(0,0,0,0), mai=c(0.1,0.1,0.1,0.0),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)}
-  if(nplts>9 & nplts<26){par(mfrow=c(5,5),omi=c(0,0,0,0), mai=c(0.1,0.1,0.1,0.0),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)}
-  if(nplts>25){par(mfrow=c(6,5),omi=c(0,0,0,0), mai=c(0.1,0.1,0.1,0.0),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)}
-  
-  #now pull out all data for a plot
-  for(j in 1:nplts){
-    paryearplt <- paryear[paryear$plot==plts[j],]
-    splot <- unique(paryearplt$species); nsp <- length(splot)
-    
-    plot(185,0.5, xlim=c(135,285), ylim=c(0,1.01),type="n",
-       xaxp=c(150,240,4), xaxt="n", xlab="Time",ylab="Flowering")
-    text(c(135,165,195,225,255),-0.075, labels=c("May","Jun","Jul","Aug","Sept"))
-    text(135,0.95,adj=0, labels=paste(years[i],"plot",plts[j],sep=" "))
-  
-    #now plot
-    for(k in 1:nsp){
-      xx <- seq(135,285)
-      n <- which(dimnames(paryearplt)[[2]]=="peak")
-      pars <- unlist(paryearplt[k,n:(n+2)])
-      yy <- predphen(xx, pars)
-      if(max(yy)>1){yy <- yy/(max(yy))} #bit of a kluge - force max to be < 1
-      xx2 <- xx[yy[]>=0.001]; yy2 <- yy[yy[]>=0.001]
-      whichsp <- which(species[]==splot[k])
-      lines(xx2,yy2, col=plotcol[whichsp],lwd=2)
-    }
-  }
-}
-
-#############################
-##One graphics window per year; all species specific plot curves on one graph
-#plotting parameters
-
-#plot per year
-for(i in 1:length(years)){
-  paryear <- parameters[parameters$year==years[i],]
-
-  X11(width=7, height=7)
-  if(length(species)<=9){par(mfrow=c(3,3),omi=c(0,0,0,0), mai=c(0.2,0.3,0.3,0.0),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)}
-  if(length(species)>9){par(mfrow=c(4,3),omi=c(0,0,0,0), mai=c(0.2,0.3,0.3,0.0),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)}
-  
-          
-  #now pull out all data for a species
-  for(j in 1:length(species)){
-    paryearsp <- paryear[paryear$species==species[j],]
-    if(dim(paryearsp)[1]==0){next}
-    
-    plot(185,0.5, xlim=c(135,285), ylim=c(0,1.01),type="n",
-       xaxp=c(150,240,4), xaxt="n", xlab="Time",ylab="Flowering")
-    text(c(135,165,195,225,255),-0.075, labels=c("May","Jun","Jul","Aug","Sep"))
-    title(paste(years[i],species[j], sep=" "))
- 
-    #now plot
-    for(k in 1:dim(paryearsp)[1]){
-      xx <- seq(135,285)
-      n <- which(dimnames(paryearsp)[[2]]=="peak")
-      pars <- unlist(paryearsp[k,n:(n+2)])
-      yy <- predphen(xx, pars)
-      if(max(yy)>1){yy <- yy/(max(yy))} #bit of a kluge - force max to be < 1
-      xx2 <- xx[yy[]>=0.001]; yy2 <- yy[yy[]>=0.001]
-      lines(xx2,yy2, col=plotcol[j],lwd=2)
-    }
-  }
-}
-
 ##############################################
 ##Assess how parameters vary with SDD, trail and year
 #In same for loop, create graphs (one per species; parameter); run some tests
@@ -434,7 +309,7 @@ yearcol <- c("purple","grey","orange","lightblue","yellowgreen","pink","navyblue
 testparsAIC <- c() #output of simple exploratory models
 
 for(i in 1:length(species)){
-  parspecies <- parameters[parameters$species==species[i],]
+  parspecies <- spyrpltpars[spyrpltpars$species==species[i],]
   
   #set shape
   pltshp <- rep(21, length=dim(parspecies)[1])
@@ -446,7 +321,7 @@ for(i in 1:length(species)){
   
   #SDD vs peak
   plot(parspecies$SDD,parspecies$peak, xlab="SDD",ylab="peak", pch=pltshp, bg=yearcol[parspecies$year-2012], cex=1.5)
-  title(paste(species[i],"- SDD vs. optim"))
+  title(paste(species[i],"- SDD vs. peak"))
   legend(x="bottomright",c("'13","'14","'15","'16","'17","'18","'19","GB","RL"), 
          pch=c(21,21,21,21,21,21,21,24,21), pt.bg=c(yearcol,"gray","gray"))
 
@@ -479,27 +354,27 @@ for(i in 1:length(species)){
     
   #SDD vs duration / range  
   plot(parspecies$SDD,parspecies$range, xlab="SDD",ylab="range", pch=pltshp, bg=yearcol[parspecies$year-2012], cex=1.5)
-  title(paste(species[i],"- SDD vs. range"))
+  title(paste(species[i],"- SDD vs. duration"))
   
-  #test - how strongly are range and SDD correlated?
-  optimtest <- cor.test(parspecies$SDD,parspecies$range)
+  #test - how strongly are duration and SDD correlated?
+  optimtest <- cor.test(parspecies$SDD,parspecies$duration)
   mtext(paste("cor=",round(optimtest$estimate,3),sep=""), side=3, adj=0.025, cex=0.75,line=-1)
   mtext(paste("p=",round(optimtest$p.value,3),sep=""), side=3, adj=0.025, cex=0.75,line=-2)
   
   #test for output - does duration flowering depend on SDD, year, trail?
   if(ntrails==1){
-    testall <- lm(parspecies$range ~ parspecies$SDD + parspecies$year)
-    testSDD <- lm(parspecies$range ~ parspecies$SDD)
-    testyear <- lm(parspecies$range ~ parspecies$year)
-    testnull <- lm(parspecies$range ~ 1)
+    testall <- lm(parspecies$duration ~ parspecies$SDD + parspecies$year)
+    testSDD <- lm(parspecies$duration ~ parspecies$SDD)
+    testyear <- lm(parspecies$duration ~ parspecies$year)
+    testnull <- lm(parspecies$duration ~ 1)
     tmpAIC <- c(AIC(testnull), AIC(testyear),AIC(testSDD),NA, AIC(testall))
   }
   if(ntrails==2){
-    testall <- lm(parspecies$range ~ parspecies$SDD + parspecies$year + as.factor(substr(parspecies$plot,1,2)))
-    testtrail <- lm(parspecies$range ~ as.factor(substr(parspecies$plot,1,2)))
-    testSDD <- lm(parspecies$range ~ parspecies$SDD)
-    testyear <- lm(parspecies$range ~ parspecies$year)
-    testnull <- lm(parspecies$range ~ 1)
+    testall <- lm(parspecies$duration ~ parspecies$SDD + parspecies$year + as.factor(substr(parspecies$plot,1,2)))
+    testtrail <- lm(parspecies$duration ~ as.factor(substr(parspecies$plot,1,2)))
+    testSDD <- lm(parspecies$duration ~ parspecies$SDD)
+    testyear <- lm(parspecies$duration ~ parspecies$year)
+    testnull <- lm(parspecies$duration ~ 1)
     tmpAIC <- c(AIC(testnull), AIC(testyear),AIC(testSDD),AIC(testtrail), AIC(testall))
   }
   
@@ -509,7 +384,7 @@ for(i in 1:length(species)){
 
   #SDD vs max height parameter
   plot(parspecies$SDD,parspecies$max, xlab="SDD",ylab="max", pch=pltshp, bg=yearcol[parspecies$year-2012], cex=1.5)
-  title(paste(species[i],"- SDD vs. max height"))
+  title(paste(species[i],"- SDD vs. max"))
   
   #test - how strongly are range and SDD correlated?
   optimtest <- cor.test(parspecies$SDD,parspecies$max)
@@ -614,12 +489,12 @@ for(i in 1:length(species)){ #loop for each year
   #first use parameters to come up with reasonable priors
   #slope & intercept for SDD vs optim
   
-  optimcoef <- unlist(coef(lm(parameters$peak~parameters$SDD)))
-  sprng <- mean(parameters$range[parameters$species==species[i]])
-  spmx <- mean(parameters$max[parameters$species==species[i]])
+  optimcoef <- unlist(coef(lm(spyrpltpars$peak~spyrpltpars$SDD)))
+  spdur <- mean(spyrpltpars$duration[spyrpltpars$species==species[i]])
+  spmx <- mean(spyrpltpars$max[spyrpltpars$species==species[i]])
 
   #set parameters & fit model
-  param <- c(optimcoef, rep(sprng, times=ntrlyr), rep(spmx, times=ntrlyr)) # initial parameters: model fits pretty fussy about this
+  param <- c(optimcoef, rep(spdur, times=ntrlyr), rep(spmx, times=ntrlyr)) # initial parameters: model fits pretty fussy about this
   modelsnowmod <- optim(param, curvefit_snowmod, control = list(maxit = 50000))
 
   #Determine which years / trails (for plotting, saving)
@@ -667,12 +542,12 @@ for(i in 2:27){
 ############### GRAPH - in progress
 ##Now make a figure, one per trail / year - of predicted flowering in earliest, latest snowmelt of that year
 for(trail in 1:2){
-  if(i==1){
+  if(trail==1){
     StationDatTrail <- StationDat[StationDat$Transect=="Reflection Lakes",]
     parameters_snowmodtrail <- parameters_snowmod[is.na(parameters_snowmod$dur.RL13)==FALSE,]
     parameters_snowmodtrail <- cbind(parameters_snowmodtrail[,1:3],parameters_snowmodtrail[,substr(dimnames(parameters_snowmodtrail)[[2]],5,6)=="RL"])
     }
-  if(i==2){
+  if(trail==2){
     StationDatTrail <- StationDat[StationDat$Transect=="Glacier Basin",]
     parameters_snowmodtrail <- parameters_snowmod[is.na(parameters_snowmod$dur.GB15)==FALSE,]
     parameters_snowmodtrail <- cbind(parameters_snowmodtrail[,1:3],parameters_snowmodtrail[,substr(dimnames(parameters_snowmodtrail)[[2]],5,6)=="GB"])
@@ -687,38 +562,55 @@ for(trail in 1:2){
     firstSDD <- min(SDDs); lastSDD <- max(SDDs)
 
     #Set plotting parameters
-    X11(width=7,height=5)
-    par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.3), xpd=NA, tck=-0.02,mgp=c(1.25,0.5,0))
-    plot(160,0.5,type="n", xlim=c(min(predDOY),max(predDOY)), ylim=c(0,1),
-         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
-    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
-    if(i==1){title(paste("Reflection Lakes",yrs[j],sep="-"))}
-    if(i==2){title(paste("Glacier Basin",yrs[j],sep="-"))}
+    X11(width=6,height=8)
+    par(mfrow=c(2,1), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.3), xpd=NA, tck=-0.02,mgp=c(1.25,0.5,0))
     
     #now extract parameters per species, plot
     parameters_smyear <- parameters_snowmodtrail[,c(1:3,(3+j),(3+j+length(yrs)))]
     spp <- parameters_smyear$species
-
+    
+    #first plot early season
+    plot(160,0.5,type="n", xlim=c(min(predDOY),max(predDOY)), ylim=c(0,1),
+         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
+    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
+    if(trail==1){title(paste("Early meadows","RL",yrs[j],sep="-"))}
+    if(trail==2){title(paste("Early meadows","GB",yrs[j],sep="-"))}
+    
+    #now plot early season
     for(k in 1:length(spp)){
       peakfirst <- parameters_smyear[k,2]+parameters_smyear[k,3]*firstSDD
+      durf <- parameters_smyear[k,4]
+      maxf <- parameters_smyear[k,5]
+      
+      #estimate flowering curve first meadows
+      param <- c(peakfirst,durf,maxf)
+      flfirst <- predphen(predDOY,param)
+
+      #now plot
+      lines(predDOY[flfirst[]>0.01],flfirst[flfirst[]>0.01],col=plotcol[k],lwd=2)
+    }
+    #add legend
+    legend(x="topleft", legend=spp, cex=0.75, col=plotcol[1:length(spp)],lwd=2)
+
+    #next plot late season
+    plot(160,0.5,type="n", xlim=c(min(predDOY),max(predDOY)), ylim=c(0,1),
+         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
+    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
+    if(trail==1){title(paste("Late meadows","RL",yrs[j],sep="-"))}
+    if(trail==2){title(paste("Late meadows","GB",yrs[j],sep="-"))}
+    
+    #now plot late season species
+    for(k in 1:length(spp)){
       peaklast <- parameters_smyear[k,2]+parameters_smyear[k,3]*lastSDD
       durf <- parameters_smyear[k,4]
       maxf <- parameters_smyear[k,5]
       
-      #estimate flowering curve first, last
-      param <- c(peakfirst,durf,max)
-      flfirst <- predphen(predDOY,param)
-      param <- c(peaklast,durf,max)
+      #estimate flowering curve last
+      param <- c(peaklast,durf,maxf)
       fllast <- predphen(predDOY,param)
       
       #now plot
-      lines(predDOY[flfirst[]>0.01],flfirst[flfirst[]>0.01],col=plotcol[k],lwd=2)
       lines(predDOY[fllast[]>0.01],fllast[fllast[]>0.01],col=plotcol[k],lwd=2)
     }
   }
 }
-  
-  
-  
-
-
