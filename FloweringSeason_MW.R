@@ -175,6 +175,7 @@ for(i in 1:length(years)){ #loop for each year
       days <- PhenoSite_YearPlotSpecies$DOY #explanatory variable: DOY 
       phenophase <- PhenoSite_YearPlotSpecies$Flower #Response variables: flowers
 
+      #TODO
       #data filter: less than 5 observations, less than 3 observations of flowering
       if(length(days)<6){next}
       if(sum(na.omit(phenophase))<3){next}
@@ -197,7 +198,7 @@ for(i in 1:length(years)){ #loop for each year
       if(model1$convergence==1){print(paste(speciesinplot[k],"no convergence", sep="-"))}
     	
       #TODO
-      #plot curve, data
+      #plot curve, data (for each plot year)
       plot(days,phenophase, ylab="flower",pch=21, bg="pink")
       xx <- seq(min(days),max(days))
       yy <- predphen(xx,model1$par)
