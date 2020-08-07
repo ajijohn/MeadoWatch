@@ -8,6 +8,7 @@
 ##     D. (in progress) estimate flowering season
 #######################################
 options(stringsAsFactors = FALSE) #needed to run a few commands
+library(boot) #functions logit, inv.logit
 
 #########################################################################
 #########Read in Data, assemble important explanatory variables #########
@@ -83,7 +84,8 @@ curvefit <- function (param){ #curve fitting function for mle
 	 peakp  <- param[1]
 	 rangep <- param[2]
 	 maxp   <- param[3]
-	 pred   <- maxp*(1/(rangep*sqrt(2*pi)))*exp(-0.5*((days-peakp)/rangep)^2)
+	 #pred   <- maxp*(1/(rangep*sqrt(2*pi)))*exp(-0.5*((days-peakp)/rangep)^2)
+	 pred <- inv.logit(rangep * (days - peakp)^2 + maxp)
 	 llik     <- dbinom(phenophase,1,pred, log=TRUE)
 	 return(-sum(llik))
 }
@@ -99,7 +101,8 @@ curvefit_snowmod <- function (param){ #curve fitting function for mle
   peakp <- intpeak + slopepeak*SDD
   rangep <- rangep_all[trlyr]
   maxp <- maxp_all[trlyr]
-  pred   <- maxp*(1/(rangep*sqrt(2*pi)))*exp(-0.5*((days-peakp)/rangep)^2)
+  #pred   <- maxp*(1/(rangep*sqrt(2*pi)))*exp(-0.5*((days-peakp)/rangep)^2)
+  pred <- inv.logit(rangep * (days - peakp)^2 + maxp)
   llik     <- dbinom(phenophase,1,pred, log=TRUE)
   return(-sum(llik))
 }
@@ -111,7 +114,8 @@ predphen <- function (xx, param){
 	peakp  <- param[1]
 	rangep <- param[2]
 	maxp   <- param[3]
-	pred   <- maxp*(1/(rangep*sqrt(2*pi)))*exp(-0.5*((days-peakp)/rangep)^2)
+	#pred   <- maxp*(1/(rangep*sqrt(2*pi)))*exp(-0.5*((days-peakp)/rangep)^2)
+	pred <- inv.logit(rangep * (days - peakp)^2 + maxp)
 	return(pred)
 }
 
@@ -152,7 +156,18 @@ for(i in 1:length(years)){ #loop for each year
     
     #loop for each species in the plot
     for(k in 1:length(speciesinplot)){
+      
+      if(i==1&j==1&k==1){
+        X11(width=8,height=8)
+        par(mfrow=c(4,4),tck=-0.02,omi=c(0,0,0,0),mai=c(0.4,0.4,0.4,0.2),mgp=c(1.25,0.5,0))
+        newplot <- 0
+      }
 
+      if(newplot==16){
+        X11(width=8,height=8)
+        par(mfrow=c(4,4),tck=-0.02,omi=c(0,0,0,0),mai=c(0.4,0.4,0.4,0.2),mgp=c(1.25,0.5,0))
+        newplot <- 0
+      }
       #pull out data for species in plot      
       PhenoSite_YearPlotSpecies <- PhenoSite_YearPlot[PhenoSite_YearPlot$Species==speciesinplot[k],]
       
@@ -160,8 +175,10 @@ for(i in 1:length(years)){ #loop for each year
       days <- PhenoSite_YearPlotSpecies$DOY #explanatory variable: DOY 
       phenophase <- PhenoSite_YearPlotSpecies$Flower #Response variables: flowers
 
-      #If less than 5 total observations, do not fit
+      #data filter: less than 5 observations, less than 3 observations of flowering
       if(length(days)<6){next}
+      if(sum(na.omit(phenophase))<3){next}
+      
       #remove days when no observations were made; NA in phenophase
 	    days <- days[is.na(phenophase)==FALSE]
 	    phenophase <- phenophase[is.na(phenophase)==FALSE]
@@ -175,10 +192,19 @@ for(i in 1:length(years)){ #loop for each year
       model0 <- optimize(nullfit, c(0.000001,0.999999)) #fit null model
 	
       #now fit alternative model - curve
-      param <- c(mean(days), sd(days), 0.5) # initial parameters: model fits pretty fussy about this
+      param <- c(mean(days[phenophase[]==1]), -0.001, 0) # initial parameters: model fits pretty fussy about this
       model1 <- optim(param, curvefit, control = list(maxit = 50000))
       if(model1$convergence==1){print(paste(speciesinplot[k],"no convergence", sep="-"))}
     	
+      #TODO
+      #plot curve, data
+      plot(days,phenophase, ylab="flower",pch=21, bg="pink")
+      xx <- seq(min(days),max(days))
+      yy <- predphen(xx,model1$par)
+      lines(xx,yy)
+      title(paste(years[i],plots[j],speciesinplot[k],sep=" "))
+      newplot <- newplot + 1
+      
       #calculate AIC, p value
       AICnull <- round(2*(model0$objective+1),1)
       AICalt <- round(2*(model1$value + 3),1)
@@ -268,7 +294,9 @@ X11(width=7.5, height=4)
 par(mfrow=c(1,1),omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)
 
 #create plot to add points to
-earlypk <- min(spyrpltpars$peak); latepk <- max(spyrpltpars$peak)
+#earlypk <- min(spyrpltpars$peak); latepk <- max(spyrpltpars$peak)
+earlypk <- 90; latepk <- 270
+
 plot(2016,175, xlim=c(2012, 2020), ylim=c(earlypk,latepk),type="n",
  xaxp=c(2012,2020,8), yaxt="n", xlab="Year",ylab="Flowering")
 text(2011.5,srt=90, c(135,165,195,225),-0.1, labels=c("May","Jun","Jul","Aug"))
@@ -353,7 +381,7 @@ for(i in 1:length(species)){
   testparsAIC <- rbind(testparsAIC,tmpoutput)
     
   #SDD vs duration / range  
-  plot(parspecies$SDD,parspecies$range, xlab="SDD",ylab="range", pch=pltshp, bg=yearcol[parspecies$year-2012], cex=1.5)
+  plot(parspecies$SDD,parspecies$duration, xlab="SDD",ylab="range", pch=pltshp, bg=yearcol[parspecies$year-2012], cex=1.5)
   title(paste(species[i],"- SDD vs. duration"))
   
   #test - how strongly are duration and SDD correlated?
@@ -490,8 +518,8 @@ for(i in 1:length(species)){ #loop for each year
   #slope & intercept for SDD vs optim
   
   optimcoef <- unlist(coef(lm(spyrpltpars$peak~spyrpltpars$SDD)))
-  spdur <- mean(spyrpltpars$duration[spyrpltpars$species==species[i]])
-  spmx <- mean(spyrpltpars$max[spyrpltpars$species==species[i]])
+  spdur <- median(spyrpltpars$duration[spyrpltpars$species==species[i]])
+  spmx <- median(spyrpltpars$max[spyrpltpars$species==species[i]])
 
   #set parameters & fit model
   param <- c(optimcoef, rep(spdur, times=ntrlyr), rep(spmx, times=ntrlyr)) # initial parameters: model fits pretty fussy about this
@@ -539,7 +567,7 @@ for(i in 2:27){
 }
 
 
-############### GRAPH - in progress
+########GRAPH model
 ##Now make a figure, one per trail / year - of predicted flowering in earliest, latest snowmelt of that year
 for(trail in 1:2){
   if(trail==1){
