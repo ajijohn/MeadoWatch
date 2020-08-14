@@ -15,7 +15,8 @@ library(boot) #functions logit, inv.logit
 #########################################################################
 
 # Read in data: Phenodat is phenology data; stationdat is lat / long and includes snow disappearance info
-PhenoDat <- read.csv("data/MW_PhenoDat_2013_2019.csv", header=TRUE) #phenology data
+PhenoDatall <- read.csv("data/MW_PhenoDat_2013_2019.csv", header=TRUE) #phenology data
+PhenoDat <- PhenoDatall[complete.cases(PhenoDatall[,c(12, 14, 16, 18)]),] # Meera removed rows where ANY phenophases were coded as NA, treating these as suspect observations (8784 rows)
 StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE) #information about station
 
 # Merge by the rows in both the files (Year, Site_Code)
@@ -175,10 +176,10 @@ for(i in 1:length(years)){ #loop for each year
       days <- PhenoSite_YearPlotSpecies$DOY #explanatory variable: DOY 
       phenophase <- PhenoSite_YearPlotSpecies$Flower #Response variables: flowers
 
-      #TODO
-      #data filter: less than 5 observations, less than 3 observations of flowering
-      if(length(days)<6){next}
-      if(sum(na.omit(phenophase))<3){next}
+    
+      #data filter: Meera increased filter from 5 observations to 10 and from 3 observations of flowering to 5
+      if(length(days)<11){next}
+      if(sum(na.omit(phenophase))<6){next}
       
       #remove days when no observations were made; NA in phenophase
 	    days <- days[is.na(phenophase)==FALSE]
