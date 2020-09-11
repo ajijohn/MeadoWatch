@@ -139,8 +139,14 @@ years <- unique(PhenoSite_Focal$Year)
 #where to save output & SDD of trail-species-plot-year specific fits
 spyrpltpars <- c() 
 
+#trigger for plotting is plottrue - set to false (default)
+plottrue <- "F" #set graph creation: default is false (no graphing)
+
 ##Now nested for loops to fit curves for all years, focal species, plots within trails
 for(i in 1:length(years)){ #loop for each year
+  
+  if(i==1){plottrue <- readline(prompt="Produce graphs for all species / plot combos? Input T or F: ")}
+
   #extract data for that year
   PhenoSite_Year <- PhenoSite_Focal[PhenoSite_Focal$Year==years[i],]
   
@@ -158,13 +164,13 @@ for(i in 1:length(years)){ #loop for each year
     #loop for each species in the plot
     for(k in 1:length(speciesinplot)){
       
-      if(i==1&j==1&k==1){
+      if(i==1&j==1&k==1&plottrue=="T"){
         X11(width=8,height=8)
         par(mfrow=c(4,4),tck=-0.02,omi=c(0,0,0,0),mai=c(0.4,0.4,0.4,0.2),mgp=c(1.25,0.5,0))
         newplot <- 0
       }
 
-      if(newplot==16){
+      if(newplot==16&plottrue=="T"){
         X11(width=8,height=8)
         par(mfrow=c(4,4),tck=-0.02,omi=c(0,0,0,0),mai=c(0.4,0.4,0.4,0.2),mgp=c(1.25,0.5,0))
         newplot <- 0
@@ -176,7 +182,6 @@ for(i in 1:length(years)){ #loop for each year
       days <- PhenoSite_YearPlotSpecies$DOY #explanatory variable: DOY 
       phenophase <- PhenoSite_YearPlotSpecies$Flower #Response variables: flowers
 
-    
       #data filter: Meera increased filter from 5 observations to 10 and from 3 observations of flowering to 5
       if(length(days)<11){next}
       if(sum(na.omit(phenophase))<6){next}
@@ -200,19 +205,21 @@ for(i in 1:length(years)){ #loop for each year
     	
       #TODO
       #plot curve, data (for each plot year)
-      plot(days,phenophase, ylab="flower",pch=21, bg="pink")
-      xx <- seq(min(days),max(days))
-      yy <- predphen(xx,model1$par)
-      lines(xx,yy)
-      title(paste(years[i],plots[j],speciesinplot[k],sep=" "))
-      newplot <- newplot + 1
-      
+      if(plottrue == "T"){
+        plot(days,phenophase, ylab="flower",pch=21, bg="pink")
+        xx <- seq(min(days),max(days))
+        yy <- predphen(xx,model1$par)
+        lines(xx,yy)
+        title(paste(years[i],plots[j],speciesinplot[k],sep=" "))
+        newplot <- newplot + 1
+      }
       #calculate AIC, p value
       AICnull <- round(2*(model0$objective+1),1)
       AICalt <- round(2*(model1$value + 3),1)
       pcurve <- signif(pchisq(model1$value-model0$objective,2),3)
     
-      #print output if desired
+      #TODO 
+      #write the info below to a data frame
       #print(speciesinplot[k])
       #print(paste("AICnull=",AICnull,"AICalt=",AICalt,"p(curve)=",pcurve))
 	
@@ -250,41 +257,49 @@ spyrpltpars$max <- as.numeric(spyrpltpars$max)
 plotcol <- c("yellowgreen","magenta","orange","purple","yellow","springgreen","pink","purple",
              "navyblue","azure4","yellow4","orchid","turquoise","salmon","maroon","black")
 
-for(trail in 1:2){
-  if(trail==1){spyrpltpars2 <- spyrpltpars[substr(spyrpltpars$plot,1,2)=="RL",]}
-  if(trail==2){spyrpltpars2 <- spyrpltpars[substr(spyrpltpars$plot,1,2)=="GB",]}
-  
-  #how many years? differs per trail
-  years <- unique(spyrpltpars2$year)
-  
-  X11(width=4.5, height=9)
-  par(mfrow=c(length(years),1),omi=c(0,0,0,0), mai=c(0.1,0.3,0.1,0.0),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)
 
-  #plot per year
-  for(i in 1:length(years)){
-    paryear <- spyrpltpars2[spyrpltpars2$year==years[i],]
+##Now extract species curves per year / plot, graph
+plottrue <- "F"
+
+for(trail in 1:2){
+  if(trail==1){plottrue <- readline(prompt="Produce trail-specific graphs, all species, separate years? Input T or F: ")}
+
+  if(plottrue=="T"){
+    if(trail==1){spyrpltpars2 <- spyrpltpars[substr(spyrpltpars$plot,1,2)=="RL",]}
+    if(trail==2){spyrpltpars2 <- spyrpltpars[substr(spyrpltpars$plot,1,2)=="GB",]}
   
-    plot(185,0.5, xlim=c(105,285), ylim=c(0,1.01),type="n",
-         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
-    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
-    text(110,0.9,labels=years[i])
-    if(i==1&trail==1){title("Reflection Lakes")}
-    if(i==1&trail==2){title("Glacier Basin")}
+    #how many years? differs per trail
+    years <- unique(spyrpltpars2$year)
+  
+    X11(width=4.5, height=9)
+    par(mfrow=c(length(years),1),omi=c(0,0,0,0), mai=c(0.1,0.3,0.1,0.0),tck=-0.01, mgp=c(1.25,0.25,0),xpd=TRUE)
+
+    #plot per year
+    for(i in 1:length(years)){
+      paryear <- spyrpltpars2[spyrpltpars2$year==years[i],]
+  
+      plot(185,0.5, xlim=c(105,285), ylim=c(0,1.01),type="n",
+           xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
+      text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
+      text(110,0.9,labels=years[i])
+      if(i==1&trail==1){title("Reflection Lakes")}
+      if(i==1&trail==2){title("Glacier Basin")}
     
     #now pull out all data for a species
-    for(j in 1:length(species)){
-      paryearsp <- paryear[paryear$species==species[j],]
-      if(dim(paryearsp)[1]==0){next}
+      for(j in 1:length(species)){
+        paryearsp <- paryear[paryear$species==species[j],]
+        if(dim(paryearsp)[1]==0){next}
 
       #now pull out data per species, and plot
-      for(k in 1:dim(paryearsp)[1]){
-         xx <- seq(105,285)
-         n <- which(dimnames(paryearsp)[[2]]=="peak")
-         pars <- unlist(paryearsp[k,n:(n+2)])
-         yy <- predphen(xx, pars)
-         if(max(yy)>1){yy <- yy/(max(yy))} #bit of a kluge - force max to be < 1
-         xx2 <- xx[yy[]>=0.001]; yy2 <- yy[yy[]>=0.001]
-         lines(xx2,yy2, col=plotcol[j],lwd=2)
+        for(k in 1:dim(paryearsp)[1]){
+           xx <- seq(105,285)
+           n <- which(dimnames(paryearsp)[[2]]=="peak")
+           pars <- unlist(paryearsp[k,n:(n+2)])
+           yy <- predphen(xx, pars)
+           if(max(yy)>1){yy <- yy/(max(yy))} #bit of a kluge - force max to be < 1
+           xx2 <- xx[yy[]>=0.001]; yy2 <- yy[yy[]>=0.001]
+           lines(xx2,yy2, col=plotcol[j],lwd=2)
+        }
       }
     }
   }
