@@ -7,6 +7,8 @@ output:
   html_document: default
 ---
 
+## Run the FloweringSeason_MW.R script first
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -21,7 +23,7 @@ Source or register all the functions
 source('Phenology.R')
 ```
 
-## Read in the data
+## Read in the data - Done at the year level
 
 ```{r PhenoSite_Focal, echo=TRUE, fig.width = 10}
 # Get list of years
@@ -65,10 +67,23 @@ for(i in 1:length(years)){ #loop for each year
 
 ```
 
+Plot the yearly phenology curve
 ```{r, fig.width = 10}
 # Small fig.width
   ggplot(data=df) + geom_point(aes(x,y)) + theme_minimal(base_size = 21) +
-    labs(x="Day of the year (DOY)" , y="P(flowering)", subtitle = paste("Reflections Trail",years[i])) +
+   geom_vline(aes(xintercept = 152))  +
+  geom_text(mapping = aes(label = 'June 1st',x=152, y = 0.1), angle = 60, hjust = 0) +
+  geom_vline(aes(xintercept = 183))  +
+  geom_text(mapping = aes(label = 'July 1st',x=183, y = 0.1), angle = 60, hjust = 0) +
+   geom_vline(aes(xintercept = 213))  +
+  geom_text(mapping = aes(label = 'Aug 1st',x=213, y = 0.1), angle = 60, hjust = 0) +
+    geom_vline(aes(xintercept = 244))  +
+  geom_text(mapping = aes(label = 'Sep 1st',x=244, y = 0.1), angle = 60, hjust = 0) +
+    labs(x="Day of the year (DOY)" , y="P(flowering)", subtitle = paste("Reflections Trail - ",'Irrespective of site/species')) +
   facet_wrap(~year)
-  
+ggsave("yearly-flowering-pheno.png", width = 20, height = 20, units = "cm")  
 ```
+Quantiles 10-25%
+
+## Read in the data - Done at the year/species level
+
