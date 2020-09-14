@@ -1,0 +1,74 @@
+---
+title: "Flowering-Season"
+author: "Aji John"
+date: "7/18/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+## Explore results from phenology models. 
+
+Source or register all the functions
+
+```{r}
+source('Phenology.R')
+```
+
+## Read in the data
+
+```{r PhenoSite_Focal, echo=TRUE, fig.width = 10}
+# Get list of years
+years <- unique(PhenoSite_Focal$Year)
+
+df <- data.frame()
+
+##Now nested for loops to fit curves for all years, focal species, plots within trails
+for(i in 1:length(years)){ #loop for each year
+  
+  #extract data for that year
+  PhenoSite_Year <- PhenoSite_Focal[PhenoSite_Focal$Year==years[i],]
+  
+  year_days <- PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes',]$DOY
+  phenophase <- PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes',]$Flower #Response variables: flowers
+  
+  #remove days when no observations were made; NA in phenophase
+  year_days <- year_days[is.na(phenophase)==FALSE]
+  phenophase <- phenophase[is.na(phenophase)==FALSE]
+  
+
+  param_year <- c(mean(year_days[phenophase[]==1]), -0.001, 0) # initial parameters: model fits pretty fussy about this
+  model1_year <- optim(param_year, curvefit, control = list(maxit = 50000))
+  
+  #add three weeks of zeroes before earliest SDD in those plots
+  SDDplt <- min(PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes',]$SDD)
+  days <- c(SDDplt-21, SDDplt-14, SDDplt-7,year_days)
+  phenophase <- c(0,0,0,phenophase)
+  
+  # Day of the year
+  xx <- seq(min(days),max(days))
+  yy <- predphen(xx,model1_year$par)
+  
+  #Create dataframe from all the years
+  yearly_data <- data.frame(x=xx, y=yy)
+  yearly_data$year <- years[i]
+  
+  df <- rbind(df, yearly_data)
+  
+}
+
+```
+
+```{r, fig.width = 10}
+# Small fig.width
+  ggplot(data=df) + geom_point(aes(x,y)) + theme_minimal(base_size = 21) +
+    labs(x="Day of the year (DOY)" , y="P(flowering)", subtitle = paste("Reflections Trail",years[i])) +
+  facet_wrap(~year)
+  
+```
