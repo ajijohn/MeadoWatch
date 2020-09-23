@@ -1,0 +1,170 @@
+---
+title: "Flowering-Season"
+author: "Aji John"
+date: "7/18/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Run the FloweringSeason_MW.R script first
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+## Explore results from phenology models. 
+
+Source or register all the functions
+
+```{r}
+source('Phenology.R')
+```
+
+## Read in the data - Done at the year level
+
+```{r PhenoSite_Focal, echo=TRUE, fig.width = 10}
+# Get list of years
+years <- unique(PhenoSite_Focal$Year)
+
+df <- data.frame()
+
+##Now nested for loops to fit curves for all years, focal species, plots within trails
+for(i in 1:length(years)){ #loop for each year
+  
+  #extract data for that year
+  PhenoSite_Year <- PhenoSite_Focal[PhenoSite_Focal$Year==years[i],]
+  
+  year_days <- PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes',]$DOY
+  phenophase <- PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes',]$Flower #Response variables: flowers
+  
+  #remove days when no observations were made; NA in phenophase
+  year_days <- year_days[is.na(phenophase)==FALSE]
+  phenophase <- phenophase[is.na(phenophase)==FALSE]
+  
+
+  param_year <- c(mean(year_days[phenophase[]==1]), -0.001, 0) # initial parameters: model fits pretty fussy about this
+  model1_year <- optim(param_year, curvefit, control = list(maxit = 50000))
+  
+  #add three weeks of zeroes before earliest SDD in those plots
+  SDDplt <- min(PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes',]$SDD)
+  days <- c(SDDplt-21, SDDplt-14, SDDplt-7,year_days)
+  phenophase <- c(0,0,0,phenophase)
+  
+  # Day of the year
+  xx <- seq(min(days),max(days))
+  yy <- predphen(xx,model1_year$par)
+  
+  #Create dataframe from all the years
+  yearly_data <- data.frame(x=xx, y=yy)
+  yearly_data$year <- years[i]
+  
+  df <- rbind(df, yearly_data)
+  
+}
+
+```
+
+Plot the yearly phenology curve
+```{r, fig.width = 10}
+# Small fig.width
+  ggplot(data=df) + geom_point(aes(x,y)) + theme_minimal(base_size = 21) +
+   geom_vline(aes(xintercept = 152))  +
+  geom_text(mapping = aes(label = 'June 1st',x=152, y = 0.1), angle = 60, hjust = 0) +
+  geom_vline(aes(xintercept = 183))  +
+  geom_text(mapping = aes(label = 'July 1st',x=183, y = 0.1), angle = 60, hjust = 0) +
+   geom_vline(aes(xintercept = 213))  +
+  geom_text(mapping = aes(label = 'Aug 1st',x=213, y = 0.1), angle = 60, hjust = 0) +
+    geom_vline(aes(xintercept = 244))  +
+  geom_text(mapping = aes(label = 'Sep 1st',x=244, y = 0.1), angle = 60, hjust = 0) +
+    labs(x="Day of the year (DOY)" , y="P(flowering)", subtitle = paste("Reflections Trail - ",'Irrespective of site/species')) +
+  facet_wrap(~year)
+ggsave("yearly-flowering-pheno.png", width = 20, height = 20, units = "cm")  
+```
+
+
+## Read in the data - Done at the year/species level; Only 9 species are included in PhenoSite_Focal. Quantiles 10-25%
+
+```{r PhenoSite_Focal, echo=TRUE, fig.width = 10}
+
+
+# species <- c("ANOC","ASLE","CAMI","CAPA","ERGR","ERMO","ERPE","LUAR","PEBR"); nspp <- length(species)
+#REFLECTION LAKES SPECIES ARE <- c("ANOC","CAPA","ERMO","ERPE","LIGR","LUAR","MIAL","PEBR","POBI","VASI")
+#GLACIER BASIN SPECIES ARE <- c("ANAR","ARLA","ASLE","CAMI", "ERGR","LUAR","MEPA","PEBR","POBI","VASI")
+
+# Get list of years
+years <- unique(PhenoSite_Focal$Year)
+
+df_species_year <- data.frame()
+
+##Now nested for loops to fit curves for all years, focal species, plots within trails
+for(i in 1:length(years)){ #loop for each year
+  
+  #extract data for that year
+  PhenoSite_Year <- PhenoSite_Focal[PhenoSite_Focal$Year==years[i],]
+  
+  #Identify species in plot
+  speciesinyear <- unique(PhenoSite_Year$Species)
+  
+  #loop for each species in the plot
+    for(k in 1:length(speciesinyear)){
+  
+  year_days <- PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes' & PhenoSite_Year$Species == speciesinyear[k],]$DOY
+  phenophase <- PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes' & PhenoSite_Year$Species == speciesinyear[k],]$Flower #Response variables: flowers
+  
+  if(length(year_days)==0){
+    print(paste('no data for',speciesinyear[k],years[i]))
+    next
+    } #break if focal species not present in a year
+  
+  #remove days when no observations were made; NA in phenophase
+  year_days <- year_days[is.na(phenophase)==FALSE]
+  phenophase <- phenophase[is.na(phenophase)==FALSE]
+  
+
+  param_year <- c(mean(year_days[phenophase[]==1]), -0.001, 0) # initial parameters: model fits pretty fussy about this
+  model1_year <- optim(param_year, curvefit, control = list(maxit = 50000))
+  
+  #add three weeks of zeroes before earliest SDD in those plots
+  SDDplt <- min(PhenoSite_Year[PhenoSite_Year$Transect.x=='Reflection Lakes' & PhenoSite_Year$Species == speciesinyear[k],]$SDD)
+  days <- c(SDDplt-21, SDDplt-14, SDDplt-7,year_days)
+  phenophase <- c(0,0,0,phenophase)
+  
+  # Day of the year
+  xx <- seq(min(days),max(days))
+  yy <- predphen(xx,model1_year$par)
+  
+  # Add to dataframe for that year/species combination
+  yearly_species_data <- data.frame(x=xx, y=yy)
+  yearly_species_data$year <- years[i]
+  yearly_species_data$species <- speciesinyear[k]
+  
+  df_species_year <- rbind(df_species_year, yearly_species_data)
+}
+  
+  
+}
+
+```
+
+Visualize the species/year level plots
+
+```{r, fig.width = 10}
+# Small fig.width
+df_species_year %>% filter(year %in% c(2013:2019)) %>%
+  ggplot() + geom_point(aes(x,y,color=species)) + theme_minimal(base_size = 14) +
+   geom_vline(aes(xintercept = 152))  +
+  geom_text(mapping = aes(label = 'June 1st',x=152, y = 0.1), angle = 60, hjust = 0) +
+  geom_vline(aes(xintercept = 183))  +
+  geom_text(mapping = aes(label = 'July 1st',x=183, y = 0.1), angle = 60, hjust = 0) +
+   geom_vline(aes(xintercept = 213))  +
+  geom_text(mapping = aes(label = 'Aug 1st',x=213, y = 0.1), angle = 60, hjust = 0) +
+    geom_vline(aes(xintercept = 244))  +
+  geom_text(mapping = aes(label = 'Sep 1st',x=244, y = 0.1), angle = 60, hjust = 0) +
+    labs(x="Day of the year (DOY)" , y="P(flowering)", subtitle = paste("Reflections Trail - ",'Year/species')) +
+  facet_wrap(~year,ncol=2)
+ggsave("yearly-species-flowering-pheno.png", width = 20, height = 20, units = "cm")  
+```
+
