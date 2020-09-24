@@ -126,7 +126,7 @@ predphen <- function (xx, param){
 #################################################################################
 
 #Define species of interest (for reference, RL and GB focal species listed)
-species <- c("ANOC","ASLE","CAMI","CAPA","ERGR","ERMO","ERPE","LUAR","PEBR"); nspp <- length(species)
+species <- c("ANOC","ASLE","CAMI","CAPA","ERGR","ERMO","ERPE","LUAR","PEBR","POBI","VASI"); nspp <- length(species)
 #REFLECTION LAKES SPECIES ARE <- c("ANOC","CAPA","ERMO","ERPE","LIGR","LUAR","MIAL","PEBR","POBI","VASI")
 #GLACIER BASIN SPECIES ARE <- c("ANAR","ARLA","ASLE","CAMI", "ERGR","LUAR","MEPA","PEBR","POBI","VASI")
 #Exclude non focal species of interest
@@ -565,7 +565,7 @@ for(i in 1:length(species)){ #loop for each year
   parameters_snowmod <- rbind(parameters_snowmod,tmppars2)
 }
 
-#save origina;
+#save original;
 parameters_snowmod2 <- parameters_snowmod
 
 #parameterssnowmod a data frame
