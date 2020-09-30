@@ -11,7 +11,6 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 library(tidyverse)
 ```
 
@@ -67,7 +66,7 @@ for(i in 1:length(years)){ #loop for each year
 
 ```
 
-Plot the yearly phenology curve
+## Plot the yearly phenology curve
 ```{r, fig.width = 10}
 # Small fig.width
   ggplot(data=df) + geom_point(aes(x,y)) + theme_minimal(base_size = 21) +
@@ -149,7 +148,7 @@ for(i in 1:length(years)){ #loop for each year
 
 ```
 
-Visualize the species/year level plots
+## Visualize the species/year level plots
 
 ```{r, fig.width = 10}
 # Small fig.width
