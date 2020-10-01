@@ -1,181 +1,570 @@
 ---
-title: "Explore-phenology"
-author: "Aji John"
-date: "10/15/2019"
+title: "Wildflower Season from MeadoWatch Data"
+author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
+date: "10/01/2020"
 output: html_document
 ---
 
+#Setup for R script and R markdown
+1. Load all libaries
+2. Specify string behavior
+3. Load packages (should we add all packages here?)
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(stringsAsFactors = FALSE)
 library(tidyverse)
 library(leaflet)
 library(lubridate)
+library(boot)
+library(readr) 
 ```
 
-## Visualization
 
-
+#Data munging / merging
+1. Read in raw data
+2. Remove cases with NA observations in any phenophase
+3. Merge plot-specific snowmelt data and individual observations
+4. Remove unneeded columns
+5. Calculate and add Julian day (DOY) to data
+6. Reorganize data columns and rename to PhenoSite
 
 ```{r}
-library(readr)
-MW_PhenoDat_2013_2018 <- read_csv("data/MW_PhenoDat_2013_2018.csv")
-head(MW_PhenoDat_2013_2018)
+# Read in phenology data, station data
+PhenoDatall <- read.csv("data/MW_PhenoDat_2013_2019.csv", header=TRUE)
+StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE) 
+
+# Remove rows where any phenophases were coded as NA
+PhenoDat <- PhenoDatall[complete.cases(PhenoDatall[,c(12, 14, 16, 18)]),] 
+
+# Merge by the rows in both the files (Year, Site_Code)
+MergePhenoStation <- merge(StationDat,PhenoDat, by=c("Year","Site_Code"))
+
+# Remove unneeded columns
+#TODO - might be a better way to do this in case column names change
+PhenoSite_0 <- MergePhenoStation[,c(1:6, 9, 12, 15:16, 18:20, 22, 24, 26, 28)]
+
+# Calculate Julian Days of observations; DSS=days since snow; add to PhenoSite
+PhenoSite_0 <- PhenoSite_0[order(PhenoSite_0$Year),] #order by year
+yrs <- unique(PhenoSite_0$Year);
+DOY <- c()
+
+# Convert the 'Date' - observed date to Julian (DOY)
+for(i in 1:length(yrs)){
+  tmpdates <- PhenoSite_0$Date[PhenoSite_0$Year==yrs[i]]
+  Jan1Jul <- as.Date(paste(yrs[i],"-01-01", sep=""))
+  ObsJulDayYr <- julian(as.Date(as.character(tmpdates),"%m/%d/%Y"),
+                        origin=Jan1Jul)
+  DOY <- c(DOY,ObsJulDayYr)
+}
+
+# Now add day of year (DOY) to Phenosite Data
+PhenoSite_0 <- cbind(PhenoSite_0, DOY)
+
+# Finally, reorganize data and rename as PhenoSite
+PhenoSite <- PhenoSite_0[,c(1,3,2,4,8,18,7,10,11,14)] #reorganize data
+
+#Examine the data
+head(PhenoSite)
+
 ```
 
-## Including Plots
 
-Visualize the sites
+#Define functions - maximum likelihood models & phenology curves (for plotting)
+There are four functions we need, 3 for model fitting and one for drawing curves. They are described here.
 
-```{r }
-MW_PhenoDat_2013_2018 %>% filter(Transect == "Reflection Lakes") %>%
- group_by(Site_Num, Year,Month) %>% summarize(meanFlowering = mean(Flower)) %>%
- ggplot() +
- geom_point(aes(as.factor(Month),size=2,  meanFlowering,shape=as.factor(Site_Num))) +
- facet_grid(.~Year)+
- theme_minimal()
+1. nullfit - binomial likelihood model that estimates a constant probability of flowering (one parameter) and the negative log likelihood, given yes / no observations. We know this model isn't accurate, but it is useful in providing
+a null model for curvefit_perplot (allowing one to compare AIC's or conduct a likelihood test as to whether flowering varies with DOY in a unimodal way).
+
+2. curvefit_perplot - binomial likelihood model that estimates the probability of flowering as a function of DOY; as described by three parameters - range, maximum, and peak. The unimodal curve is fit with a logit transformation (similar to Theobald et al 2017, Sethi et al 2020; albeit with parameters that do NOT vary with climate). Also requires yes / no observations. This function is fit to year-plot-species specific observations
+
+3. curvefit_allplot - binomial likelihood model that estimates the probability of flowering for a species across all plots, years and transects as a function of several parameters. Similar to the second model above, there is a unimodal curve describing flowering, fit with a logit transformation. Peak flowering at a plot is predicted by snowmelt date (intercept, slope parameter estimated). Range and maximum parameters vary by year and plot. This function is fit to all data from a species.
+
+4. predflower - input a DOY (or vector of DOY's) and 3 parameters describing peak, range and duration of flowering; and returns the probability of flowering. This is primarily used for plotting.
+
+```{r}
+#Null model - assumes the probability of flowering is constant
+nullfit <- function (param){ 
+	meanp  <- param[1]
+	pred   <- rep(meanp, times=length(phenophase))
+	llik     <- dbinom(phenophase,1,pred, log=TRUE) #this is the likelihood
+	return(-sum(llik)) #this is the negative log likelihood, which is minimized
+}
+
+#Assumes flowering varies with DOY as a function of 3 parameters
+#Should be fit per species, plot and year
+curvefit_perplot <- function (param){ #curve fitting function for mle
+	 peakp  <- param[1]
+	 rangep <- param[2]
+	 maxp   <- param[3]
+	 pred <- inv.logit(rangep * (days - peakp)^2 + maxp)
+	 llik     <- dbinom(phenophase,1,pred, log=TRUE)
+	 return(-sum(llik))
+}
+
+#Fits model per species 
+#peak flowering varies with snowmelt, and plot/trail specific range and max
+#Should be fit per species (but all data for each speices)
+curvefit_allplot <- function (param){ #curve fitting function for mle
+  intpeak  <- param[1]
+  slopepeak <- param[2]
+  rangep_all <- param[3:(2+ntrlyr)] #different range per trail, year
+  maxp_all   <- param[(3+ntrlyr):(2+2*ntrlyr)] #different max per trail, year
+  peakp <- intpeak + slopepeak*SDD
+  rangep <- rangep_all[trlyr]
+  maxp <- maxp_all[trlyr]
+  pred <- inv.logit(rangep * (days - peakp)^2 + maxp)
+  llik     <- dbinom(phenophase,1,pred, log=TRUE)
+  return(-sum(llik))
+}
+
+#Predicts flowering phenology as a function of DOY, param (peak, range, max)
+predflower <- function (xx, param){ 
+  days    <- xx
+	peakp  <- param[1]
+	rangep <- param[2]
+	maxp   <- param[3]
+	pred <- inv.logit(rangep * (days - peakp)^2 + maxp)
+	return(pred)
+}
+```
+
+
+#Define wildflower community for model fitting
+This chunk of code defines the wildflower community and subsets the data to only include these species. Specifically:
+
+1. Specify which flowering species to include. For reference:
+   A. Reflection Lakes species include: c("ANOC", "CAPA", "ERMO", "ERPE", "LIGR", "LUAR", "MIAL", "PEBR", "POBI", "VASI")
+   B. Glacier Basin species include: c("ANAR", "ARLA", "ASLE", "CAMI", "ERGR", "LUAR", "MEPA", "PEBR", "POBI", "VASI")
+
+2. Create PhenoSite_Focal - data set with just species of interest
+
+3. From this, *nspp* (number of species) and *nyears* (number of years) are defined, which are used in for loops
+
+```{r}
+# Define the wildflower community: which species to include
+species <- c("ANOC", "ASLE", "CAMI", "CAPA", "ERGR", "ERMO",
+             "ERPE", "LUAR", "PEBR", "VASI")
+
+# Create PhenoSite_Focal - data set with just species of interest
+specieskeep <- PhenoSite$Species %in% species
+PhenoSite_Focal <- PhenoSite[specieskeep,]
+
+# Determine how many years of data, how many species, etc
+yrs <- unique(PhenoSite_Focal$Year)
+nyrs <- length(yrs)
+nspp <- length(species)
+
+```
+
+
+#Phenological models fit to year-plot-species specific data
+This chunk of code uses several for loops to fit phenological curves to year-plot-species specific data (using function *curvefit_perplot*). The advantage of these curves is that they are optimized to individual plots. The disadvantage is that these curves only exist if the species was present in the plot (even if it was nearby). More broadly, these fits can be used to check output from likelihood models fit to all data from a species.
+
+##Code does the following:
+1. Pulls out data for each species / plot / year combo. Data in innermost loop is PhenoSite_YearPlotSpecies. Note - fitting only occurs if sufficient data, as defined by these two parameters (you can modify them):
+   + *totobs* (# observations for fitting, set at 10)
+   + *totyesobs* (# observations of flowering, set at 5)
+
+2. The functions nullfit and curvefit_perplot are fit to year-plot-species specific data.
+
+3. AIC's are calculated for both the null model and curve fitting model, which can be used to determine whether time (DOY) helps explain the probability of flowering. This information is currently not saved.
+
+4. Plots individual curves and raw data in separate graphics windows (if *plottrue* is set to "T")
+
+5. Saves the peak, range and maximum parameters to object pars_yrpltsp
+
+6. Turn pars_yrpltsp into a data frame (this happens after the for loop)
+
+```{r}
+#define object in which to save parameters
+pars_yrpltsp <- c() 
+
+#set plottrue to 'T' if plots desired; 'F' if not
+plottrue <- "F"
+
+#set data filters - how many total obs, how many flowering obs
+#to proceed with model fitting?
+totobs <- 20 #need at least 20 observations (visits) 
+totyesobs <- 5 #flowering needs to be observed at least 5 times 
+
+#For loops to fit curves per year/plot/species, save parameters, plot 
+for(i in 1:nyrs){ # First for loop: runs through years
+
+  #extract data for that year
+  PhenoSite_Year <- PhenoSite_Focal[PhenoSite_Focal$Year==yrs[i],]
+  
+  #pull out unique plots for year in question
+  plots <- unique(PhenoSite_Year$Site_Code)
+  
+  #Nested for loop for each plot
+  for(j in 1:length(plots)){ # Second for loop: each plot
+    PhenoSite_YearPlot <- PhenoSite_Year[PhenoSite_Year$Site_Code==plots[j],]
+
+    #Identify species in plot
+    spinplt <- unique(PhenoSite_YearPlot$Species)
+    if(length(spinplt)==0){next} #break if focal spp not in plot
+    
+    #Nested for loop for each species
+    for(k in 1:length(spinplt)){ #Third for loop: each species in the pot
+      
+      #Set up graphics windows for multiple plots, if plottrue set to "T"
+      if(plottrue=="T"){
+        if(i==1&j==1&k==1){ #set up graphics window, if plotting
+          X11(width=8,height=8)
+          par(mfrow=c(4,4), tck=-0.02, omi=c(0,0,0,0), 
+              mai=c(0.4,0.4,0.4,0.2), mgp=c(1.25,0.5,0))
+          newplot <- 0
+        }
+
+        if(newplot==16){
+          X11(width=8,height=8)
+          par(mfrow=c(4,4), tck=-0.02, omi=c(0,0,0,0),
+              mai=c(0.4,0.4,0.4,0.2), mgp=c(1.25,0.5,0))
+          newplot <- 0
+        }
+      }
+      
+      #Extract data for the species in question      
+      PhenoSite_YearPlotSpecies <- 
+        PhenoSite_YearPlot[PhenoSite_YearPlot$Species==spinplt[k],]
+      
+      #define parameters for curvefitting
+      days <- PhenoSite_YearPlotSpecies$DOY #explanatory variable: DOY 
+      phenophase <- PhenoSite_YearPlotSpecies$Flower #yes / no flowering
+
+      #Do not fit model to data if insufficient data
+      if(length(days)<=totobs){next}
+      if(sum(na.omit(phenophase))<=totyesobs){next}
+      
+      #remove days when no observations were made; NA in phenophase
+      #TODO is this redundant with cases line? check with earlier code
+	    days <- days[is.na(phenophase)==FALSE]
+	    phenophase <- phenophase[is.na(phenophase)==FALSE]
+	    
+	    #add three weeks of zeroes before earliest SDD in those plots
+	    SDDplt <- min(PhenoSite_YearPlotSpecies$SDD)
+	    days <- c(SDDplt-21, SDDplt-14, SDDplt-7,days)
+	    phenophase <- c(0,0,0,phenophase)
+
+      #now fit null model
+      model0 <- optimize(nullfit, c(0.000001,0.999999)) #fit null model
+	
+      #now fit alternative model - curve
+      param <- c(mean(days[phenophase[]==1]), -0.001, 0) # initial parameters
+      model1 <- optim(param, curvefit_perplot, control = list(maxit = 50000))
+      if(model1$convergence==1){
+        print(paste(spinplt[k],"no convergence", sep="-"))}
+    	
+      #plot curve, data only if plottrue is set to "T"
+      if(plottrue == "T"){
+        plot(days,phenophase, ylab="flower",pch=21, bg="grey")
+        xx <- seq(min(days),max(days))
+        yy <- predflower(xx,model1$par)
+        lines(xx,yy)
+        title(paste(nyears[i],plots[j],spinplt[k],sep=" "))
+        newplot <- newplot + 1
+      }
+      
+      #TODO 
+      #write the model tests / AIC to data frame
+      AICnull <- round(2*(model0$objective+1),1)
+      AICalt <- round(2*(model1$value + 3),1)
+      pcurve <- signif(pchisq(model1$value-model0$objective,2),3)
+
+      #save parameters to spyrpltpars
+      tmp_pars <- c(yrs[i], as.character(plots[j]), SDDplt, 
+                    as.character(spinplt[k]), model1$par[1:3])
+      pars_yrpltsp <- rbind(pars_yrpltsp, tmp_pars)
+    }
+  }
+}
+  
+# turn spyrpltpars into a data frame
+dimnames(pars_yrpltsp) <- list(c(), c("year", "plot", "SDD", "species",
+                                     "peak", "duration", "max"))
+pars_yrpltsp <- data.frame(pars_yrpltsp)
+
+#change storage type to numeric - all except plot (since a few plots have a, b)
+pars_yrpltsp$year <- as.numeric(pars_yrpltsp$year)
+pars_yrpltsp$species <- as.factor(pars_yrpltsp$species)
+pars_yrpltsp$SDD <- as.numeric(pars_yrpltsp$SDD)
+pars_yrpltsp$peak <- as.numeric(pars_yrpltsp$peak)
+pars_yrpltsp$duration <- as.numeric(pars_yrpltsp$duration)
+pars_yrpltsp$max <- as.numeric(pars_yrpltsp$max)
+
+head(pars_yrpltsp)
+```
+
+
+#Graph to visualize peak flowering as observed by MW volunteers each year
+This code takes estimates of peak flowering from year-plot-species specific model fits (in pars_yrpltsp) and plots those estimates by year (year on the x-axis, DOY on the y axis) and by trail.
+
+```{r}
+##Plot peak flowering estimates of all species, trails, plots on one graph
+par(mfrow=c(1,1),omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2), 
+    tck=-0.01, mgp=c(1.25,0.25,0), xpd=TRUE)
+
+#set plotting colors - 16 total to accommodate all species if needed
+plotcol <- c("yellowgreen","magenta","orange","purple","yellow","springgreen",
+             "pink","purple","navyblue","azure4","yellow4","orchid",
+             "turquoise","salmon","maroon","black")
+
+#create plot to add points to
+#earlypk <- min(spyrpltpars$peak); latepk <- max(spyrpltpars$peak)
+earlypk <- 135; latepk <- 255
+
+plot(2016,175, xlim=c(2012, 2020), ylim=c(earlypk,latepk),type="n",
+     xaxp=c(2012,2020,8), yaxt="n", xlab="Year",ylab="Flowering")
+text(2011.5,srt=90, c(135, 165, 195, 225, 255),-0.1, 
+     labels=c("May", "Jun", "Jul", "Aug", "Sept"))
+  
+for(trail in 1:2){
+  if(trail==1){
+    pars_yrpltsp2 <- pars_yrpltsp[substr(pars_yrpltsp$plot,1,2)=="RL",]}
+  if(trail==2){
+    pars_yrpltsp2 <- pars_yrpltsp[substr(pars_yrpltsp$plot,1,2)=="GB",]}
+  
+  #how many years? differs per trail
+  yrs2 <- unique(pars_yrpltsp2$year)
+
+  #extract data per year, plot
+  for(i in 1:length(yrs2)){
+    paryear <- pars_yrpltsp2[pars_yrpltsp2$year==yrs2[i],]
  
-```
+    #now pull out all data for a species
+    for(j in 1:length(species)){
+      paryearsp <- paryear[paryear$species==species[j],]
+      if(dim(paryearsp)[1]==0){next}
+      pks <- paryearsp$peak
+      tiny <- 0; if(trail==2){tiny <- 0.333}
+      if(trail==1){pltshp <-21}; if(trail==2){pltshp <- 24}
+      points((rep(yrs2[i],length(pks))+jitter(rep(tiny,length(pks)),2.5)),
+             pks,pch=pltshp, bg=plotcol[j], cex=1.25)
+    }
+  }
+}
 
-```{r }
-library(readr)
-MW_PhenoSite_2013_2018 <- read_csv("data/MW_SiteDat_2013_2018.csv")
-head(MW_PhenoSite_2013_2018)
-```
-
-Visualize the sites
-
-```{r }
-library(raster)
-library(leaflet)
-library(ggrepel)
-Sites_2013 <- MW_PhenoSite_2013_2018 %>% 
-  filter(Year == 2013 & Transect== "Reflection Lakes") %>% 
-  as.data.frame()
-
-AllSites_2018 <- MW_PhenoSite_2013_2018 %>% 
-  filter(Year == 2018 & Transect %in% c( "Reflection Lakes","Glacier Basin")) %>% 
-  as.data.frame()
-
-xy <- cbind(x=Sites_2013$longitude+0.008, 
-            y=Sites_2013$latitude-0.005)
-S <- SpatialPoints(xy)
-bbox(S)
-
-
-library(ggmap)
-pp_stamen <- get_stamenmap(bbox = bbox(S),
-                                zoom = 13)
-pp_stamen
-ggmap(pp_stamen) +
-  geom_point(data = Sites_2013,
-             mapping = aes(x = Sites_2013$longitude,
-                            y = Sites_2013$latitude,color=as.factor(Site_Num))) 
-
-
-
-```
-```{r }
-lj <- leaflet(Sites_2013) %>%
-  addTiles() %>%  # Add default OpenStreetMap map tiles
-  addMarkers(lng=Sites_2013$longitude, lat=Sites_2013$latitude, popup=Sites_2013$Site_Num)
-  lj
+legend(x="topleft", legend=c("RL","GB"), pch=c(21,24), 
+       pt.bg="gray", cex=0.75, pt.cex=1.25)
+legend(x="bottomleft",legend=species, pch=21, 
+       pt.bg=plotcol[1:length(species)], cex=0.75, pt.cex=1.25)
 ```
 
 
-```{r }
+#Fit phenology model for all species data
+This code fits a predictive phenology model to all observations of flowering for a particular species (function *curvefit_allplot*), for the same flowering community as defined above. So, this code chunk expects that the data frame *PhenoSite_Focal*, the vector *species*, and the objects *nspp*, *totobs* and *totyesobs* have been defined. Note that this takes a bit of time to run (5ish minutes). The code does the following:
 
-xy <- cbind(x=AllSites_2018$longitude, 
-            y=AllSites_2018$latitude)
-S <- SpatialPoints(xy)
-bbox(S)
+1. Subset data for a particular species.
 
+2. For each species, use a for loop to assemble year-plot specific data for the species in question. This requires extracing year-plot specific data, assessing whether there is sufficient data (so only plots with *totobs* observations and *totyesobs* flowering observations) are included, and adding three no flowering observations before snowmelt (as was done for model fitting for individual year-plot-species data), and creating variables *days* (vector of DOY for all plots included), *phenophase* (vector of 1's and 0's observed), *SDD* (snow disappearance date at each plot for the observation in question) and *trlyr* which trail / year combo the observation came from (this is for fitting range, max parameters).
 
-library(ggmap)
-pp_stamen <- get_stamenmap(bbox = bbox(S),
-                                zoom = 15)
-pp_stamen
-ggmap(pp_stamen) +
-  geom_point(data = AllSites_2018,
-             mapping = aes(x = AllSites_2018$longitude,
-                            y = AllSites_2018$latitude,color=as.factor(Site_Num))) 
+3. Fit the maximum likelihood model (defined by *curvefit_allplot* above) to the data. This requires setting initial parameters first - which was done by fitting the relationship between peak flowering and SDD from year-plot-species specific data (in *pars_sppltsp*), and taking the average range and duration values for those same model fits.
 
+4. Saves the parameters to *pars_spp*
 
+5. After the for loop, turns *pars_spp* into a data frame
+
+```{r}
+#define where to save output
+pars_spp <- c() #save parameters for per species fit, peak f based on SDD
+
+##Now nested for loops to fit curves for all years, species, plots
+for(i in 1:nspp){ #loop for each species, to assemble data
+  #extract data for that year
+  PhenoSite_Species <- PhenoSite_Focal[PhenoSite_Focal$Species==species[i],]
+  
+  #assemble data - need to add zeros before SDD, define trail year combos
+  yrplt <- paste(PhenoSite_Species$Year, PhenoSite_Species$Site_Code, sep="")
+  yrplts <- unique(yrplt)
+  yeartrail <- unique(substr(yrplts,1,6))
+  yeartrail <- yeartrail[order(yeartrail)]
+  ntrlyr <- length(yeartrail)
+  trlyr <- c()
+  days <- c()
+  phenophase <- c()
+  SDD <- c()
+  
+  #Now go through each unique year - plot combination per species
+  for(j in 1:length(yrplts)){
+     PhenoSite_YearPlotSpecies <- PhenoSite_Species[yrplt[]==yrplts[j],]
+     tmpdays <- PhenoSite_YearPlotSpecies$DOY #explanatory variable: DOY 
+     tmpphenophase <- PhenoSite_YearPlotSpecies$Flower #yes / no flowers
+     tmpSDD <- PhenoSite_YearPlotSpecies$SDD
+     
+     #Do not include if fewer totobs obs, totyesobs flowering obs
+     if(length(tmpdays)<=totobs){next}
+     if(sum(tmpphenophase)<=totyesobs){next}
+     
+     #remove days when no observations were made; NA in phenophase
+     tmpdays <- tmpdays[is.na(tmpphenophase)==FALSE]
+     tmpSDD <- tmpSDD[is.na(tmpphenophase)==FALSE]
+     tmpphenophase <- tmpphenophase[is.na(tmpphenophase)==FALSE]
+     
+     #Add observations of no flowering 3 weeks prior to snowmelt
+     SDDplt <- min(tmpSDD)
+     tmpdays <- c(SDDplt-21, SDDplt-14, SDDplt-7,tmpdays)
+     tmpphenophase <- c(0,0,0,tmpphenophase)
+     tmpSDD <- c(tmpSDD[1:3],tmpSDD)
+    
+     #determine which trail year combo
+     whichtrlyr <- substr(paste(PhenoSite_YearPlotSpecies$Year[1],
+                                PhenoSite_YearPlotSpecies$Site_Code[1], 
+                                sep=""),1,6)
+     tmptrlyr <- rep(which(whichtrlyr==yeartrail[]),times=length(tmpdays))
+     #now append to days, phenophase,trlyear
+     days <- c(days, tmpdays)
+     phenophase <- c(phenophase, tmpphenophase)
+     SDD <- c(SDD, tmpSDD)
+     trlyr <- c(trlyr, tmptrlyr)
+  }
+  #now fit curvefit_all plot model - optim as function of SDD
+  
+  #first use individual year-plot-species to come up with starting points
+  #slope & intercept for SDD vs optim
+  optimcoef <- unlist(coef(lm(pars_yrpltsp$peak~pars_yrpltsp$SDD)))
+  spdur <- median(pars_yrpltsp$duration[pars_yrpltsp$species==species[i]])
+  spmx <- median(pars_yrpltsp$max[pars_yrpltsp$species==species[i]])
+
+  #specify initial parameters (note, optim can be fussy)
+  param <- c(optimcoef, rep(spdur, times=ntrlyr), rep(spmx, times=ntrlyr))
+  modelsnowmod <- optim(param, curvefit_allplot, control = list(maxit = 50000))
+
+  #Determine which years / trails (for plotting, saving)
+  trails <- "both"
+  if(length(unique(substr(yeartrail,5,6)))==1){
+    if(unique(substr(yeartrail,5,6))=="RL"){trails <- "Reflection Lakes"}
+    if(unique(substr(yeartrail,5,6))=="GB"){trails <- "Glacier Basin"}
+  }
+ 
+  #Save parameters to pars_spp
+  if(trails=="Reflection Lakes"){
+    tmppars <- c(modelsnowmod$par[1:2], rep(NA, times=(ntrlyr-2)),
+                 modelsnowmod$par[3:(2+ntrlyr)],rep(NA, times=(ntrlyr-2)),
+                 modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)])
+  }
+  if(trails=="Glacier Basin"){
+    tmppars <- c(modelsnowmod$par[1:2], modelsnowmod$par[3:(2+ntrlyr)], 
+                 rep(NA, times=(ntrlyr+2)),
+                 modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)],
+                 rep(NA, times=(ntrlyr+2)))
+  }
+  if(trails=="both"){
+    tmppars <- modelsnowmod$par
+  }
+  tmppars2 <- c(species[i],tmppars)
+  pars_spp <- rbind(pars_spp,tmppars2)
+}
+
+#save original;
+pars_spp2 <- pars_spp
+
+#make pars_spp a data frame
+dimnames(pars_spp) <- list(c(), c("species","optimint", "optimslope",
+                                  "dur-GB15","dur-GB16","dur-GB17","dur-GB18",
+                                  "dur-GB19","dur-RL13","dur-RL14","dur-RL15",
+                                  "dur-RL16","dur-RL17","dur-RL18","dur-RL19",
+                                  "max-GB15","max-GB16","max-GB17","max-GB18",
+                                  "max-GB19","max-RL13","max-RL14","max-RL15",
+                                  "max-RL16","max-RL17","max-RL18","max-RL19"))
+pars_spp <- data.frame(pars_spp)
+
+#change storage type to numeric - all except plot (since a few plots have a, b)
+pars_spp$species <- as.factor(pars_spp$species)
+
+for(i in 2:27){
+  pars_spp[,i] <- as.numeric(pars_spp[,i])
+}
+
+head(pars_spp)
 
 ```
-```{r }
-lj <- leaflet(AllSites_2018) %>%
-  addTiles() %>%  # Add default OpenStreetMap map tiles
- setView(	-121.7603,46.8523, zoom = 10) %>% 
-  addMarkers(lng=AllSites_2018$longitude, lat=AllSites_2018$latitude, popup=AllSites_2018$Site_Num)
-lj
-```
-
-Read the species data for distribution
-
-```{r , echo=FALSE}
-species_Data <- read_csv('./data/SpeciesData.csv')
-species_Data %>% 
-  filter(Phenophase=='flwr' ) %>%
-  ggplot() +
-  geom_point(aes(Year,Opt)) +
-  facet_grid(.~Year)
-```
 
 
-Plot by site, sample year
+#Graph meadow level species richness by year / trail
+This code graphs the probability of observing flowering at the meadow scale (i.e. when at one location along the trail) depending on the DOY, for the years / trails of MW. This function takes output from species specific models fit to all data, and uses the mean observed snowmelt date for that year / trail.
 
-```{r , echo=FALSE}
-
-species_Data %>% 
-  filter(Phenophase=='flwr'  & Year==2015) %>%
-  ggplot() +
-  geom_point(aes(Opt,Height)) +
-  facet_grid(.~Site)
-
+```{r}
 
 ```
 
-By Year,
 
-```{r , echo=FALSE}
-# Histogram overlaid with kernel density curve
-species_Data %>% 
-  filter(Phenophase=='flwr' ) %>% ggplot( aes(x=Opt)) + 
-    #geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
-    #                 binwidth=.5,
-       #            colour="black", fill="white") +
-    geom_density(alpha=.2, fill="#FF6666")   + # Overlay with transparent density plot 
-   geom_vline(aes(xintercept=mean(Opt, na.rm=T)),   # Ignore NA values for mean
-               color="red", linetype="dashed", size=1) +
-    facet_grid(.~Year)
+#Predict species richness on the trails by DOY (IN PROGRESS)
+```{r}
+#For loop per year, and then trail
+for(i in 1:nyrs){
+  if(trail==1){
+    StationDatTrail <- StationDat[StationDat$Transect=="Reflection Lakes",]
+    parameters_snowmodtrail <- parameters_snowmod[is.na(parameters_snowmod$dur.RL13)==FALSE,]
+    parameters_snowmodtrail <- cbind(parameters_snowmodtrail[,1:3],parameters_snowmodtrail[,substr(dimnames(parameters_snowmodtrail)[[2]],5,6)=="RL"])
+    }
+  if(trail==2){
+    StationDatTrail <- StationDat[StationDat$Transect=="Glacier Basin",]
+    parameters_snowmodtrail <- parameters_snowmod[is.na(parameters_snowmod$dur.GB15)==FALSE,]
+    parameters_snowmodtrail <- cbind(parameters_snowmodtrail[,1:3],parameters_snowmodtrail[,substr(dimnames(parameters_snowmodtrail)[[2]],5,6)=="GB"])
+  }
+  
+  #Now cycle through years
+  predDOY <- seq(105,255)
+  yrs <- unique(StationDatTrail$Year)
+  
+  for(j in 1:length(yrs)){
+    SDDs <- StationDatTrail$SDD[StationDatTrail$Year==yrs[j]]
+    firstSDD <- min(SDDs); lastSDD <- max(SDDs)
+
+    #Set plotting parameters
+    X11(width=6,height=8)
+    par(mfrow=c(2,1), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.3), xpd=NA, tck=-0.02,mgp=c(1.25,0.5,0))
+    
+    #now extract parameters per species, plot
+    parameters_smyear <- parameters_snowmodtrail[,c(1:3,(3+j),(3+j+length(yrs)))]
+    spp <- parameters_smyear$species
+    
+    #first plot early season
+    plot(160,0.5,type="n", xlim=c(min(predDOY),max(predDOY)), ylim=c(0,1),
+         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
+    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
+    if(trail==1){title(paste("Early meadows","RL",yrs[j],sep="-"))}
+    if(trail==2){title(paste("Early meadows","GB",yrs[j],sep="-"))}
+    
+    #now plot early season
+    for(k in 1:length(spp)){
+      peakfirst <- parameters_smyear[k,2]+parameters_smyear[k,3]*firstSDD
+      durf <- parameters_smyear[k,4]
+      maxf <- parameters_smyear[k,5]
+      
+      #estimate flowering curve first meadows
+      param <- c(peakfirst,durf,maxf)
+      flfirst <- predphen(predDOY,param)
+
+      #now plot
+      lines(predDOY[flfirst[]>0.01],flfirst[flfirst[]>0.01],col=plotcol[k],lwd=2)
+    }
+    #add legend
+    legend(x="topleft", legend=spp, cex=0.75, col=plotcol[1:length(spp)],lwd=2)
+
+    #next plot late season
+    plot(160,0.5,type="n", xlim=c(min(predDOY),max(predDOY)), ylim=c(0,1),
+         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
+    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
+    if(trail==1){title(paste("Late meadows","RL",yrs[j],sep="-"))}
+    if(trail==2){title(paste("Late meadows","GB",yrs[j],sep="-"))}
+    
+    #now plot late season species
+    for(k in 1:length(spp)){
+      peaklast <- parameters_smyear[k,2]+parameters_smyear[k,3]*lastSDD
+      durf <- parameters_smyear[k,4]
+      maxf <- parameters_smyear[k,5]
+      
+      #estimate flowering curve last
+      param <- c(peaklast,durf,maxf)
+      fllast <- predphen(predDOY,param)
+      
+      #now plot
+      lines(predDOY[fllast[]>0.01],fllast[fllast[]>0.01],col=plotcol[k],lwd=2)
+    }
+  }
+}
+
 ```
 
-By site, sample year
-
-```{r , echo=FALSE}
-# Histogram overlaid with kernel density curve
-species_Data %>% 
-  filter(Phenophase=='flwr' ) %>%  filter(str_detect(Site, "RL") & Year==2013) %>% ggplot( aes(x=Opt)) + 
-    #geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
-    #                 binwidth=.5,
-       #            colour="black", fill="white") +
-    geom_density(alpha=.2, fill="#FF6666")   + # Overlay with transparent density plot 
-   geom_vline(aes(xintercept=mean(Opt, na.rm=T)),   # Ignore NA values for mean
-               color="red", linetype="dashed", size=1) +
-    facet_wrap(Year~Site)
-```
-
-By site, sample year (warm)
-
-```{r , echo=FALSE}
-# Histogram overlaid with kernel density curve
-species_Data %>% 
-  filter(Phenophase=='flwr' ) %>%  filter(str_detect(Site, "RL") & Year==2015) %>% ggplot( aes(x=Opt)) + 
-    #geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
-    #                 binwidth=.5,
-       #            colour="black", fill="white") +
-    geom_density(alpha=.2, fill="#FF6666")   + # Overlay with transparent density plot 
-   geom_vline(aes(xintercept=mean(Opt, na.rm=T)),   # Ignore NA values for mean
-               color="red", linetype="dashed", size=1) +
-    facet_wrap(Year~Site)
-```
