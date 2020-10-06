@@ -176,6 +176,8 @@ This chunk of code uses several for loops to fit phenological curves to year-plo
 
 6. Turn pars_yrpltsp into a data frame (this happens after the for loop)
 
+7. Write parameter fits to data folder (PerPlotCurves.csv)
+
 ```{r}
 #define object in which to save parameters
 pars_yrpltsp <- c() 
@@ -294,6 +296,10 @@ pars_yrpltsp$duration <- as.numeric(pars_yrpltsp$duration)
 pars_yrpltsp$max <- as.numeric(pars_yrpltsp$max)
 
 head(pars_yrpltsp)
+
+#Write output to data folder
+write.csv(pars_yrpltsp, "data/PerPlotCurves.csv", quote=FALSE,
+          row.names=FALSE)
 ```
 
 
@@ -361,13 +367,20 @@ This code fits a predictive phenology model to all observations of flowering for
 
 3. Fit the maximum likelihood model (defined by *curvefit_allplot* above) to the data. This requires setting initial parameters first - which was done by fitting the relationship between peak flowering and SDD from year-plot-species specific data (in *pars_sppltsp*), and taking the average range and duration values for those same model fits.
 
-4. Saves the parameters to *pars_spp*
+4. Saves the parameters to *pars_spp_peak*, *pars_spp_range*, *pars_spp_max*
+    + *pars_spp_peak* has per-species slope / intercept relating SDD to peak flowering
+    + *pars_spp_range* includes the year / trail specific range parameters
+    + *pars_spp_max* includes the year / trail specific max parameters   
 
-5. After the for loop, turns *pars_spp* into a data frame
+5. After the for loop, turns *pars_spp* objects into data framed, view it
+
+6. Write *pars_spp_peak*, *pars_spp_range*, *pars_spp_max* as .csv files to the data folder.
 
 ```{r}
 #define where to save output
-pars_spp <- c() #save parameters for per species fit, peak f based on SDD
+pars_spp_peak <- c() #save peak parameters for per species fit
+pars_spp_range <- c() #save range parameters for per species fit
+pars_spp_max <- c() #save max parameters for per species fit
 
 ##Now nested for loops to fit curves for all years, species, plots
 for(i in 1:nspp){ #loop for each species, to assemble data
@@ -377,9 +390,9 @@ for(i in 1:nspp){ #loop for each species, to assemble data
   #assemble data - need to add zeros before SDD, define trail year combos
   yrplt <- paste(PhenoSite_Species$Year, PhenoSite_Species$Site_Code, sep="")
   yrplts <- unique(yrplt)
-  yeartrail <- unique(substr(yrplts,1,6))
-  yeartrail <- yeartrail[order(yeartrail)]
-  ntrlyr <- length(yeartrail)
+  trailyear <- unique(paste(substr(yrplts,5,6),substr(yrplts,1,4),sep=""))
+  trailyear <- trailyear[order(trailyear)]
+  ntrlyr <- length(trailyear)
   trlyr <- c()
   days <- c()
   phenophase <- c()
@@ -408,10 +421,9 @@ for(i in 1:nspp){ #loop for each species, to assemble data
      tmpSDD <- c(tmpSDD[1:3],tmpSDD)
     
      #determine which trail year combo
-     whichtrlyr <- substr(paste(PhenoSite_YearPlotSpecies$Year[1],
-                                PhenoSite_YearPlotSpecies$Site_Code[1], 
-                                sep=""),1,6)
-     tmptrlyr <- rep(which(whichtrlyr==yeartrail[]),times=length(tmpdays))
+     whichtrlyr <- paste(substr(PhenoSite_YearPlotSpecies$Site_Code[1],1,2),
+                                PhenoSite_YearPlotSpecies$Year[1], sep="")
+     tmptrlyr <- rep(which(whichtrlyr==trailyear[]),times=length(tmpdays))
      #now append to days, phenophase,trlyear
      days <- c(days, tmpdays)
      phenophase <- c(phenophase, tmpphenophase)
@@ -432,139 +444,152 @@ for(i in 1:nspp){ #loop for each species, to assemble data
 
   #Determine which years / trails (for plotting, saving)
   trails <- "both"
-  if(length(unique(substr(yeartrail,5,6)))==1){
-    if(unique(substr(yeartrail,5,6))=="RL"){trails <- "Reflection Lakes"}
-    if(unique(substr(yeartrail,5,6))=="GB"){trails <- "Glacier Basin"}
+  if(length(unique(substr(trailyear,1,2)))==1){
+    if(unique(substr(trailyear,1,2))=="RL"){trails <- "Reflection Lakes"}
+    if(unique(substr(trailyear,1,2))=="GB"){trails <- "Glacier Basin"}
   }
  
-  #Save parameters to pars_spp
+  #Save parameters to appropriate folders
+  #first, intercept and slope coefficients
+  tmppeakpars <- c(species[i],modelsnowmod$par[1:2])
+  pars_spp_peak <- rbind(pars_spp_peak,tmppeakpars)
+  
+  #now range and max pars
   if(trails=="Reflection Lakes"){
-    tmppars <- c(modelsnowmod$par[1:2], rep(NA, times=(ntrlyr-2)),
-                 modelsnowmod$par[3:(2+ntrlyr)],rep(NA, times=(ntrlyr-2)),
-                 modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)])
+    #range parameters
+    tmpspp <- rep(species[i], times=ntrlyr)
+    tmpsite <- rep("RL", times=ntrlyr)
+    tmpyear <- yrs
+    tmprange <- modelsnowmod$par[3:(2+ntrlyr)]
+    tmprangepars <- cbind(tmpspp,tmpsite,tmpyear,tmprange)
+    pars_spp_range <- rbind(pars_spp_range,tmprangepars)
+      
+    #max parameters
+    tmpmax <- modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)]
+    tmpmaxpars <- cbind(tmpspp,tmpsite,tmpyear,tmpmax)
+    pars_spp_max <- rbind(pars_spp_max,tmpmaxpars)
   }
+  
   if(trails=="Glacier Basin"){
-    tmppars <- c(modelsnowmod$par[1:2], modelsnowmod$par[3:(2+ntrlyr)], 
-                 rep(NA, times=(ntrlyr+2)),
-                 modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)],
-                 rep(NA, times=(ntrlyr+2)))
+    #range parameters
+    tmpspp <- rep(species[i], times=ntrlyr)
+    tmpsite <- rep("GB", times=ntrlyr)
+    tmpyear <- substr(trailyear,3,6)
+    tmprange <- modelsnowmod$par[3:(2+ntrlyr)]
+    tmprangepars <- cbind(tmpspp,tmpsite,tmpyear,tmprange)
+    pars_spp_range <- rbind(pars_spp_range,tmprangepars)
+      
+    #max parameters
+    tmpmax <- modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)]
+    tmpmaxpars <- cbind(tmpspp,tmpsite,tmpyear,tmpmax)
+    pars_spp_max <- rbind(pars_spp_max,tmpmaxpars)
   }
+  
   if(trails=="both"){
-    tmppars <- modelsnowmod$par
+    #range parameters
+    tmpspp <- rep(species[i], times=ntrlyr)
+    tmpsite <- substr(trailyear,1,2)
+    tmpyear <- substr(trailyear,3,6)
+    tmprange <- modelsnowmod$par[3:(2+ntrlyr)]
+    tmprangepars <- cbind(tmpspp,tmpsite,tmpyear,tmprange)
+    pars_spp_range <- rbind(pars_spp_range,tmprangepars)
+      
+    #max parameters
+    tmpmax <- modelsnowmod$par[(3+ntrlyr):(2+ntrlyr+ntrlyr)]
+    tmpmaxpars <- cbind(tmpspp,tmpsite,tmpyear,tmpmax)
+    pars_spp_max <- rbind(pars_spp_max,tmpmaxpars)
   }
-  tmppars2 <- c(species[i],tmppars)
-  pars_spp <- rbind(pars_spp,tmppars2)
 }
 
-#save original;
-pars_spp2 <- pars_spp
+#make par_spp_peak, pars_spp_range, and pars_spp_max, data frames
+dimnames(pars_spp_peak) <- list(c(), c("species","peakint", "peakSDDslope"))
+dimnames(pars_spp_range) <- list(c(), c("species","site", "year","range"))
+dimnames(pars_spp_max) <- list(c(), c("species","site", "year","max"))
 
-#make pars_spp a data frame
-dimnames(pars_spp) <- list(c(), c("species","optimint", "optimslope",
-                                  "dur-GB15","dur-GB16","dur-GB17","dur-GB18",
-                                  "dur-GB19","dur-RL13","dur-RL14","dur-RL15",
-                                  "dur-RL16","dur-RL17","dur-RL18","dur-RL19",
-                                  "max-GB15","max-GB16","max-GB17","max-GB18",
-                                  "max-GB19","max-RL13","max-RL14","max-RL15",
-                                  "max-RL16","max-RL17","max-RL18","max-RL19"))
-pars_spp <- data.frame(pars_spp)
+#Change to data frame
+pars_spp_peak <- data.frame(pars_spp_peak)
+pars_spp_range <- data.frame(pars_spp_range)
+pars_spp_max <- data.frame(pars_spp_max)
 
-#change storage type to numeric - all except plot (since a few plots have a, b)
-pars_spp$species <- as.factor(pars_spp$species)
+#change storage type 
+pars_spp_peak$species <- as.factor(pars_spp_peak$species)
+pars_spp_range$species <- as.factor(pars_spp_range$species)
+pars_spp_max$species <- as.factor(pars_spp_max$species)
+pars_spp_range$site <- as.factor(pars_spp_range$site)
+pars_spp_max$site <- as.factor(pars_spp_max$site)
 
-for(i in 2:27){
-  pars_spp[,i] <- as.numeric(pars_spp[,i])
+for(i in 2:3){
+  pars_spp_peak[,i] <- as.numeric(pars_spp_peak[,i])
+  pars_spp_range[,i+1] <- as.numeric(pars_spp_range[,i+1])
+  pars_spp_max[,i+1] <- as.numeric(pars_spp_max[,i+1])
 }
 
-head(pars_spp)
+head(pars_spp_peak)
+head(pars_spp_range)
+head(pars_spp_max)
+
+#Write fitted parameters
+write.csv(pars_spp_peak, "data/PeakSDDRelationship.csv", quote=FALSE,
+          row.names=FALSE)
+write.csv(pars_spp_range, "data/YearTrailRange.csv", quote=FALSE,
+          row.names=FALSE)
+write.csv(pars_spp_max, "data/YearTrailMax.csv", quote=FALSE,
+          row.names=FALSE)
 
 ```
 
 
-#Graph meadow level species richness by year / trail
-This code graphs the probability of observing flowering at the meadow scale (i.e. when at one location along the trail) depending on the DOY, for the years / trails of MW. This function takes output from species specific models fit to all data, and uses the mean observed snowmelt date for that year / trail.
+#Graph meadow level species richness by year / trail (**In Progress**)
+This code graphs the probability of observing flowering at the meadow scale (i.e. when at one location along the trail) depending on the DOY, for all years / trails that MW data was collected. This function takes output from species specific models fit to all data, and uses the mean observed snowmelt date for that year / trail.
 
 ```{r}
+#which trails
+trails <- c("GB","RL")
 
-```
+#set up multi-panel figure
+layout(matrix(1:(nyrs*2), ncol=2))
+par(omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.3), tck=-0.02,mgp=c(1.25,0.5,0))
 
-
-#Predict species richness on the trails by DOY (IN PROGRESS)
-```{r}
-#For loop per year, and then trail
+#for loop
 for(i in 1:nyrs){
-  if(trail==1){
-    StationDatTrail <- StationDat[StationDat$Transect=="Reflection Lakes",]
-    parameters_snowmodtrail <- parameters_snowmod[is.na(parameters_snowmod$dur.RL13)==FALSE,]
-    parameters_snowmodtrail <- cbind(parameters_snowmodtrail[,1:3],parameters_snowmodtrail[,substr(dimnames(parameters_snowmodtrail)[[2]],5,6)=="RL"])
+  for(j in 1:2){
+    if(yrs[i]<=2014 & trails=="GB"){next}
+    
+    #calculate peak flowering - from mean snowmelt
+    psp <- pars_spp_peak
+    
+    #extract year, trail specific range parameters
+    psr <- pars_spp_range
+    psr_yt <- psr[psr$year==yrs[i] & psr$site==trails[j],]
+    
+    #extract year, plot specific max parameters
+    psm <- pars_spp_max
+    psm_yt <- psm[psm$year==yrs[i] & psm$site==trails[j],]
+    
+    #species
+    spp <- psm_yt$species
+    
+    #for loop plotting species
+    
     }
-  if(trail==2){
-    StationDatTrail <- StationDat[StationDat$Transect=="Glacier Basin",]
-    parameters_snowmodtrail <- parameters_snowmod[is.na(parameters_snowmod$dur.GB15)==FALSE,]
-    parameters_snowmodtrail <- cbind(parameters_snowmodtrail[,1:3],parameters_snowmodtrail[,substr(dimnames(parameters_snowmodtrail)[[2]],5,6)=="GB"])
-  }
-  
-  #Now cycle through years
-  predDOY <- seq(105,255)
-  yrs <- unique(StationDatTrail$Year)
-  
-  for(j in 1:length(yrs)){
-    SDDs <- StationDatTrail$SDD[StationDatTrail$Year==yrs[j]]
-    firstSDD <- min(SDDs); lastSDD <- max(SDDs)
-
-    #Set plotting parameters
-    X11(width=6,height=8)
-    par(mfrow=c(2,1), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.3), xpd=NA, tck=-0.02,mgp=c(1.25,0.5,0))
     
-    #now extract parameters per species, plot
-    parameters_smyear <- parameters_snowmodtrail[,c(1:3,(3+j),(3+j+length(yrs)))]
-    spp <- parameters_smyear$species
     
-    #first plot early season
-    plot(160,0.5,type="n", xlim=c(min(predDOY),max(predDOY)), ylim=c(0,1),
-         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
-    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
-    if(trail==1){title(paste("Early meadows","RL",yrs[j],sep="-"))}
-    if(trail==2){title(paste("Early meadows","GB",yrs[j],sep="-"))}
     
-    #now plot early season
-    for(k in 1:length(spp)){
-      peakfirst <- parameters_smyear[k,2]+parameters_smyear[k,3]*firstSDD
-      durf <- parameters_smyear[k,4]
-      maxf <- parameters_smyear[k,5]
-      
-      #estimate flowering curve first meadows
-      param <- c(peakfirst,durf,maxf)
-      flfirst <- predphen(predDOY,param)
-
-      #now plot
-      lines(predDOY[flfirst[]>0.01],flfirst[flfirst[]>0.01],col=plotcol[k],lwd=2)
-    }
-    #add legend
-    legend(x="topleft", legend=spp, cex=0.75, col=plotcol[1:length(spp)],lwd=2)
-
-    #next plot late season
-    plot(160,0.5,type="n", xlim=c(min(predDOY),max(predDOY)), ylim=c(0,1),
-         xaxp=c(150,270,5), xaxt="n", xlab="Time",ylab="Flowering")
-    text(c(105,135,165,195,225,255),-0.1, labels=c("Apr","May","Jun","Jul","Aug","Sep"))
-    if(trail==1){title(paste("Late meadows","RL",yrs[j],sep="-"))}
-    if(trail==2){title(paste("Late meadows","GB",yrs[j],sep="-"))}
-    
-    #now plot late season species
-    for(k in 1:length(spp)){
-      peaklast <- parameters_smyear[k,2]+parameters_smyear[k,3]*lastSDD
-      durf <- parameters_smyear[k,4]
-      maxf <- parameters_smyear[k,5]
-      
-      #estimate flowering curve last
-      param <- c(peaklast,durf,maxf)
-      fllast <- predphen(predDOY,param)
-      
-      #now plot
-      lines(predDOY[fllast[]>0.01],fllast[fllast[]>0.01],col=plotcol[k],lwd=2)
-    }
+    head(pars_spp_peak)
+head(pars_spp_range)
+head(pars_spp_max)    
   }
 }
 
 ```
 
+
+#Other tidbits to add
+
+##QA/QC volunteer vs. expert values
+
+##Output AIC values for plot level - null vs. pheno curve
+
+##Output AIC values for all plot specific parameters vs model
+
+##Extract SDD data from raw files
