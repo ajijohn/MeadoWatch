@@ -1,0 +1,90 @@
+---
+title: "FloweringIndices"
+author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
+date: "10/6/2020"
+output: html_document
+---
+
+#Goal / Objective
+The goal of this R markdown is to estimate, per DOY, various metrics correlated to the flowering season. This file takes as input parameter fits from phenological curves fit to MeadoWatch data (see *Peak-Wildflower-Season.Rmd*)
+
+#Setup for R script and R markdown
+1. Load all libraries
+2. Specify string behavior
+3. Load packages
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(stringsAsFactors = FALSE)
+library(boot)
+ 
+```
+
+
+#Read in necessary data: parameter fits and trail specific SDD data
+These parameter fits are from maximum likelihood models fit to a subset of MeadoWatch data (see *Peak-Wildflower-Season.Rmd*). The snow disappearance data were measured using hobos, modeled or observed on the MeadoWatch trails (these observations are used to describe the snow dynamics of each year / trail). There are 5 data frames to be read in:
+1. *PerPlotCurves.csv*: includes peak, range and max parameters (for a unimodal curve describing the relationship between DOY and flowering probability) for focal species, in each year, trail, plot in which they were observed. In other words, this model was separately fit to year-trail-plot-species specific data.
+
+2. A second set of models were fit to each species data separately. This model assumed the same functional form - with the relationship between DOY and flowering probability determined by 3 parameters. However, the 3 sets of parameters were not individually fit per year-plot-trail. Instead:
+    + A. The peak parameter varied with plot specific snow duration. The slope and intercept parameters describing this relationship are contained in the file *PeakSddRelationship.csv* (in the data folder)
+    + B. The range / duration parameter describing phenological curves are assumed to vary by year and trail (if the species occurred on both trails). These parameters are contained in the file *YearTrailRange.csv*
+    + C. Similarly, the max parameter describing phenological curves are assumed to vary by year and trail (if the species occurred on both trails).These parameters are contained in the file *YearTrailMax.csv*
+
+3. *StationDat.csv* includes snow disappearance data collected from each trail / plot.
+    
+```{r}
+# Read in phenology data, station data
+PlotPheno_pars <- read.csv("data/PerPlotCurves.csv", header=TRUE)
+PeakSDD_pars <- read.csv("data/PeakSdDRElationship.csv", header=TRUE)
+Range_pars <- read.csv("data/YearTrailRange.csv", header=TRUE) 
+Max_pars <- read.csv("data/YearTrailMax.csv", header=TRUE)
+StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE) 
+
+#Determine unique species, years included in parameters
+species <- unique(PeakSDD_pars$species)
+nspp <- length(species)
+yrs <- unique(PlotPheno_pars$year)
+nyrs <- length(yrs)
+
+#Reminder of species, # years included
+print(paste("Data examines phenology of", nspp, "species", sep=" "))
+print("Species include:"); print(species)
+print(paste("Data includes observations from", nyrs, "years", sep=" "))
+print("Years of data included:"); print(yrs)      
+
+#Examine data frames     
+head(PlotPheno_pars)
+head(PeakSDD_pars)
+head(Range_pars)
+head(Max_pars)
+
+#SDD data
+head(StationDat)
+
+```
+
+#Trail-wide flowering probability (per species, entire community) **IN PROGRESS**
+This chunk of code estimates the probability of observing flowering of focal species along each MeadoWatch trail (RL and GB) for each year, between April 15 and October 15 (6 months). This is done in the following way:
+
+1. For each trail, year and focal species on the trail, determine the earliest and latest snowmelt observed in plots (assumptions, this a reasonable proxy for range of snowmelt observed along the entire trail).
+
+2. For each trail, year and focal species on the trail, extract the following parameters:
+    + A. Earliest peak flowering and latest peakflowering (*peakearly* and *peaklate*) on the trail, from the relationship between SDD and peak flowering (PeakSDD_pars).
+    + B. Year-trail specific range and max parameters (*range_yrtrl* and *max_yrtrl*), from the appropriate data frames (Range_pars and Max_pars)
+    
+3. Year, species and trail wide probability of flowering by DOY is calculated as follows:
+    + DOY < *peakearly*; predict using *peakearly*, *range_yrtrl* and *maxyrtrl*
+    + DOY >= *peakearly* and <= *peaklate*, probability of flowering is inv.logit(*max_yrtrl*)
+    + DOY > *peaklate*, predict using *peaklate*, *range_yrtrl* and *maxyrtrl*
+    
+4. The above can be used to calculate the probability of observing all focal species flowering, and at least one focal species flowering. 
+
+5. Species-specific and community flowering by DOY, year and trail are written to a data frame
+
+*Note that an issue with this is that we are assuming that yes / no observations of a specific species in a 2 x 1 meter plot correlate with abundance / number of flowers. This may be a flawed assumption; see below for an alternative approach.*
+    
+```{r}
+
+```
+
+#Trail-wide flowering richness (estimated from species-specific models); **IN PROGRESS**
