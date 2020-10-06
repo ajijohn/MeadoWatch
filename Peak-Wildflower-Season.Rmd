@@ -6,7 +6,7 @@ output: html_document
 ---
 
 #Setup for R script and R markdown
-1. Load all libaries
+1. Load all libraries
 2. Specify string behavior
 3. Load packages (should we add all packages here?)
 
@@ -538,58 +538,17 @@ write.csv(pars_spp_max, "data/YearTrailMax.csv", quote=FALSE,
 
 ```
 
+#Code chunks to add **In Progress**
 
-#Graph meadow level species richness by year / trail (**In Progress**)
+#Graph meadow level species richness by year / trail
 This code graphs the probability of observing flowering at the meadow scale (i.e. when at one location along the trail) depending on the DOY, for all years / trails that MW data was collected. This function takes output from species specific models fit to all data, and uses the mean observed snowmelt date for that year / trail.
-
-```{r}
-#which trails
-trails <- c("GB","RL")
-
-#set up multi-panel figure
-layout(matrix(1:(nyrs*2), ncol=2))
-par(omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.3), tck=-0.02,mgp=c(1.25,0.5,0))
-
-#for loop
-for(i in 1:nyrs){
-  for(j in 1:2){
-    if(yrs[i]<=2014 & trails=="GB"){next}
-    
-    #calculate peak flowering - from mean snowmelt
-    psp <- pars_spp_peak
-    
-    #extract year, trail specific range parameters
-    psr <- pars_spp_range
-    psr_yt <- psr[psr$year==yrs[i] & psr$site==trails[j],]
-    
-    #extract year, plot specific max parameters
-    psm <- pars_spp_max
-    psm_yt <- psm[psm$year==yrs[i] & psm$site==trails[j],]
-    
-    #species
-    spp <- psm_yt$species
-    
-    #for loop plotting species
-    
-    }
-    
-    
-    
-    head(pars_spp_peak)
-head(pars_spp_range)
-head(pars_spp_max)    
-  }
-}
-
-```
-
-
-#Other tidbits to add
-
-##QA/QC volunteer vs. expert values
 
 ##Output AIC values for plot level - null vs. pheno curve
 
 ##Output AIC values for all plot specific parameters vs model
 
+##Explore odd phenological curves (a function of outliers / irregular sampling?)
+
 ##Extract SDD data from raw files
+
+##QA/QC volunteer vs. expert values
