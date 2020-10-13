@@ -38,13 +38,19 @@ PlotPheno_pars <- read.csv("data/PerPlotCurves.csv", header=TRUE)
 PeakSDD_pars <- read.csv("data/PeakSdDRElationship.csv", header=TRUE)
 Range_pars <- read.csv("data/YearTrailRange.csv", header=TRUE) 
 Max_pars <- read.csv("data/YearTrailMax.csv", header=TRUE)
-StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE) 
+StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE)
+
+#Change Station Dat Transect data to acronym
+StationDat$Transect[StationDat$Transect=="Reflection Lakes"] <- "RL"
+StationDat$Transect[StationDat$Transect=="Glacier Basin"] <- "GB"
+
 
 #Determine unique species, years included in parameters
 species <- unique(PeakSDD_pars$species)
 nspp <- length(species)
 yrs <- unique(PlotPheno_pars$year)
 nyrs <- length(yrs)
+trails <- c("GB", "RL")
 
 #Reminder of species, # years included
 print(paste("Data examines phenology of", nspp, "species", sep=" "))
@@ -63,10 +69,32 @@ head(StationDat)
 
 ```
 
-#Trail-wide flowering probability (per species, entire community) **IN PROGRESS**
-This chunk of code estimates the probability of observing flowering of focal species along each MeadoWatch trail (RL and GB) for each year, between April 15 and October 15 (6 months). This is done in the following way:
+#Functions to predict probability of flowering, flowering richness
+```{r}
+#Predicts flowering phenology as a function of DOY, param (peak, range, max)
+predflowertrail <- function (xx, param){ 
+  days    <- xx
+	peakearly  <- param[1]
+	peaklate  <- param[2]
+	range <- param[3]
+	max   <- param[4]
+	predmax <- inv.logit(max)
+	ptrailflower <- rep(predmax, time=length(days))
+	predearly <- inv.logit(range * (days - peakearly)^2 + max)
+	predlate <- inv.logit(range * (days - peaklate)^2 + max)
+	ptrailflower[days[]<peakearly] <- predearly[days[]<peakearly]
+	ptrailflower[days[]>peaklate] <- predlate[days[]>peaklate]
+	ptrailflower[ptrailflower<0.005] <- 0
+	return(ptrailflower)
+}
+```
 
-1. For each trail, year and focal species on the trail, determine the earliest and latest snowmelt observed in plots (assumptions, this a reasonable proxy for range of snowmelt observed along the entire trail).
+
+
+#Trail-wide flowering probability (per species, entire community) **IN PROGRESS**
+This chunk of code estimates the probability of observing flowering of focal species along each MeadoWatch trail (RL and GB) for each year, between March 15 and October 15 (7 months). This is done in the following way:
+
+1. For each trail and year, determine the earliest and latest snowmelt observed in plots (assumptions, this a reasonable proxy for range of snowmelt observed along the entire trail).
 
 2. For each trail, year and focal species on the trail, extract the following parameters:
     + A. Earliest peak flowering and latest peakflowering (*peakearly* and *peaklate*) on the trail, from the relationship between SDD and peak flowering (PeakSDD_pars).
@@ -74,7 +102,7 @@ This chunk of code estimates the probability of observing flowering of focal spe
     
 3. Year, species and trail wide probability of flowering by DOY is calculated as follows:
     + DOY < *peakearly*; predict using *peakearly*, *range_yrtrl* and *maxyrtrl*
-    + DOY >= *peakearly* and <= *peaklate*, probability of flowering is inv.logit(*max_yrtrl*)
+    + DOY >= *peakearly* and <= *peaklate*, probability of flowering is inv.logit(*max_yrtrl*). This assumes that somewhere on the trail the visitor is observing flowering at the maximum probability.
     + DOY > *peaklate*, predict using *peaklate*, *range_yrtrl* and *maxyrtrl*
     
 4. The above can be used to calculate the probability of observing all focal species flowering, and at least one focal species flowering. 
@@ -84,7 +112,110 @@ This chunk of code estimates the probability of observing flowering of focal spe
 *Note that an issue with this is that we are assuming that yes / no observations of a specific species in a 2 x 1 meter plot correlate with abundance / number of flowers. This may be a flawed assumption; see below for an alternative approach.*
     
 ```{r}
+DOY_pred <- seq(105,285) #approximate April 15 - October 15
+outputGB <- c()
+outputRL <- c()
+
+for(i in 1:nyrs){ #each year
+    outputboth <- cbind(rep(yrs[i], times=length(DOY_pred)),DOY_pred)
+    dimnames(outputboth) <- list(c(), c("year","DOY"))
+    outputRL_yr <- outputboth; outputGB_yr <- outputboth
+
+    for(j in 1:2){ #each trail
+        #Extract max and min SDD
+        SDD_obs <- StationDat$SDD[StationDat$Year==yrs[i] &
+                                  StationDat$Transect==trails[j]]
+        if(length(SDD_obs)==0){next} #break if no obs - GB 2013, 2014
+        SDD_max <- max(SDD_obs); SDD_min <- min(SDD_obs)
+        
+        #Extract year / trail specific range, max parameters (all focal)
+        rng_yrtrlall <- Range_pars[Range_pars$year==yrs[i]
+                                    & Range_pars$site==trails[j],]
+        max_yrtrlall <- Max_pars[Max_pars$year==yrs[i]
+                                & Max_pars$site==trails[j],]
+        
+        #Extract focal species (varies per trail)
+        spp_trl <- rng_yrtrlall$species
+        
+        for(k in 1:length(spp_trl)){
+            #determine early, late peak
+            int_spp <- PeakSDD_pars$peakint[PeakSDD_pars$species==spp_trl[k]]
+            slp_spp <- PeakSDD_pars$peakSDDslope[PeakSDD_pars$species
+                                                 ==spp_trl[k]]
+            peakearly <- int_spp + slp_spp*SDD_min
+            peaklate <- int_spp + slp_spp*SDD_max
+            
+            #determine max, range
+            max_yrtrl <- max_yrtrlall$max[max_yrtrlall$species==spp_trl[k]]
+            rng_yrtrl <- rng_yrtrlall$range[rng_yrtrlall$species
+                                                ==spp_trl[k]]            
+            #Now assess predflower
+            param <- c(peakearly, peaklate, rng_yrtrl, max_yrtrl)
+            ptrailf <- predflowertrail(DOY_pred,param)
+            
+            #Now include in output files
+            if(j==1){
+              outputGB_yr <- cbind(outputGB_yr, ptrailf)
+              dimnames(outputGB_yr)[[2]][k+2] <- spp_trl[k]}
+            if(j==2){
+              outputRL_yr <- cbind(outputRL_yr, ptrailf)
+              dimnames(outputRL_yr)[[2]][k+2] <- spp_trl[k]}
+        }
+    if(j==1){outputGB <- rbind(outputGB,outputGB_yr)}
+    if(j==2){outputRL <- rbind(outputRL,outputRL_yr)}
+    }
+}
+
+#Calculate flowering indexes
+#probability all focal species flower
+allflGB <- apply(outputGB[,3:dim(outputGB)[2]], 1, prod)
+allflRL <- apply(outputRL[,3:dim(outputRL)[2]], 1, prod)
+
+#probability any focal species flowers
+pnoGBa <- 1-outputGB[,3:dim(outputGB)[2]]
+pnoRLa <- 1-outputRL[,3:dim(outputRL)[2]]
+anyflGB <- 1-apply(pnoGBa, 1, prod)
+anyflRL <- 1-apply(pnoRLa, 1, prod)
+
+#append
+outputGB <- cbind(outputGB, anyflGB,allflGB)
+outputRL <- cbind(outputRL, anyflRL,allflRL)
+
+#Examine output
+#TODO why is ERGR 2015 acting odd?
+head(outputGB)
+head(outputRL)
 
 ```
+
+#Make a representative graph **IN PROGRESS**
+```{r}
+#Examine output
+#TODO why is ERGR 2015 acting odd?
+head(outputGB)
+head(outputRL)
+
+#RL - representative graph - 2015, 2019
+pltyrs <- c(2015, 2019)
+par(mfrow=c(2,2), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2), 
+    tck=-0.01, mgp=c(1.25,0.25,0), xpd=TRUE)
+
+for(i in 1:length(pltyrs)){
+  yrdat <- outputRL[outputRL[,1]==pltyrs[i],]
+  plot(yrdat[,2],yrdat[,10], type="l", col="pink", lwd=2, 
+       xaxt="n", xlab="DOY", ylab="probability", 
+       main=paste("Any Focal",pltyrs[i], sep=" "))
+  text(c(105,135,165,195,225,255,285),-0.1,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))
+
+  plot(yrdat[,2],yrdat[,11], type="l", col="pink", lwd=2, 
+       xaxt="n",xlab="DOY", ylab="probability", 
+       main=paste("All Focal",pltyrs[i], sep=" "))
+  text(c(105,135,165,195,225,255,285),-0.1,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))
+  
+}
+```
+
 
 #Trail-wide flowering richness (estimated from species-specific models); **IN PROGRESS**
