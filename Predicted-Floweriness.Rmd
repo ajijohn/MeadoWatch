@@ -69,9 +69,9 @@ head(StationDat)
 
 ```
 
-#Functions to predict probability of flowering, flowering richness
+#Functions to predict probability of flowering
 ```{r}
-#Predicts flowering phenology as a function of DOY, param (peak, range, max)
+#Predicts flowering probability as a function of DOY, param (peak, range, max)
 predflowertrail <- function (xx, param){ 
   days    <- xx
 	peakearly  <- param[1]

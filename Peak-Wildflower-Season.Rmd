@@ -538,10 +538,12 @@ write.csv(pars_spp_max, "data/YearTrailMax.csv", quote=FALSE,
 
 ```
 
-#Code chunks to add **In Progress**
-
-#Graph meadow level species richness by year / trail
+#Graph meadow level curves (visualization) **May not be necessary?**
 This code graphs the probability of observing flowering at the meadow scale (i.e. when at one location along the trail) depending on the DOY, for all years / trails that MW data was collected. This function takes output from species specific models fit to all data, and uses the mean observed snowmelt date for that year / trail.
+
+
+
+#Code chunks to add **In Progress**
 
 #Output AIC values for plot level - null vs. pheno curve
 
