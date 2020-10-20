@@ -182,6 +182,9 @@ This chunk of code uses several for loops to fit phenological curves to year-plo
 #define object in which to save parameters
 pars_yrpltsp <- c() 
 
+#define object in which to save AIC values
+aics_yrpltsp <- c() 
+
 #set plottrue to 'T' if plots desired; 'F' if not
 plottrue <- "F"
 
@@ -274,10 +277,17 @@ for(i in 1:nyrs){ # First for loop: runs through years
       AICalt <- round(2*(model1$value + 3),1)
       pcurve <- signif(pchisq(model1$value-model0$objective,2),3)
 
+      #save AIC values
+      tmp_aic_vals <- c(yrs[i], as.character(plots[j]),
+                        as.character(spinplt[k]),AICnull,AICalt)
+      
       #save parameters to spyrpltpars
       tmp_pars <- c(yrs[i], as.character(plots[j]), SDDplt, 
                     as.character(spinplt[k]), model1$par[1:3])
+      
       pars_yrpltsp <- rbind(pars_yrpltsp, tmp_pars)
+      aics_yrpltsp <- rbind(aics_yrpltsp, tmp_aic_vals)
+      
     }
   }
 }
@@ -295,10 +305,22 @@ pars_yrpltsp$peak <- as.numeric(pars_yrpltsp$peak)
 pars_yrpltsp$duration <- as.numeric(pars_yrpltsp$duration)
 pars_yrpltsp$max <- as.numeric(pars_yrpltsp$max)
 
+# turn aic vector to dataframe
+dimnames(aics_yrpltsp) <- list(c(), c("year", "plot", "species", "AICnull", "AICalt"))
+aics_yrpltsp <- data.frame(aics_yrpltsp)
+aics_yrpltsp$year <- as.numeric(aics_yrpltsp$year)
+aics_yrpltsp$species <- as.factor(aics_yrpltsp$species)
+
+
 head(pars_yrpltsp)
+
+head(aics_yrpltsp)
 
 #Write output to data folder
 write.csv(pars_yrpltsp, "data/PerPlotCurves.csv", quote=FALSE,
+          row.names=FALSE)
+#Write AIC output to data folder
+write.csv(aics_yrpltsp, "data/AICPerPlot.csv", quote=FALSE,
           row.names=FALSE)
 ```
 
@@ -357,7 +379,13 @@ legend(x="bottomleft",legend=species, pch=21,
        pt.bg=plotcol[1:length(species)], cex=0.75, pt.cex=1.25)
 ```
 
-
+#Graph to visualize AIC for Null and Alt for Year, Plot and Species
+Visual plot, not a great plot as its not by plot/species, but one can see AIC of Alt model is lower than null
+```{r}
+aics_yrpltsp %>% pivot_longer(cols=c("AICnull","AICalt")) %>% mutate(value =as.numeric(value)) %>% ggplot(aes(x=year, y=value, fill=name,color=species,group=species)) +
+    geom_bar(stat='identity', position='dodge') + theme_minimal(base_size = 14)+
+  labs(fill='AIC value',y='AIC value',x="Year")
+```
 #Fit phenology model for all species data
 This code fits a predictive phenology model to all observations of flowering for a particular species (function *curvefit_allplot*), for the same flowering community as defined above. So, this code chunk expects that the data frame *PhenoSite_Focal*, the vector *species*, and the objects *nspp*, *totobs* and *totyesobs* have been defined. Note that this takes a bit of time to run (5ish minutes). The code does the following:
 
@@ -545,9 +573,9 @@ This code graphs the probability of observing flowering at the meadow scale (i.e
 
 #Code chunks to add **In Progress**
 
-#Output AIC values for plot level - null vs. pheno curve
+#Output AIC values for plot level - null vs. pheno curve - Aji - first version done 10/20
 
-#Output AIC values for all plot specific parameters vs model
+#Output AIC values for all plot specific parameters vs model - Aji first version done 10/20
 
 #Identify potentially problematic data (data + curves)
 ##plots with outliers
