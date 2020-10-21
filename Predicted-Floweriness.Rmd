@@ -87,12 +87,26 @@ predflowertrail <- function (xx, param){
 	ptrailflower[ptrailflower<0.005] <- 0
 	return(ptrailflower)
 }
+
+#Predicts yes / no flowering ~f(DOY, peak); used for richness
+predrichtrail <- function (xx, param){ 
+  days    <- xx
+	peakearly  <- param[1]
+	peaklate  <- param[2]
+	predmax <- inv.logit(max)
+	predearly <- inv.logit(range * (days - peakearly)^2 + max)
+	predlate <- inv.logit(range * (days - peaklate)^2 + max)
+	pyesnoflower <- rep(1, time=length(days))
+	pyesnoflower[predearly[]<0.5*predmax & days[]<peakearly] <- 0
+	pyesnoflower[predearly[]<0.5*predmax & days[]>peaklate] <- 0
+	return(ptrailflower)
+}
 ```
 
 
 
-#Trail-wide flowering probability (per species, entire community) **IN PROGRESS**
-This chunk of code estimates the probability of observing flowering of focal species along each MeadoWatch trail (RL and GB) for each year, between March 15 and October 15 (7 months). This is done in the following way:
+#Trail-wide flowering prob & richness (per species, entire community) **IN PROGRESS**
+This chunk of code estimates the probability of observing flowering of focal species along each MeadoWatch trail (RL and GB) for each year, between March 15 and October 15 (7 months). It also redefines flowering as yes / no (as long as p(flowering) > 0.5 * max flowering). This is done in the following way:
 
 1. For each trail and year, determine the earliest and latest snowmelt observed in plots (assumptions, this a reasonable proxy for range of snowmelt observed along the entire trail).
 
@@ -107,20 +121,28 @@ This chunk of code estimates the probability of observing flowering of focal spe
     
 4. The above can be used to calculate the probability of observing all focal species flowering, and at least one focal species flowering. 
 
-5. Species-specific and community flowering by DOY, year and trail are written to a data frame
+5. A yes / no probability of flowering is also calculated, as follows:
+    + Probability of flowering > 0.5*max flowering = yes; < = no
+    
+6. The above can be used to calculate flowering richness.
+
+7. Species-specific and community flowering by DOY, year and trail are written to a data frame
 
 *Note that an issue with this is that we are assuming that yes / no observations of a specific species in a 2 x 1 meter plot correlate with abundance / number of flowers. This may be a flawed assumption; see below for an alternative approach.*
     
 ```{r}
 DOY_pred <- seq(105,285) #approximate April 15 - October 15
-outputGB <- c()
-outputRL <- c()
+outputGB_p <- c()
+outputRL_p <- c()
+outputGB_r <- c()
+outputRL_r <- c()
 
 for(i in 1:nyrs){ #each year
     outputboth <- cbind(rep(yrs[i], times=length(DOY_pred)),DOY_pred)
     dimnames(outputboth) <- list(c(), c("year","DOY"))
-    outputRL_yr <- outputboth; outputGB_yr <- outputboth
-
+    outputRL_yr_p <- outputboth; outputGB_yr_p <- outputboth
+    outputRL_yr_r <- outputboth; outputGB_yr_r <- outputboth
+    
     for(j in 1:2){ #each trail
         #Extract max and min SDD
         SDD_obs <- StationDat$SDD[StationDat$Year==yrs[i] &
@@ -152,43 +174,63 @@ for(i in 1:nyrs){ #each year
             #Now assess predflower
             param <- c(peakearly, peaklate, rng_yrtrl, max_yrtrl)
             ptrailf <- predflowertrail(DOY_pred,param)
+            ptrailr <- ptrailf
+            ptrailr[ptrailf>=0.5*max(ptrailf)] <- 1
+            ptrailr[ptrailf<0.5*max(ptrailf)] <- 0
             
             #Now include in output files
             if(j==1){
-              outputGB_yr <- cbind(outputGB_yr, ptrailf)
-              dimnames(outputGB_yr)[[2]][k+2] <- spp_trl[k]}
+              outputGB_yr_p <- cbind(outputGB_yr_p, ptrailf)
+              dimnames(outputGB_yr_p)[[2]][k+2] <- spp_trl[k]
+              outputGB_yr_r <- cbind(outputGB_yr_r, ptrailr)
+              dimnames(outputGB_yr_r)[[2]][k+2] <- spp_trl[k]
+              }
             if(j==2){
-              outputRL_yr <- cbind(outputRL_yr, ptrailf)
-              dimnames(outputRL_yr)[[2]][k+2] <- spp_trl[k]}
+              outputRL_yr_p <- cbind(outputRL_yr_p, ptrailf)
+              dimnames(outputRL_yr_p)[[2]][k+2] <- spp_trl[k]
+              outputRL_yr_r <- cbind(outputRL_yr_r, ptrailr)
+              dimnames(outputRL_yr_r)[[2]][k+2] <- spp_trl[k]
+          }
         }
-    if(j==1){outputGB <- rbind(outputGB,outputGB_yr)}
-    if(j==2){outputRL <- rbind(outputRL,outputRL_yr)}
+    if(j==1){outputGB_p <- rbind(outputGB_p,outputGB_yr_p)
+             outputGB_r <- rbind(outputGB_r,outputGB_yr_r)}
+    if(j==2){outputRL_p <- rbind(outputRL_p,outputRL_yr_p)
+             outputRL_r <- rbind(outputRL_r,outputRL_yr_r)}
     }
 }
 
-#Calculate flowering indexes
+#Calculate probability of flowering indices
 #probability all focal species flower
-allflGB <- apply(outputGB[,3:dim(outputGB)[2]], 1, prod)
-allflRL <- apply(outputRL[,3:dim(outputRL)[2]], 1, prod)
+allflGB <- apply(outputGB_p[,3:dim(outputGB_p)[2]], 1, prod)
+allflRL <- apply(outputRL_p[,3:dim(outputRL_p)[2]], 1, prod)
 
 #probability any focal species flowers
-pnoGBa <- 1-outputGB[,3:dim(outputGB)[2]]
-pnoRLa <- 1-outputRL[,3:dim(outputRL)[2]]
+pnoGBa <- 1-outputGB_p[,3:dim(outputGB_p)[2]]
+pnoRLa <- 1-outputRL_p[,3:dim(outputRL_p)[2]]
 anyflGB <- 1-apply(pnoGBa, 1, prod)
 anyflRL <- 1-apply(pnoRLa, 1, prod)
 
 #append
-outputGB <- cbind(outputGB, anyflGB,allflGB)
-outputRL <- cbind(outputRL, anyflRL,allflRL)
+outputGB_p <- data.frame(cbind(outputGB_p, anyflGB,allflGB))
+outputRL_p <- data.frame(cbind(outputRL_p, anyflRL,allflRL))
+
+#Calculate richness indices - i.e. stairstep functions
+richGB <- apply(outputGB_r[,3:dim(outputGB_r)[2]], 1, sum)
+richRL <- apply(outputRL_r[,3:dim(outputRL_r)[2]], 1, sum)
+
+#append
+outputGB_r <- data.frame(cbind(outputGB_r, richGB))
+outputRL_r <- data.frame(cbind(outputRL_r, richRL))
 
 #Examine output
-#TODO why is ERGR 2015 acting odd?
-head(outputGB)
-head(outputRL)
+head(outputGB_p) 
+head(outputRL_p)
+head(outputGB_r)
+head(outputRL_r)
 
 ```
 
-#Make a representative graph **IN PROGRESS**
+#Graphs to show these metrics for each trail / year **IN PROGRESS**
 ```{r}
 #Examine output
 #TODO why is ERGR 2015 acting odd?

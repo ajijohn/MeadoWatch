@@ -1,7 +1,7 @@
 ---
 title: "Wildflower Season from MeadoWatch Data"
 author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
-date: "10/13/2020"
+date: "Updated 10/21/2020"
 output: html_document
 ---
 
@@ -386,6 +386,7 @@ aics_yrpltsp %>% pivot_longer(cols=c("AICnull","AICalt")) %>% mutate(value =as.n
     geom_bar(stat='identity', position='dodge') + theme_minimal(base_size = 14)+
   labs(fill='AIC value',y='AIC value',x="Year")
 ```
+
 #Fit phenology model for all species data
 This code fits a predictive phenology model to all observations of flowering for a particular species (function *curvefit_allplot*), for the same flowering community as defined above. So, this code chunk expects that the data frame *PhenoSite_Focal*, the vector *species*, and the objects *nspp*, *totobs* and *totyesobs* have been defined. Note that this takes a bit of time to run (5ish minutes). The code does the following:
 
@@ -577,10 +578,11 @@ This code graphs the probability of observing flowering at the meadow scale (i.e
 
 #Output AIC values for all plot specific parameters vs model - Aji first version done 10/20
 
-#Identify potentially problematic data (data + curves)
+#Identify potentially problematic data (data + curves) Aji
 ##plots with outliers
 ##limited sampling early / late
+##odd parameter fits (peak flowering too late / early to be realistic)
 
-#Extract SDD data from raw files
+#Extract SDD data from raw files (Meera?)
 
-#QA/QC volunteer vs. expert values
+#QA/QC volunteer vs. expert values (Meera?)
