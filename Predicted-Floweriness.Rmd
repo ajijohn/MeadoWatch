@@ -44,7 +44,6 @@ StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE)
 StationDat$Transect[StationDat$Transect=="Reflection Lakes"] <- "RL"
 StationDat$Transect[StationDat$Transect=="Glacier Basin"] <- "GB"
 
-
 #Determine unique species, years included in parameters
 species <- unique(PeakSDD_pars$species)
 nspp <- length(species)
@@ -228,36 +227,119 @@ head(outputRL_p)
 head(outputGB_r)
 head(outputRL_r)
 
+#estimate species in GB, RL
+nsppRL <- dim(outputRL_p)[2]-4
+nsppGB <- dim(outputGB_p)[2]-4
+
 ```
 
-#Graphs to show these metrics for each trail / year **IN PROGRESS**
+#Graphs to show all three metrics for all years, trails
 ```{r}
-#Examine output
-#TODO why is ERGR 2015 acting odd?
-head(outputGB)
-head(outputRL)
 
-#RL - representative graph - 2015, 2019
-pltyrs <- c(2015, 2019)
-par(mfrow=c(2,2), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2), 
+for(i in 2013:2019){
+  ntrail <- 2; if(i<2015){ntrail <- 1}
+
+  #setup file name to write results to  
+  figname <- paste("figs/FloweringMetrics-",i,".png",sep="")
+  
+  #write file to png
+  png(filename=figname,width=(ntrail*240), height=720)
+  
+  #Set up plot
+  par(mfcol=c(3,ntrail), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2), 
     tck=-0.01, mgp=c(1.25,0.25,0), xpd=TRUE)
 
-for(i in 1:length(pltyrs)){
-  yrdat <- outputRL[outputRL[,1]==pltyrs[i],]
-  plot(yrdat[,2],yrdat[,10], type="l", col="pink", lwd=2, 
+  for(j in 1:ntrail){
+    if(j==1){
+      yrdat_p <- outputRL_p[outputRL_p$year==i,]
+      yrdat_r <- outputRL_r[outputRL_r$year==i,]
+      dimnames(yrdat_p)[[2]][3+nsppRL]<- "anyfl"
+      dimnames(yrdat_p)[[2]][4+nsppRL]<- "allfl"
+      dimnames(yrdat_r)[[2]][3+nsppRL]<- "rich"
+      yrdat_r$rich <- yrdat_r$rich/nsppRL
+    }
+  
+    if(j==2){
+      yrdat_p <- outputGB_p[outputGB_p$year==i,]
+      yrdat_r <- outputGB_r[outputGB_r$year==i,]
+      dimnames(yrdat_p)[[2]][3+nsppGB]<- "anyfl"
+      dimnames(yrdat_p)[[2]][4+nsppGB]<- "allfl"
+      dimnames(yrdat_r)[[2]][3+nsppGB]<- "rich"
+      yrdat_r$rich <- yrdat_r$rich/nsppGB
+    }
+    
+   #graph showing the probability of seeing at least one flower  
+   plot(yrdat_p$DOY,yrdat_p$anyfl, type="l", col="violet", lwd=2, 
        xaxt="n", xlab="DOY", ylab="probability", 
-       main=paste("Any Focal",pltyrs[i], sep=" "))
-  text(c(105,135,165,195,225,255,285),-0.1,
+       main=paste("P(any species flowering)", sep=" "), ylim=c(0,1))
+   text(c(105,135,165,195,225,255,285),-0.05,
        labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))
 
-  plot(yrdat[,2],yrdat[,11], type="l", col="pink", lwd=2, 
+   #graph showing the probability of seeing all focal flowers  
+   plot(yrdat_p$DOY,yrdat_p$allfl, type="l", col="violet", lwd=2, 
        xaxt="n",xlab="DOY", ylab="probability", 
-       main=paste("All Focal",pltyrs[i], sep=" "))
-  text(c(105,135,165,195,225,255,285),-0.1,
+       main=paste("P(all species)", sep=" "), ylim=c(0,0.2))
+   text(c(105,135,165,195,225,255,285),-0.01,
        labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))
-  
+
+   #graph showing the richness  
+   plot(yrdat_r$DOY,yrdat_r$rich, type="l", col="violet", lwd=2, 
+       xaxt="n",xlab="DOY", ylab="probability", 
+       main=paste("P(total richness)", sep=" "), ylim=c(0,1))
+   text(c(105,135,165,195,225,255,285),-0.05,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))
+  }
+  dev.off()
 }
 ```
 
 
-#Trail-wide flowering richness (estimated from species-specific models); **IN PROGRESS**
+#Graph showing richness of all years, on all plots
+```{r}
+  
+#Set up plot
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2), 
+    tck=-0.01, mgp=c(1.25,0.25,0), xpd=TRUE)
+
+yrcols <- c("chartreuse","cyan","darkorange","darkorchid1","darkgreen",
+            "deeppink3","cornflowerblue")
+
+#first plot Reflection lakes
+for(i in 2013:2019){
+    yrdat_r <- outputRL_r[outputRL_r$year==i,]
+    dimnames(yrdat_r)[[2]][3+nsppRL]<- "rich"
+    yrdat_r$rich <- yrdat_r$rich/nsppRL
+    
+   #graph richness: create if 2013, add lines if later years
+   if(i==2013){
+   plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
+       lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
+       main=paste("RL - Richness", sep=" "), ylim=c(0,1));
+   text(c(105,135,165,195,225,255,285),-0.05,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}
+   if(i>2013){
+     lines(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],lwd=2)}
+}
+
+#Now Glacier Basin
+for(i in 2015:2019){
+    yrdat_r <- outputGB_r[outputGB_r$year==i,]
+    dimnames(yrdat_r)[[2]][3+nsppGB]<- "rich"
+    yrdat_r$rich <- yrdat_r$rich/nsppGB
+    
+   #graph richness: create if 2013, add lines if later years
+   if(i==2015){
+   plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
+       lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
+       main=paste("GB - Richness", sep=" "), ylim=c(0,1));
+   text(c(105,135,165,195,225,255,285),-0.05,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}
+   if(i>2015){
+     lines(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012], lwd=2)}
+}
+
+legend(x="topleft",legend=c(2013:2019), cex=0.75,
+       col=yrcols, lwd=2)
+
+```
+
