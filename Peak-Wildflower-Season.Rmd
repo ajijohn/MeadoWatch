@@ -168,7 +168,7 @@ This chunk of code uses several for loops to fit phenological curves to year-plo
 
 2. The functions nullfit and curvefit_perplot are fit to year-plot-species specific data.
 
-3. AIC's are calculated for both the null model and curve fitting model, which can be used to determine whether time (DOY) helps explain the probability of flowering. This information is currently not saved.
+3. AIC's are calculated for both the null model and curve fitting model, which can be used to determine whether time (DOY) helps explain the probability of flowering. This is saved to aics_yrpltsp.
 
 4. Plots individual curves and raw data in separate graphics windows (if *plottrue* is set to "T")
 
@@ -271,7 +271,6 @@ for(i in 1:nyrs){ # First for loop: runs through years
         newplot <- newplot + 1
       }
       
-      #TODO 
       #write the model tests / AIC to data frame
       AICnull <- round(2*(model0$objective+1),1)
       AICalt <- round(2*(model1$value + 3),1)
@@ -310,18 +309,20 @@ dimnames(aics_yrpltsp) <- list(c(), c("year", "plot", "species", "AICnull", "AIC
 aics_yrpltsp <- data.frame(aics_yrpltsp)
 aics_yrpltsp$year <- as.numeric(aics_yrpltsp$year)
 aics_yrpltsp$species <- as.factor(aics_yrpltsp$species)
+aics_yrpltsp$AICnull <- as.numeric(aics_yrpltsp$AICnull)
+aics_yrpltsp$AICalt <- as.numeric(aics_yrpltsp$AICalt)
 
-
+#examine pars, aics
 head(pars_yrpltsp)
-
 head(aics_yrpltsp)
 
 #Write output to data folder
 write.csv(pars_yrpltsp, "data/PerPlotCurves.csv", quote=FALSE,
           row.names=FALSE)
 #Write AIC output to data folder
-write.csv(aics_yrpltsp, "data/AICPerPlot.csv", quote=FALSE,
+write.csv(aics_yrpltsp, "data/AIC_plotmodel.csv", quote=FALSE,
           row.names=FALSE)
+
 ```
 
 
@@ -379,8 +380,11 @@ legend(x="bottomleft",legend=species, pch=21,
        pt.bg=plotcol[1:length(species)], cex=0.75, pt.cex=1.25)
 ```
 
+
 #Graph to visualize AIC for Null and Alt for Year, Plot and Species
 Visual plot, not a great plot as its not by plot/species, but one can see AIC of Alt model is lower than null
+
+Another option is to plot AIC null vs. AIC alt of all combos, and the 1:1 line. This should show most if not all AIC alt are less than AIC null. Could color code / change shapes depending on years / species
 ```{r}
 aics_yrpltsp %>% pivot_longer(cols=c("AICnull","AICalt")) %>% mutate(value =as.numeric(value)) %>% ggplot(aes(x=year, y=value, fill=name,color=species,group=species)) +
     geom_bar(stat='identity', position='dodge') + theme_minimal(base_size = 14)+
@@ -397,19 +401,22 @@ This code fits a predictive phenology model to all observations of flowering for
 3. Fit the maximum likelihood model (defined by *curvefit_allplot* above) to the data. This requires setting initial parameters first - which was done by fitting the relationship between peak flowering and SDD from year-plot-species specific data (in *pars_sppltsp*), and taking the average range and duration values for those same model fits.
 
 4. Saves the parameters to *pars_spp_peak*, *pars_spp_range*, *pars_spp_max*
-    + *pars_spp_peak* has per-species slope / intercept relating SDD to peak flowering
+    + *pars_spp_peak* per-species slope / intercept relates SDD to peak
     + *pars_spp_range* includes the year / trail specific range parameters
-    + *pars_spp_max* includes the year / trail specific max parameters   
+    + *pars_spp_max* includes the year / trail specific max parameters 
+    
+5. Also saves the AIC values to aics_sp
 
-5. After the for loop, turns *pars_spp* objects into data framed, view it
+6. After the for loop, turns *pars_spp* objects into data framed, view it
 
-6. Write *pars_spp_peak*, *pars_spp_range*, *pars_spp_max* as .csv files to the data folder.
+7. Write *pars_spp_peak*, *pars_spp_range*, *pars_spp_max* as .csv files to the data folder.
 
 ```{r}
 #define where to save output
 pars_spp_peak <- c() #save peak parameters for per species fit
 pars_spp_range <- c() #save range parameters for per species fit
 pars_spp_max <- c() #save max parameters for per species fit
+aics_sp <-c() #save AIC of overall model 
 
 ##Now nested for loops to fit curves for all years, species, plots
 for(i in 1:nspp){ #loop for each species, to assemble data
@@ -478,10 +485,14 @@ for(i in 1:nspp){ #loop for each species, to assemble data
     if(unique(substr(trailyear,1,2))=="GB"){trails <- "Glacier Basin"}
   }
  
-  #Save parameters to appropriate folders
+  #Save parameters to appropriate file
   #first, intercept and slope coefficients
   tmppeakpars <- c(species[i],modelsnowmod$par[1:2])
   pars_spp_peak <- rbind(pars_spp_peak,tmppeakpars)
+  
+  #save AIC
+  tmpaic <- c(species[i],round(2*modelsnowmod$value+length(param),2))
+  aics_sp <- rbind(aics_sp,tmpaic)
   
   #now range and max pars
   if(trails=="Reflection Lakes"){
@@ -534,11 +545,13 @@ for(i in 1:nspp){ #loop for each species, to assemble data
 dimnames(pars_spp_peak) <- list(c(), c("species","peakint", "peakSDDslope"))
 dimnames(pars_spp_range) <- list(c(), c("species","site", "year","range"))
 dimnames(pars_spp_max) <- list(c(), c("species","site", "year","max"))
+dimnames(aics_sp) <- list(c(), c("species","AIC"))
 
 #Change to data frame
 pars_spp_peak <- data.frame(pars_spp_peak)
 pars_spp_range <- data.frame(pars_spp_range)
 pars_spp_max <- data.frame(pars_spp_max)
+aics_sp <- data.frame(aics_sp)
 
 #change storage type 
 pars_spp_peak$species <- as.factor(pars_spp_peak$species)
@@ -546,6 +559,8 @@ pars_spp_range$species <- as.factor(pars_spp_range$species)
 pars_spp_max$species <- as.factor(pars_spp_max$species)
 pars_spp_range$site <- as.factor(pars_spp_range$site)
 pars_spp_max$site <- as.factor(pars_spp_max$site)
+aics_sp$species <- as.factor(aics_sp$species)
+aics_sp$AIC <- as.numeric(aics_sp$AIC)
 
 for(i in 2:3){
   pars_spp_peak[,i] <- as.numeric(pars_spp_peak[,i])
@@ -556,6 +571,7 @@ for(i in 2:3){
 head(pars_spp_peak)
 head(pars_spp_range)
 head(pars_spp_max)
+head(aics_sp)
 
 #Write fitted parameters
 write.csv(pars_spp_peak, "data/PeakSDDRelationship.csv", quote=FALSE,
@@ -564,32 +580,32 @@ write.csv(pars_spp_range, "data/YearTrailRange.csv", quote=FALSE,
           row.names=FALSE)
 write.csv(pars_spp_max, "data/YearTrailMax.csv", quote=FALSE,
           row.names=FALSE)
+write.csv(aics_sp, "data/AIC_speciesmodel.csv", quote=FALSE,
+          row.names=FALSE)
 
 ```
 
-#Graph meadow level curves (visualization) **May not be necessary?**
-This code graphs the probability of observing flowering at the meadow scale (i.e. when at one location along the trail) depending on the DOY, for all years / trails that MW data was collected. This function takes output from species specific models fit to all data, and uses the mean observed snowmelt date for that year / trail.
+
+#Calculate AIC species model vs. separate parameters for all plots
+#TODO **In progress**
+Note - this shows that the separate parameters for all plots does better, despite needing a lot more parameters. So we can't use model fit to justify this. A reasonable question would be - how much worse does the all species model do. 
+```{r}
+aics_yrpltsp2 <- tapply(aics_yrpltsp$AICalt, aics_yrpltsp$species, sum)
+aics_comp <- cbind(aics_sp, aics_yrpltsp2)
+dimnames(aics_comp)[[2]][3] <- "AICalt"
+
+head(aics_comp)
+```
 
 
 
-#Code chunks to add **In Progress**
+#Code Chunks **In Progress**
 
-#Output AIC values for plot level - null vs. pheno curve - Aji - first version done 10/20
 
-#Output AIC values for all plot specific parameters vs model - Aji first version done 10/20
-
-<<<<<<< HEAD
-#Identify potentially problematic data (data + curves) Aji
+#Outliers (AJI - 10/26)
 ##plots with outliers
 ##limited sampling early / late
-##odd parameter fits (peak flowering too late / early to be realistic)
-
-#Extract SDD data from raw files (Meera?)
-=======
-#Identify potentially problematic data (data + curves) - Aji first version done 10/26
-##plots with outliers
-##limited sampling early / late
-## Defnitely species wit peak flowering dates that are outside conventional range
+## Definitely species with peak flowering dates that are outside conventional range
 ```{r}
 plot_pars_years <- read.csv("data/PerPlotCurves.csv", header=TRUE) 
 plot_pars_years %>% ggplot() + geom_point(aes(as.factor(year),peak,color=species)) + facet_grid(.~plot) + theme_minimal() + theme(axis.text.x = element_text(angle = 90,hjust = 5)) +
@@ -602,10 +618,11 @@ plot_pars_years %>% ggplot() + geom_point(aes(as.factor(year),peak,color=species
     geom_hline(aes(yintercept = 244))  +
   geom_text(mapping = aes(label = 'Sep 1st',y=244, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
   labs(x=" Year", y= "Peak flowering (DOY)", color="Species")
+
 ggsave("figs/sanity_check.png", width = 30, height = 20, units = "cm")
 
 ``` 
-#Extract SDD data from raw files
->>>>>>> f610d6309794d89ce084e3a3b0c9239ffe1a3c5e
+
+#Extract SDD data from raw files (Meera?)
 
 #QA/QC volunteer vs. expert values (Meera?)
