@@ -578,11 +578,34 @@ This code graphs the probability of observing flowering at the meadow scale (i.e
 
 #Output AIC values for all plot specific parameters vs model - Aji first version done 10/20
 
+<<<<<<< HEAD
 #Identify potentially problematic data (data + curves) Aji
 ##plots with outliers
 ##limited sampling early / late
 ##odd parameter fits (peak flowering too late / early to be realistic)
 
 #Extract SDD data from raw files (Meera?)
+=======
+#Identify potentially problematic data (data + curves) - Aji first version done 10/26
+##plots with outliers
+##limited sampling early / late
+## Defnitely species wit peak flowering dates that are outside conventional range
+```{r}
+plot_pars_years <- read.csv("data/PerPlotCurves.csv", header=TRUE) 
+plot_pars_years %>% ggplot() + geom_point(aes(as.factor(year),peak,color=species)) + facet_grid(.~plot) + theme_minimal() + theme(axis.text.x = element_text(angle = 90,hjust = 5)) +
+     geom_hline(aes(yintercept = 152))  +
+  geom_text(mapping = aes(label = 'June 1st',y=152, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
+  geom_hline(aes(yintercept = 183))  +
+  geom_text(mapping = aes(label = 'July 1st',y=183, x = 0.1), angle = 90, alpha=.4,hjust = 0) +
+   geom_hline(aes(yintercept = 213))  +
+  geom_text(mapping = aes(label = 'Aug 1st',y=213, x = 0.1), angle = 90, alpha=.4,hjust = 0) +
+    geom_hline(aes(yintercept = 244))  +
+  geom_text(mapping = aes(label = 'Sep 1st',y=244, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
+  labs(x=" Year", y= "Peak flowering (DOY)", color="Species")
+ggsave("figs/sanity_check.png", width = 30, height = 20, units = "cm")
+
+``` 
+#Extract SDD data from raw files
+>>>>>>> f610d6309794d89ce084e3a3b0c9239ffe1a3c5e
 
 #QA/QC volunteer vs. expert values (Meera?)
