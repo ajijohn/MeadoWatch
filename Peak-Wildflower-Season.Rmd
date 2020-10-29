@@ -607,7 +607,7 @@ head(aics_comp)
 ##limited sampling early / late
 ## Definitely species with peak flowering dates that are outside conventional range
 ```{r}
-plot_pars_years <- read.csv("data/PerPlotCurves.csv", header=TRUE) 
+plot_pars_years <- read_csv("data/PerPlotCurves.csv") 
 plot_pars_years %>% ggplot() + geom_point(aes(as.factor(year),peak,color=species)) + facet_grid(.~plot) + theme_minimal() + theme(axis.text.x = element_text(angle = 90,hjust = 5)) +
      geom_hline(aes(yintercept = 152))  +
   geom_text(mapping = aes(label = 'June 1st',y=152, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
@@ -619,9 +619,23 @@ plot_pars_years %>% ggplot() + geom_point(aes(as.factor(year),peak,color=species
   geom_text(mapping = aes(label = 'Sep 1st',y=244, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
   labs(x=" Year", y= "Peak flowering (DOY)", color="Species")
 
-ggsave("figs/sanity_check.png", width = 30, height = 20, units = "cm")
+ggsave("figs/sanity_check.png",width = 70, height = 20, units = "cm")
 
 ``` 
+Better plot, but it is at Site level (RL or GB)
+```{r}
+
+plot_pars_years %>% mutate(site= str_sub(plot_pars_years$plot,1,2)) %>% ggplot( aes(x = peak, y = species,fill=SDD)) +
+   geom_jitter() +
+    facet_grid(site~year) +
+    scale_fill_viridis_c(name = "Snow Melt Date") +
+    labs(title = 'Peaks across all the years',
+       subtitle = 'Modelled peak flowering across 10 focal species', 
+         x = "Day of the year") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank())
+
+ggsave("figs/sanity_check_revised.png", width = 35, height = 20, units = "cm")
+```
 
 #Extract SDD data from raw files (Meera?)
 
