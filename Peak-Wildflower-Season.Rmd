@@ -636,6 +636,55 @@ plot_pars_years %>% mutate(site= str_sub(plot_pars_years$plot,1,2)) %>% ggplot( 
 
 ggsave("figs/sanity_check_revised.png", width = 35, height = 20, units = "cm")
 ```
+# Pairwise comparison of abservations for finding differences to track outliers
+
+Observations by trail / year / plot / species
+```{r}
+
+PhenoDat %>% group_by(Transect,Year,Site_Code,Species) %>% tally()
+```
+
+Determine all pairwise differences in dates between all yes observations in each trail / year / plot / species combo, and identify any observation where the minimum value is > 7
+
+```{r}
+
+PhenoDat %>% filter (Flower == 1) %>% mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>% group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>% filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
+   geom_jitter() +
+    facet_grid(Transect~Year)    +
+  scale_fill_viridis_c(name = "Difference in DOY") +
+    labs(title = 'Pairwise differences',
+       subtitle = 'All species', 
+         x = "Site Code") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+Filter it only by focal species
+
+```{r}
+
+PhenoDat %>% filter (Flower == 1 & Species %in% species) %>% mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>% group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>% filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
+   geom_jitter() +
+    facet_grid(Transect~Year)    +
+  scale_fill_viridis_c(name = "Difference in DOY") +
+    labs(title = 'Pairwise differences',
+       subtitle = 'All species', 
+         x = "Site Code") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+Plot by RL only, looks like 128 observations for RL
+
+```{r}
+PhenoDat %>% filter (Transect== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>% mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>% group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>% filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
+   geom_point() +
+    facet_grid(Transect~Year)    +
+  scale_fill_viridis_c(name = "Difference in DOY") +
+    labs(title = 'Pairwise differences',
+       subtitle = 'All species', 
+         x = "Site Code") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
 
 #Extract SDD data from raw files (Meera?)
 
