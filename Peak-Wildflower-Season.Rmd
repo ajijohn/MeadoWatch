@@ -672,7 +672,7 @@ PhenoDat %>% filter (Flower == 1 & Species %in% species) %>% mutate (doy = lubri
 ```
 
 
-Plot by RL only, looks like 128 observations for RL
+Plot by RL only, looks like 128 observations for RL (no jitter)
 
 ```{r}
 PhenoDat %>% filter (Transect== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>% mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>% group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>% filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
@@ -681,6 +681,19 @@ PhenoDat %>% filter (Transect== 'Reflection Lakes' & Flower == 1 & Species %in% 
   scale_fill_viridis_c(name = "Difference in DOY") +
     labs(title = 'Pairwise differences',
        subtitle = 'All species', 
+         x = "Site Code") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+Plot by RL only, looks like 128 observations for RL (with jitter)
+```{r}
+PhenoDat %>% filter (Transect== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>% mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>% group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>% filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
+   geom_jitter() +
+    facet_grid(Transect~Year)    +
+  scale_fill_viridis_c(name = "Difference in DOY") +
+    labs(title = 'Pairwise differences',
+       subtitle = 'All species (jittered)', 
          x = "Site Code") +
   theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
