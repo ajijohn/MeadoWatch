@@ -1,0 +1,30 @@
+---
+title: "Microclimate"
+author: "Meera Lee Sethi"
+date: "11/10/2020"
+output: html_document
+---
+#Setup for R script and R markdown
+1. Load all libraries
+2. Specify string behavior
+3. Load packages 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(stringsAsFactors = FALSE)
+library(tidyverse)
+library(leaflet)
+library(lubridate)
+library(boot)
+library(readr) 
+library(data.table)
+library(xts)
+library(psych)
+```
+
+
+#Data wrangling
+1. Imports raw data (csv files)
+2. Formats individual year-plot files
+3. Cleans and checks data
+4. Extracts snow cover attributes
