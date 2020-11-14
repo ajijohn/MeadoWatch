@@ -1,6 +1,6 @@
 ---
 title: "Microclimate"
-author: "Meera Lee Sethi"
+author: "Meera Lee Sethi, based on code by Ian Breckheimer"
 date: "11/10/2020"
 output: html_document
 ---
@@ -12,11 +12,12 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(stringsAsFactors = FALSE)
-library(tidyverse)
-library(leaflet)
-library(lubridate)
-library(boot)
-library(readr) 
+```
+
+```{r workspace, eval=FALSE}
+####Set up workspace####
+source("./HRL_microclim_functions.R")
+
 library(data.table)
 library(xts)
 library(psych)
@@ -28,3 +29,33 @@ library(psych)
 2. Formats individual year-plot files
 3. Cleans and checks data
 4. Extracts snow cover attributes
+
+```{r paths, eval=FALSE}
+input_paths_soil <- c("./data/Microclimate/2014 RL",
+                      "./data/Microclimate/2015 GB",
+                      "./data/Microclimate/2015 RL",
+                      "./data/Microclimate/2016 GB",
+                      "./data/Microclimate/2017 GB", 
+                      "./data/Microclimate/2017 RL", 
+                      "./data/Microclimate/2018 GB", 
+                      "./data/Microclimate/2018 RL", 
+                      "./data/Microclimate/2019 GB", 
+                      "./data/Microclimate/2019 RL")
+                 
+```
+
+```{r csv processing1, eval=FALSE}
+snow_formatted <- batch_format_micro_csv(input_paths=input_paths_soil,
+                                         output_path="./temp/soil",
+                      file_prefixes=c("MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil"),
+                                         output_metadata_filename="metadata_soil.txt",
+                                         overwrite=FALSE)
+```
+
+```{r snow processing, eval=FALSE}
+snow_processed <- batch_extract_snow_vars(input_path="./temp/soil",
+                                            input_metadata_filename="metadata_soil.txt",
+                                            output_path="./output/soil",
+                                            output_metadata_filename="metadata_snow.txt",
+                                            range_threshold=1,max_threshold=2,overwrite=FALSE)
+```

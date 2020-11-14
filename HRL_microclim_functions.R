@@ -1,6 +1,6 @@
 ##Functions for formatting and processing microclimate data.
-##Author: Ian Breckheimer
-##Created: 15 December 2016
+##Author: Ian Breckheimer (Modified by Meera Lee Sethi for MW/WTA analysis)
+##Last worked on: November 2020
 
 ####Function to format an individual HOBO or ibutton file and extract metadata.####
 format_micro_csv <- function(csv_name) {
@@ -199,10 +199,11 @@ batch_format_micro_csv <- function(input_paths=getwd(),output_path,file_prefixes
   stopifnot(is.logical(overwrite) & length(overwrite)==1)
   
   ##Deletes the existing metadata file if it exists
-  setwd(output_path)
+  oldwd <- setwd(output_path)
   if(file.exists(output_metadata_filename)){
     file.remove(output_metadata_filename)
   }
+  setwd(oldwd)
   
   ##Checks to see how many input files there are.
   csv_all <- c()
@@ -217,7 +218,9 @@ batch_format_micro_csv <- function(input_paths=getwd(),output_path,file_prefixes
   file_n <- 0
   
   for (i in 1:length(input_paths)){
-    setwd(input_paths[i])
+    print(input_paths[i])
+    print(getwd())
+    oldwd <- setwd(input_paths[i])
     flush.console()
     print(paste("Now processing files in folder ",input_paths[i]))
     files <- list.files(".",pattern=".csv$") # lists all the .csv files in the working directory (!!! WARNING: DON'T INCLUDE '.csv' IN ANY FILE NAMES IN THE WORKING DIRECTORY, '.csv' SHOULD ONLY APPEAR AS A FILE EXTENSION !!!). This script thinks that any file with the string '.csv' in the file name is a .csv file
@@ -226,7 +229,8 @@ batch_format_micro_csv <- function(input_paths=getwd(),output_path,file_prefixes
     ## write the modified files as .csv files to an output folder
     
     # set the working directory to the folder that will collect the output files
-    setwd(output_path)
+    setwd(oldwd)
+    oldwd <- setwd(output_path)
     outfiles <- length(list.files())
     if(outfiles>0){
       print(paste("Output folder already contains ", outfiles,"files."))
@@ -258,28 +262,28 @@ batch_format_micro_csv <- function(input_paths=getwd(),output_path,file_prefixes
       file_n <- file_n+1
       print(paste("Completed processing file ",file_n," of ",nfiles))
     }
-    
+    setwd(oldwd)
   }
   
   ##Returns output metadata
-  setwd(output_path)
+  oldwd <- setwd(output_path)
   meta_output <- read.csv(output_metadata_filename)
+  setwd(oldwd)
   return(meta_output)
 }
 
 ####Function to estimate snow cover duration from a series of .csv microclimate files.####
 batch_extract_snow_vars <- function(input_path,input_metadata_filename="metadata.txt",
-                                    figure_path,output_path,output_metadata_filename,
+                                   output_path,output_metadata_filename,
                                     range_threshold=1,max_threshold=2,overwrite=FALSE){
   ##Loads required packages
   require(data.table)
   
   ##Checks inputs
   stopifnot(dir.exists(input_path))
-  stopifnot(dir.exists(figure_path))
   stopifnot(dir.exists(output_path))
   
-  setwd(input_path)
+  oldwd <- setwd(input_path)
   stopifnot(file.exists(input_metadata_filename))
   stopifnot(!file.exists(output_metadata_filename)|overwrite==TRUE)
   
@@ -303,7 +307,8 @@ batch_extract_snow_vars <- function(input_path,input_metadata_filename="metadata
   for (k in 1:nfiles) {
     
     ##Makes sure we are in the right directory
-    setwd(input_path)
+    setwd(oldwd)
+    oldwd <- setwd(input_path)
     
     ##Prints progress.
     flush.console()
@@ -377,41 +382,6 @@ batch_extract_snow_vars <- function(input_path,input_metadata_filename="metadata
     snow_cover_duration[k] <- sum(d.snow$snow)  #'snow cover duration' the total number of days with snow cover
     minimum_soil_temp[k] <- min(d$TEMP,na.rm=TRUE) #Winter minimum soil temperature
     
-    
-    ## PLOT SOIL TEMPERATURE AND THE SNOW COVER ALGORITHM OUTPUT TO MAKE SURE OUTPUT IS REASONABLE
-    
-    # Save figure as pdf
-    setwd(figure_path)
-    population <- strsplit(files[k], ".csv")[[1]]
-    graph.file <- paste(population, ".pdf", sep = "")
-    pdf(file = graph.file, width = 10, height = 7)
-    
-    # Left Y axis
-    par(mar = c(4, 6, 3, 6))
-    plot(d$Date, d$TEMP.calib, main = population, axes = F, xlab = "", ylab = "", pch = 20, col = "red")
-    axis(2, col = "red", col.axis = "red", col.ticks = "red")
-    leftY <- expression(paste("Temperature", degree, "C"))
-    text(par("usr")[1] - 30, par("usr")[3] + ((par("usr")[3] + par("usr")[4])/2), adj = 0.5, leftY, srt = 90, xpd = TRUE, 
-         col = "red")
-    
-    # Right Y axis
-    par(new = TRUE)
-    plot(daily$date, daily$snow, pch = 20, col = "blue", ylim = c(0, 1.2), axes = FALSE, xaxt = "n", yaxt = "n", 
-         xlab = "", ylab = "")
-    axis(4, col = "blue", col.axis = "blue", col.ticks = "blue", yaxp = c(0, 1, 1), labels = F)
-    rightY <- paste("Snow cover")
-    text(par("usr")[2] + 30, par("usr")[3] + ((par("usr")[3] + par("usr")[4])/2), adj = 0.5, rightY, srt = 270, xpd = TRUE, 
-         col = "blue")
-    text(par("usr")[2] + 15, 0, 0, srt = 270, xpd = T, col = "blue")
-    text(par("usr")[2] + 15, 1, 1, srt = 270, xpd = T, col = "blue")
-    
-    # X axis
-    axis.Date(1, d$Date, at = seq(from = min(d$Date), to = max(d$Date), by = "months"))
-    
-    dev.off()
-    
-    ################################################ 
-    
   }
   
   ##Computes elapsed time.
@@ -445,179 +415,26 @@ batch_extract_snow_vars <- function(input_path,input_metadata_filename="metadata
   ##Moves .csv and .pdf graphics of flagged files to new directories
   out_flagged <- out_merged[out_merged$flagged==TRUE,]
   flagged_csvs <- out_flagged$out_filename
-  setwd(output_path)
+  setwd(oldwd)
+  oldwd <- setwd(output_path)
   dir.create("./flagged")
   file.copy(paste(input_path,"/",as.character(flagged_csvs),sep=""),"./flagged")
-  flagged_pdfs <- sub(".csv",".pdf",out_flagged$out_filename)
-  setwd(figure_path)
-  dir.create("./flagged")
-  file.copy(flagged_pdfs,"./flagged")
   
   ##Moves .csv and .pdf graphics of unflagged files to a new directory
   out_unflagged <- out_merged[out_merged$flagged==FALSE,]
   unflagged_csvs <- out_unflagged$out_filename
-  setwd(output_path)
+  setwd(oldwd)
+  oldwd <- setwd(output_path)
   dir.create("./unflagged")
   file.copy(paste(input_path,"/",as.character(unflagged_csvs),sep=""),"./unflagged")
-  unflagged_pdfs <- sub(".csv",".pdf",out_unflagged$out_filename)
-  setwd(figure_path)
-  dir.create("./unflagged")
-  file.copy(unflagged_pdfs,"./unflagged")
   
   ##subsets data for the unflagged files
   out_unflagged<- out_merged[out_merged$flagged==FALSE,]
   
   # Save output file
-  setwd(output_path)
+  setwd(oldwd)
+  oldwd <- setwd(output_path)
   write.table(out_unflagged, file = output_metadata_filename, sep = ",", row.names = FALSE)
   return(out_merged)
+  setwd(oldwd)
 }
-
-batch_clean_air_temps <- function(input_path,input_metadata_filename,
-                                      output_path,output_metadata_filename,
-                                      figure_path,
-                                      guess_tz="Etc/GMT-7",
-                                      temp_spike_thresh=10,
-                                      min_temp_thresh=-20,
-                                      max_temp_thresh=50,
-                                      max_temp_hr=17,
-                                      overwrite=TRUE){
-  ##Sets up workspace
-  require(xts)
-  require(psych)
-  Sys.setenv(TZ=guess_tz)
-  
-  ##Checks inputs
-  stopifnot(length(input_metadata_filename)==1)
-  stopifnot(length(output_metadata_filename)==1)
-  stopifnot(dir.exists(input_path))
-  stopifnot(dir.exists(output_path))
-  stopifnot(dir.exists(figure_path))
-  stopifnot(is.logical(overwrite) & length(overwrite)==1)
-  setwd(input_path)
-  stopifnot(file.exists(input_metadata_filename))
-  
-  ##Checks to see how many input files there are.
-  airtemp_files <- list.files(input_path,pattern=".csv$")
-  nfiles <- length(airtemp_files)
-  
-  ##Creates folders for output
-  setwd(output_path)
-  if(!dir.exists("./flagged")){
-    dir.create("./flagged")
-  }
-  if(!dir.exists("./unflagged")){
-    dir.create("./unflagged")
-  }
-  
-  ##Checks to make sure we've got the same number files as we do metadata lines
-  setwd(input_path)
-  air_meta <- read.table(input_metadata_filename,sep=",",header=TRUE)
-  stopifnot(nrow(air_meta)==nfiles)
-  
-  print(paste("Now processing ",nfiles," air-temp files."))
-  
-  ##Sets up a file counter.
-  file_n <- 0
-  
-  ##Creates empty data frame for metadata.
-  nfiles <- length(airtemp_files)
-  metadata <- data.frame(filename=rep("NA",nfiles),
-                         cleaned_min=rep(NA,nfiles),
-                         cleaned_max=rep(NA,nfiles),
-                         mean_hr_max=rep(NA,nfiles),
-                         flag_missing_data=rep(NA,nfiles),
-                         flag_wrong_tz=rep(NA,nfiles))
-  
-  metadata$filename <- as.character(metadata$filename)
-  
-  for (i in 1:length(airtemp_files)){
-    
-    # Ensures we are looking at the right directory
-    setwd(input_path)
-    
-    # Prints progress to console.
-    flush.console()
-    print(paste("Now processing ",airtemp_files[i],". File ",i," of ",
-                length(airtemp_files)))
-    #Reads data and converts to date and time-series format.
-    data <- read.csv(airtemp_files[i],header=TRUE)
-    data <- data[complete.cases(data),]
-    data$datestring <- paste(data$YEAR,data$MONTH,data$DAY,sep="-")
-    data$timestring <- paste(data$HOUR,data$MIN,"00",sep=":")
-    data$datetime <- strptime(paste(data$datestring,data$timestring),
-                              format="%Y-%m-%d %H:%M:%S",tz=guess_tz)
-    tempts <- xts(data$TEMP,order.by=data$datetime)
-    tzone(tempts) <- "Etc/GMT-7"
-    
-    # Save figure as pdf
-    setwd(figure_path)
-    plotname <- strsplit(airtemp_files[i], ".csv")[[1]]
-    figpath <- paste(figure_path,plotname,".pdf", sep = "")
-    pdf(file = figpath, width = 10, height = 7)
-    
-    # Left Y axis
-    par(mar = c(4, 6, 3, 6))
-    plot(data$datetime,data$TEMP,type='l', main = plotname, xlab='Date', 
-         ylab=expression(paste("Temperature", degree, "C")),col='blue',
-         axes = T,ylim=c(-10,35),pch = 20)  
-    dev.off()
-    
-    ## Checks for and eliminates values outside of the physical range 
-    ## and temperature spikes that could be caused by direct sun.
-    tempts[tempts < min_temp_thresh] <- NA
-    tempts[tempts > max_temp_thresh] <- NA
-    tlagged <- lag.xts(tempts,k=1)
-    delta <- tempts-tlagged
-    tempts[delta > temp_spike_thresh] <- NA
-    
-    ##Calculates the circadian mean hour of the day with the maximum temperature.
-    hr_max_ts <- do.call(rbind, lapply(split(tempts,"days"), function(x) x[which.max(x)]))
-    hrs <- as.numeric(format(index(hr_max_ts),format="%H"))
-    mean_hr_max <- circadian.mean(hrs,hours=TRUE)
-    
-    ##Flags time-series with problems
-    if(sum(is.na(tempts)) > 10){
-      flag_missing_values <- TRUE
-    }else{
-      flag_missing_values <- FALSE
-    }
-    
-    if((mean_hr_max-max_temp_hr) > 4 | (mean_hr_max-max_temp_hr) < -4){
-      flag_wrong_tz <- TRUE
-    }else{
-      flag_wrong_tz <- FALSE
-    }
-    outts <- data.frame(DATE=index(tempts),TZ=air_meta$tz[i],TEMP=tempts)
-    setwd(output_path)
-    if(flag_missing_values==FALSE & flag_wrong_tz==FALSE){
-      write.csv(outts,paste("./unflagged/",airtemp_files[i]),row.names=FALSE)
-    }else{
-      write.csv(outts,paste("./flagged/",airtemp_files[i]),row.names=FALSE)
-    }
-    
-    ##Assembles metadata.
-    metadata$filename[i] <- airtemp_files[i]
-    
-    ## Gets the cleaned temp range
-    metadata$cleaned_min[i] <- min(tempts,na.rm=TRUE)
-    metadata$cleaned_max[i] <- max(tempts,na.rm=TRUE)
-    
-    ## Gets the hour of mean temperature.
-    metadata$mean_hr_max[i] <- mean_hr_max
-    
-    metadata$flag_missing_data[i] <- flag_missing_values 
-    metadata$flag_wrong_tz[i] <- flag_wrong_tz
-  }
-  
-  metadata_unflagged <- metadata[metadata$flag_missing_data==FALSE &
-                                 metadata$flag_wrong_tz==FALSE,]
-  
-  meta_all <- merge(air_meta,metadata_unflagged,by.x="out_filename",by.y="filename",all.x=T)
-  
-  ##Writes cleaned unflagged files to output.
-  setwd(output_path)
-  write.table(meta_all,output_metadata_filename,sep="\t",row.names=FALSE)
-  return(metadata)
-}
-
