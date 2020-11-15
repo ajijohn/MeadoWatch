@@ -382,7 +382,7 @@ legend(x="bottomleft",legend=species, pch=21,
 
 
 #Graph to visualize AIC for Null and Alt for Year, Plot and Species
-Visual plot, not a great plot as its not by plot/species, but one can see AIC of Alt model is lower than null
+## Visual plot, not a great plot as its not by plot/species, but one can see AIC of Alt model is lower than null
 
 Another option is to plot AIC null vs. AIC alt of all combos, and the 1:1 line. This should show most if not all AIC alt are less than AIC null. Could color code / change shapes depending on years / species
 ```{r}
@@ -600,15 +600,13 @@ head(aics_comp)
 
 
 #Code Chunks **In Progress**
-
-
 #Outliers (AJI - 10/26)
 ##plots with outliers
 ##limited sampling early / late
 ## Definitely species with peak flowering dates that are outside conventional range
 ```{r}
 plot_pars_years <- read_csv("data/PerPlotCurves.csv") 
-plot_pars_years %>% ggplot() + geom_point(aes(as.factor(year),peak,color=species)) + facet_grid(.~plot) + theme_minimal() + theme(axis.text.x = element_text(angle = 90,hjust = 5)) +
+plot_pars_years %>%  mutate(site= str_sub(plot_pars_years$plot,1,2)) %>%ggplot() + geom_point(aes(as.factor(year),peak,color=species)) + facet_grid(.~plot) + theme_minimal() + theme(axis.text.x = element_text(angle = 90,hjust = 5)) +
      geom_hline(aes(yintercept = 152))  +
   geom_text(mapping = aes(label = 'June 1st',y=152, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
   geom_hline(aes(yintercept = 183))  +
@@ -617,7 +615,8 @@ plot_pars_years %>% ggplot() + geom_point(aes(as.factor(year),peak,color=species
   geom_text(mapping = aes(label = 'Aug 1st',y=213, x = 0.1), angle = 90, alpha=.4,hjust = 0) +
     geom_hline(aes(yintercept = 244))  +
   geom_text(mapping = aes(label = 'Sep 1st',y=244, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
-  labs(x=" Year", y= "Peak flowering (DOY)", color="Species")
+ # facet_grid(.~year) +
+  labs(x=" Year", y= "Predicted Peak flowering (DOY)", color="Species")
 
 ggsave("figs/sanity_check.png",width = 70, height = 20, units = "cm")
 
