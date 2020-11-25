@@ -1,7 +1,7 @@
 ---
 title: "Analyze MeadoWatch Data"
 author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
-date: "Updated 11/17/2020"
+date: "Updated 11/25/2020"
 output: html_document
 ---
 
@@ -69,6 +69,103 @@ head(PhenoSite)
 
 ```
 
+#Define wildflower community you are interested in
+This chunk of code defines the wildflower community and subsets the data to only include these species. Specifically:
+
+1. Specify which flowering species to include. For reference:
+   A. Reflection Lakes species include: c("ANOC", "CAPA", "ERMO", "ERPE", "LIGR", "LUAR", "MIAL", "PEBR", "POBI", "VASI")
+   B. Glacier Basin species include: c("ANAR", "ARLA", "ASLE", "CAMI", "ERGR", "LUAR", "MEPA", "PEBR", "POBI", "VASI")
+
+2. Create PhenoSite_Focal - data set with just species of interest
+
+3. From this, *nspp* (number of species) and *nyears* (number of years) are defined, which are used in for loops
+
+```{r}
+# Define the wildflower community: which species to include
+species <- c("ANOC", "ASLE", "CAMI", "CAPA", "ERGR", "ERMO",
+             "ERPE", "LUAR", "PEBR", "VASI")
+
+# Create PhenoSite_Focal - data set with just species of interest
+specieskeep <- PhenoSite$Species %in% species
+PhenoSite_Focala <- PhenoSite[specieskeep,]
+
+# Determine how many years of data, how many species, etc
+yrs <- unique(PhenoSite_Focala$Year)
+nyrs <- length(yrs)
+nspp <- length(species)
+
+```
+
+#Observer effort / Outliers
+Add information to PhenoSite_Focal to allow for outlier detection
+1. Calculate total observations per plot / year / species
+2. Filter out plots with too little data (see below for parameters that can be modified)
+   + *totobs* (# observations for fitting, set at 30)
+   + *totyesobs* (# observations of flowering, set at 5)
+3. Calculate closest (in time) yes / no observation
+
+```{r}
+#Calculate total number of observations
+Nobs <- PhenoSite_Focala %>% 
+  group_by(Transect.x,Year,Site_Code,Species)%>% 
+  tally() %>% as.data.frame()
+
+#Calculate total number of yes observations
+PhenoSite_Focalb <- PhenoSite_Focala[PhenoSite_Focala$Flower==1,]
+Nobsyes <- PhenoSite_Focalb %>% 
+  group_by(Transect.x,Year,Site_Code,Species)%>% 
+  tally() %>% as.data.frame()
+
+#merge PhenoSite_Focal.. with Nobs, Nobsyes
+PhenoSite_Focalc <- merge(PhenoSite_Focala, Nobs,
+                         by=c("Year","Transect.x",
+                              "Site_Code","Species"))
+PhenoSite_Focald <- merge(PhenoSite_Focalc, Nobsyes,
+                         by=c("Year","Transect.x",
+                              "Site_Code","Species"))
+dimnames(PhenoSite_Focald)[[2]][11:12] <- c("Nobs","NobsY")
+
+#Filter out plots with fewer than totobs, totyesobs observations
+totobs <- 30
+totyesobs <- 5
+
+PhenoSite_Focale <- PhenoSite_Focald[PhenoSite_Focald$Nobs>=totobs &
+                                      PhenoSite_Focald$NobsY>totyesobs,]
+
+#For each observation, calculate nearest yes, no observation
+#I'm doing this by for loop but this is inefficient. any ideas?
+distyes <- rep(NA, times=dim(PhenoSite_Focale)[1])
+distno <- rep(NA, times=dim(PhenoSite_Focale)[1])
+PhenoSite_Focal <- cbind(PhenoSite_Focale, distyes, distno)
+
+#Now for loop to calculate
+for(i in 1:dim(PhenoSite_Focal)[1]){
+  yr <- PhenoSite_Focal$Year[i]
+  sc <- PhenoSite_Focal$Site_Code[i]
+  sp <- PhenoSite_Focal$Species[i]
+  dy <- PhenoSite_Focal$DOY[i]
+  
+  #extract plot / year / species data
+  compdat <- PhenoSite_Focal[PhenoSite_Focal$Year==yr&
+                               PhenoSite_Focal$Site_Code==sc&
+                               PhenoSite_Focal$Species==sp,]
+  #separate into yes and no
+  compdatyes <- compdat[compdat$Flower==1,]
+  compdatno <- compdat[compdat$Flower==0,]
+  
+  #closest yes, no observation
+  minyes <- min(abs(compdatyes$DOY - dy))
+  minno <- min(abs(compdatno$DOY - dy))
+  
+  #Fill in PhenoSite_Focal
+  PhenoSite_Focal$distyes[i] <- minyes
+  PhenoSite_Focal$distno[i] <- minno
+}
+
+head(PhenoSite_Focal)
+     
+```
+
 
 #Define functions - maximum likelihood models & phenology curves (for plotting)
 There are four functions we need, 3 for model fitting and one for drawing curves. They are described here.
@@ -130,41 +227,11 @@ predflower <- function (xx, param){
 ```
 
 
-#Define wildflower community for model fitting
-This chunk of code defines the wildflower community and subsets the data to only include these species. Specifically:
-
-1. Specify which flowering species to include. For reference:
-   A. Reflection Lakes species include: c("ANOC", "CAPA", "ERMO", "ERPE", "LIGR", "LUAR", "MIAL", "PEBR", "POBI", "VASI")
-   B. Glacier Basin species include: c("ANAR", "ARLA", "ASLE", "CAMI", "ERGR", "LUAR", "MEPA", "PEBR", "POBI", "VASI")
-
-2. Create PhenoSite_Focal - data set with just species of interest
-
-3. From this, *nspp* (number of species) and *nyears* (number of years) are defined, which are used in for loops
-
-```{r}
-# Define the wildflower community: which species to include
-species <- c("ANOC", "ASLE", "CAMI", "CAPA", "ERGR", "ERMO",
-             "ERPE", "LUAR", "PEBR", "VASI")
-
-# Create PhenoSite_Focal - data set with just species of interest
-specieskeep <- PhenoSite$Species %in% species
-PhenoSite_Focal <- PhenoSite[specieskeep,]
-
-# Determine how many years of data, how many species, etc
-yrs <- unique(PhenoSite_Focal$Year)
-nyrs <- length(yrs)
-nspp <- length(species)
-
-```
-
-
 #Phenological models fit to year-plot-species specific data
 This chunk of code uses several for loops to fit phenological curves to year-plot-species specific data (using function *curvefit_perplot*). The advantage of these curves is that they are optimized to individual plots. The disadvantage is that these curves only exist if the species was present in the plot (even if it was nearby). More broadly, these fits can be used to check output from likelihood models fit to all data from a species.
 
 ##Code does the following:
-1. Pulls out data for each species / plot / year combo. Data in innermost loop is PhenoSite_YearPlotSpecies. Note - fitting only occurs if sufficient data, as defined by these two parameters (you can modify them):
-   + *totobs* (# observations for fitting, set at 20)
-   + *totyesobs* (# observations of flowering, set at 5)
+1. Pulls out data for each species / plot / year combo. Data in innermost loop is PhenoSite_YearPlotSpecies. 
 
 2. The functions nullfit and curvefit_perplot are fit to year-plot-species specific data.
 
@@ -187,11 +254,6 @@ aics_yrpltsp <- c()
 
 #set plottrue to 'T' if plots desired; 'F' if not
 plottrue <- "F"
-
-#set data filters - how many total obs, how many flowering obs
-#to proceed with model fitting?
-totobs <- 20 #need at least 20 observations (visits) 
-totyesobs <- 5 #flowering needs to be observed at least 5 times 
 
 #For loops to fit curves per year/plot/species, save parameters, plot 
 for(i in 1:nyrs){ # First for loop: runs through years
@@ -238,14 +300,10 @@ for(i in 1:nyrs){ # First for loop: runs through years
       days <- PhenoSite_YearPlotSpecies$DOY #explanatory variable: DOY 
       phenophase <- PhenoSite_YearPlotSpecies$Flower #yes / no flowering
 
-      #Do not fit model to data if insufficient data
-      if(length(days)<=totobs){next}
-      if(sum(na.omit(phenophase))<=totyesobs){next}
-      
       #remove days when no observations were made; NA in phenophase
       #TODO is this redundant with cases line? check with earlier code
-	    days <- days[is.na(phenophase)==FALSE]
-	    phenophase <- phenophase[is.na(phenophase)==FALSE]
+	    #days <- days[is.na(phenophase)==FALSE]
+	    #phenophase <- phenophase[is.na(phenophase)==FALSE]
 	    
 	    #add three weeks of zeroes before earliest SDD in those plots
 	    SDDplt <- min(PhenoSite_YearPlotSpecies$SDD)
@@ -398,7 +456,173 @@ title("Compare Null to Curve")
 abline(0,1)
 ```
 
-#Fit phenology model for all species data
+
+#Explore Outliers
+The following graphs are intended to detect outliers and model fitting issues
+
+##Graph of plot / Species / Year-specific model fits
+In this graph, the predicted peak flowering day of the year (DOY) of each species is graphed by year/plot id. X-axis is the years, Y-axis is DOY, and colors indicate all the species. This allows us to identify species / plot year fits that are anomolous (indicating potential model fitting issues) 
+```{r}
+plot_pars_years <- read_csv("data/PerPlotCurves.csv") 
+
+# str_sub subsets first two characters pf the site ID, so here it would be either RL or GB.
+# aes - aesthetics -we give x and y variables , and color 
+# facets add third dimension to the figure here.
+# %>%  is the pipe operator - which is equivalent to saying make all the field names available to the operation on right, it helps one to write simplified code where we don't need to use $ to access the fields in a dataframe
+
+plot_pars_years %>%  mutate(site= str_sub(plot_pars_years$plot,1,2)) %>%
+  ggplot() +
+  geom_point(aes(as.factor(year),peak,color=species)) + 
+  facet_grid(.~plot) +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 90,hjust = 5)) +
+     geom_hline(aes(yintercept = 152))  +
+  geom_text(mapping = aes(label = 'June 1st',y=152, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
+  geom_hline(aes(yintercept = 183))  +
+  geom_text(mapping = aes(label = 'July 1st',y=183, x = 0.1), angle = 90, alpha=.4,hjust = 0) +
+   geom_hline(aes(yintercept = 213))  +
+  geom_text(mapping = aes(label = 'Aug 1st',y=213, x = 0.1), angle = 90, alpha=.4,hjust = 0) +
+    geom_hline(aes(yintercept = 244))  +
+  geom_text(mapping = aes(label = 'Sep 1st',y=244, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
+ # facet_grid(.~year) +
+  labs(x=" Year", y= "Predicted Peak flowering (DOY)", color="Species")
+
+# Its a comprehensive plot so might be better to view the generated image separately.
+ggsave("figs/sanity_check.png",width = 70, height = 20, units = "cm")
+
+``` 
+
+#Alternative graph of model fits
+Alternative plot to visualize outliers,  Site level (RL or GB) is on alternative y-axis, X-axis DOY, and Y-axis the focal species. We see the outliers are closer to start of the y-axis scale or towards the end. Columns here are years. SDD gradient can be ignored ( no variation)
+```{r}
+# note here aes  (aesthetics included 'fill' as well)
+plot_pars_years %>% 
+  mutate(site= str_sub(plot_pars_years$plot,1,2)) %>% 
+  ggplot( aes(x = peak, y = species,fill=SDD)) +
+   geom_jitter() +
+    facet_grid(site~year) +
+    scale_fill_viridis_c(name = "Snow Melt Date") +
+    labs(title = 'Peaks across all the years',
+       subtitle = 'Modelled peak flowering across 10 focal species', 
+         x = "Day of the year") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank())
+
+ggsave("figs/sanity_check_revised.png", width = 35, height = 20, units = "cm")
+```
+
+#Observation Effort
+This code calculates the total number of observations for each plot / year / species combination.
+```{r}
+
+#This coce shows the total number of observations by plot / year / species
+PhenoSite_Focal %>% 
+  group_by(Transect.x,Year,Site_Code,Species)%>% 
+  tally()
+
+#This code does the same thing, but transforms the tibble into a dataframe
+tallyObservations_typs <- PhenoSite_Focal %>% 
+  group_by(Transect.x,Year,Site_Code,Species)%>% 
+  tally() %>% as.data.frame()
+```
+
+#Graph showing species/ year / transect observer effort
+Notice a perfect cluster of # of observationsin 2015 Reflections lake. Also, what we see is the low number of observations for some of the plot / species combinations
+
+```{r}
+# In dply lingo everything is a tibble , we are transforming it to a dataframe for compatibility
+tallyObservations_typs %>% 
+  ggplot() +
+  geom_jitter(aes(as.factor(Year), n,color=Species))+
+  facet_grid(.~Transect.x) +
+  labs(y="Number of observations",x="Year") +
+  theme_minimal(base_size = 14) 
+
+```
+
+#Calculate outlier 'yes' observations
+This code calculates all pairwise differences in dates between all yes observations in each trail / year / plot / species combo, and identify any observation where the minimum value is > 7
+
+For example, imagine a specific query : Species =='ANOC' & Year=='2013' & Site_Code =='RL9'
+
+1.*group_by* orders the rows by given set of fields (in order)
+2. *lag* gets the previous row
+
+Returns
+
+# Groups:   Transect, Year, Site_Code, Species [1]
+  Transect          Year Site_Code Species Date      Observer                           QA.QC
+  <chr>            <int> <chr>     <chr>   <chr>     <chr>                              <int>
+1 Reflection Lakes  2013 RL9       ANOC    7/21/2013 Dave Purdon                            0
+2 Reflection Lakes  2013 RL9       ANOC    7/23/2013 Anna Wilson; Cherry Chen               1
+3 Reflection Lakes  2013 RL9       ANOC    7/23/2013 Weedy McCauley                         0
+4 Reflection Lakes  2013 RL9       ANOC    7/24/2013 Brooke Upton                           0
+5 Reflection Lakes  2013 RL9       ANOC    7/24/2013 Rita Moore; Dan Paquette               0
+6 Reflection Lakes  2013 RL9       ANOC    7/25/2013 Carol Miltimore                        0
+7 Reflection Lakes  2013 RL9       ANOC    7/26/2013 Carol Clingan                          0
+8 Reflection Lakes  2013 RL9       ANOC    8/4/2013  Johndavid Hascup; Kristalyn Hascup     0
+9 Reflection Lakes  2013 RL9       ANOC    8/10/2013 Bonnie Scott                           0
+
+Row # 7 and 8 is what we use to find the difference which is greater than 7 
+
+#TODO I suggest making pdif a variable we can play around with
+#Question - does this only look at the difference between each observation and a previous flowering observation, or also the difference between previous and next? In the latter case, what happens to the first observation of flowering (no previous observation?)
+
+```{r}
+PhenoSite_Focal %>% 
+  filter (Flower == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect.x,Year,Site_Code,Species) %>%
+  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+  filter (pdiff > 7) %>% 
+  ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
+   geom_jitter() +
+    facet_grid(Transect.x~Year)    +
+  scale_fill_viridis_c(name = "Difference in DOY") +
+    labs(title = 'Pairwise differences',
+       subtitle = 'All species', 
+         x = "Site Code") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+# Pairwise differences but filter it only by focal species
+#I got rid of this snippet of code, as I changed code above to only look at focal species
+
+# Plot pairwise for RL only, looks like 128 observations for RL (no jitter)
+
+```{r}
+PhenoSite_Focal %>% 
+  filter (Transect.x== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect.x,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
+  filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
+   geom_point() +
+    facet_grid(Transect.x~Year)    +
+  scale_fill_viridis_c(name = "Difference in DOY") +
+    labs(title = 'Pairwise differences',
+       subtitle = 'All species', 
+         x = "Site Code") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+#Plot pairwise for RL only, looks like 128 observations for RL (with jitter)
+```{r}
+PhenoSite_Focal %>% 
+  filter (Transect.x== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect.x,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
+  filter (pdiff > 7) %>% 
+  ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
+   geom_jitter() +
+    facet_grid(Transect.x~Year)    +
+  scale_fill_viridis_c(name = "Difference in DOY") +
+    labs(title = 'Pairwise differences',
+       subtitle = 'All species (jittered)', 
+         x = "Site Code") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+#Fit phenology model for all species data, using second model
 This code fits a predictive phenology model to all observations of flowering for a particular species (function *curvefit_allplot*), for the same flowering community as defined above. So, this code chunk expects that the data frame *PhenoSite_Focal*, the vector *species*, and the objects *nspp*, *totobs* and *totyesobs* have been defined. Note that this takes a bit of time to run (5ish minutes). The code does the following:
 
 1. Subset data for a particular species.
@@ -604,172 +828,3 @@ dimnames(aics_comp)[[2]][3] <- "plotmodel"
 aics_comp
 ```
 
-
-#Outliers
-The following graphs are intended to detect outliers and model fitting issues
-
-##Graph of plot / Species / Year-specific model fits
-In this graph, the predicted peak flowering day of the year (DOY) of each species is graphed by year/plot id. X-axis is the years, Y-axis is DOY, and colors indicate all the species. This allows us to identify species / plot year fits that are anomolous (indicating potential model fitting issues) 
-```{r}
-plot_pars_years <- read_csv("data/PerPlotCurves.csv") 
-
-# str_sub subsets first two characters pf the site ID, so here it would be either RL or GB.
-# aes - aesthetics -we give x and y variables , and color 
-# facets add third dimension to the figure here.
-# %>%  is the pipe operator - which is equivalent to saying make all the field names available to the operation on right, it helps one to write simplified code where we don't need to use $ to access the fields in a dataframe
-
-plot_pars_years %>%  mutate(site= str_sub(plot_pars_years$plot,1,2)) %>%
-  ggplot() +
-  geom_point(aes(as.factor(year),peak,color=species)) + 
-  facet_grid(.~plot) +
-  theme_minimal() + theme(axis.text.x = element_text(angle = 90,hjust = 5)) +
-     geom_hline(aes(yintercept = 152))  +
-  geom_text(mapping = aes(label = 'June 1st',y=152, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
-  geom_hline(aes(yintercept = 183))  +
-  geom_text(mapping = aes(label = 'July 1st',y=183, x = 0.1), angle = 90, alpha=.4,hjust = 0) +
-   geom_hline(aes(yintercept = 213))  +
-  geom_text(mapping = aes(label = 'Aug 1st',y=213, x = 0.1), angle = 90, alpha=.4,hjust = 0) +
-    geom_hline(aes(yintercept = 244))  +
-  geom_text(mapping = aes(label = 'Sep 1st',y=244, x = 0.1), angle = 90,alpha=.4, hjust = 0) +
- # facet_grid(.~year) +
-  labs(x=" Year", y= "Predicted Peak flowering (DOY)", color="Species")
-
-# Its a comprehensive plot so might be better to view the generated image separately.
-ggsave("figs/sanity_check.png",width = 70, height = 20, units = "cm")
-
-``` 
-
-#Alternative graph of model fits
-Alternative plot to visualize outlieers,  Site level (RL or GB) is on alternative y-axis, X-axis DOY, and Y-axis the focal species. We see the outliers are closer to start of the y-axis scale or towards the end. Columns here are years. SDD gradient can be ignored ( no variation)
-```{r}
-# note here aes  (aesthetics included 'fill' as well)
-plot_pars_years %>% 
-  mutate(site= str_sub(plot_pars_years$plot,1,2)) %>% 
-  ggplot( aes(x = peak, y = species,fill=SDD)) +
-   geom_jitter() +
-    facet_grid(site~year) +
-    scale_fill_viridis_c(name = "Snow Melt Date") +
-    labs(title = 'Peaks across all the years',
-       subtitle = 'Modelled peak flowering across 10 focal species', 
-         x = "Day of the year") +
-  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank())
-
-ggsave("figs/sanity_check_revised.png", width = 35, height = 20, units = "cm")
-```
-
-#Observation Effort
-This code calculates the total number of observations for each plot / year / species combination.
-```{r}
-
-#This coce shows the total number of observations by plot / year / species
-PhenoSite_Focal %>% 
-  group_by(Transect.x,Year,Site_Code,Species)%>% 
-  tally()
-
-#This code does the same thing, but transforms the tibble into a dataframe
-tallyObservations_typs <- PhenoSite_Focal %>% 
-  group_by(Transect.x,Year,Site_Code,Species)%>% 
-  tally() %>% as.data.frame()
-```
-
-#Graph showing species/ year / transect observer effort
-Notice a perfect cluster of # of observationsin 2015 Reflections lake. Also, what we see is the low number of observations for some of the plot / species combinations
-
-```{r}
-# In dply lingo everything is a tibble , we are transforming it to a dataframe for compatibility
-tallyObservations_typs %>% 
-  ggplot() +
-  geom_jitter(aes(as.factor(Year), n,color=Species))+
-  facet_grid(.~Transect.x) +
-  labs(y="Number of observations",x="Year") +
-  theme_minimal(base_size = 14) 
-
-```
-
-#Calculate outlier 'yes' observations
-This code calculates all pairwise differences in dates between all yes observations in each trail / year / plot / species combo, and identify any observation where the minimum value is > 7
-
-For example, imagine a specific query : Species =='ANOC' & Year=='2013' & Site_Code =='RL9'
-
-1.*group_by* orders the rows by given set of fields (in order)
-2. *lag* gets the previous row
-
-Returns
-
-# Groups:   Transect, Year, Site_Code, Species [1]
-  Transect          Year Site_Code Species Date      Observer                           QA.QC
-  <chr>            <int> <chr>     <chr>   <chr>     <chr>                              <int>
-1 Reflection Lakes  2013 RL9       ANOC    7/21/2013 Dave Purdon                            0
-2 Reflection Lakes  2013 RL9       ANOC    7/23/2013 Anna Wilson; Cherry Chen               1
-3 Reflection Lakes  2013 RL9       ANOC    7/23/2013 Weedy McCauley                         0
-4 Reflection Lakes  2013 RL9       ANOC    7/24/2013 Brooke Upton                           0
-5 Reflection Lakes  2013 RL9       ANOC    7/24/2013 Rita Moore; Dan Paquette               0
-6 Reflection Lakes  2013 RL9       ANOC    7/25/2013 Carol Miltimore                        0
-7 Reflection Lakes  2013 RL9       ANOC    7/26/2013 Carol Clingan                          0
-8 Reflection Lakes  2013 RL9       ANOC    8/4/2013  Johndavid Hascup; Kristalyn Hascup     0
-9 Reflection Lakes  2013 RL9       ANOC    8/10/2013 Bonnie Scott                           0
-
-Row # 7 and 8 is what we use to find the difference which is greater than 7 
-
-#TODO I suggest making pdif a variable we can play around with
-#Question - does this only look at the difference between each observation and a previous flowering observation, or also the difference between previous and next? In the latter case, what happens to the first observation of flowering (no previous observation?)
-
-```{r}
-PhenoSite_Focal %>% 
-  filter (Flower == 1) %>% 
-  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect.x,Year,Site_Code,Species) %>%
-  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
-  filter (pdiff > 7) %>% 
-  ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
-   geom_jitter() +
-    facet_grid(Transect.x~Year)    +
-  scale_fill_viridis_c(name = "Difference in DOY") +
-    labs(title = 'Pairwise differences',
-       subtitle = 'All species', 
-         x = "Site Code") +
-  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-```
-
-# Pairwise differences but filter it only by focal species
-#I got rid of this snippet of code, as I changed code above to only look at focal species
-
-# Plot pairwise for RL only, looks like 128 observations for RL (no jitter)
-
-```{r}
-PhenoSite_Focal %>% 
-  filter (Transect.x== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
-  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect.x,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
-  filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
-   geom_point() +
-    facet_grid(Transect.x~Year)    +
-  scale_fill_viridis_c(name = "Difference in DOY") +
-    labs(title = 'Pairwise differences',
-       subtitle = 'All species', 
-         x = "Site Code") +
-  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
-#Plot pairwise for RL only, looks like 128 observations for RL (with jitter)
-```{r}
-PhenoSite_Focal %>% 
-  filter (Transect.x== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
-  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect.x,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
-  filter (pdiff > 7) %>% 
-  ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
-   geom_jitter() +
-    facet_grid(Transect.x~Year)    +
-  scale_fill_viridis_c(name = "Difference in DOY") +
-    labs(title = 'Pairwise differences',
-       subtitle = 'All species (jittered)', 
-         x = "Site Code") +
-  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
-#Extract SDD data from raw files (Meera?)
-
-#QA/QC volunteer vs. expert values (Meera?)
