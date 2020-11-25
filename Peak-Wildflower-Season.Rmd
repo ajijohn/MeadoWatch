@@ -384,7 +384,7 @@ legend(x="bottomleft",legend=species, pch=21,
 #Graph to visualize AIC for Null and Alt for Year, Plot and Species
 ## Visual plot, not a great plot as its not by plot/species, but one can see AIC of Alt model is lower than null
 
-#TODO Another option is to plot AIC null vs. AIC alt of all combos, and the 1:1 line. This should show most if not all AIC alt are less than AIC null. Could color code / change shapes depending on years / species
+#Second graph plots AIC null vs. AIC alt of all combos, and the 1:1 line. This should show most if not all AIC alt are less than AIC null. Could color code / change shapes depending on years / species
 ```{r}
 #Make a plot showing...
 aics_yrpltsp %>% pivot_longer(cols=c("AICnull","AICalt")) %>% mutate(value =as.numeric(value)) %>% ggplot(aes(x=year, y=value, fill=name,color=species,group=species)) +
@@ -392,7 +392,8 @@ aics_yrpltsp %>% pivot_longer(cols=c("AICnull","AICalt")) %>% mutate(value =as.n
   labs(fill='AIC value',y='AIC value',x="Year")
 
 #Make a plot showing AIC null vs. AICalt
-plot(aics_yrpltsp$AICnull, aics_yrpltsp$AICalt, pch=21, bg="grey")
+plot(aics_yrpltsp$AICnull, aics_yrpltsp$AICalt, pch=21, bg="grey",
+     xlab="AIC Null", ylab="AIC Curve")
 title("Compare Null to Curve")
 abline(0,1)
 ```
@@ -593,28 +594,22 @@ write.csv(aics_sp, "data/AIC_speciesmodel.csv", quote=FALSE,
 
 
 #Calculate AIC species model vs. separate parameters for all plots
-<<<<<<< HEAD
-=======
-
->>>>>>> 5cb1190edb7cead8c7076aef276ed8e34c6c9960
-Note - this shows that the separate parameters for all plots does better, despite needing a lot more parameters. So we can't use model fit to justify this. A reasonable question would be - how much worse does the all species model do. 
+Note - this shows that the separate parameters for all plots does better, despite needing a lot more parameters. So we can't use model fit to justify this. A reasonable question would be - how much worse does the all species model do.
 ```{r}
 aics_yrpltsp2 <- tapply(aics_yrpltsp$AICalt, aics_yrpltsp$species, sum)
 aics_comp <- cbind(aics_sp, aics_yrpltsp2)
-dimnames(aics_comp)[[2]][3] <- "AICalt"
+dimnames(aics_comp)[[2]][2] <- "snowmodel"
+dimnames(aics_comp)[[2]][3] <- "plotmodel"
 
 aics_comp
 ```
 
 
+#Outliers
+The following graphs are intended to detect outliers and model fitting issues
 
-# Detect outliers
-## Plots with outliers
-## Limited sampling early / late
-## Definitely species with peak flowering dates that are outside conventional range
-
-### Plots the predicted peak flowering day of the year (DOY) of each species by year/plot id. X-axis is the years, Y-axis is DOY, and colors indicate all the species. 
-
+##Graph of plot / Species / Year-specific model fits
+In this graph, the predicted peak flowering day of the year (DOY) of each species is graphed by year/plot id. X-axis is the years, Y-axis is DOY, and colors indicate all the species. This allows us to identify species / plot year fits that are anomolous (indicating potential model fitting issues) 
 ```{r}
 plot_pars_years <- read_csv("data/PerPlotCurves.csv") 
 
@@ -643,14 +638,10 @@ plot_pars_years %>%  mutate(site= str_sub(plot_pars_years$plot,1,2)) %>%
 ggsave("figs/sanity_check.png",width = 70, height = 20, units = "cm")
 
 ``` 
-<<<<<<< HEAD
-#plot of outliers 2
-Better plot, but it is at Site level (RL or GB)
-=======
-### Alternative plot to visualize outlieers,  Site level (RL or GB) is on alternative y-axis, X-axis DOY, and Y-axis the focal species. We see the outliers are closer to start of the y-axis scale or towards the end. Columns here are years. SDD gardient can be ignored ( no variation)
->>>>>>> 5cb1190edb7cead8c7076aef276ed8e34c6c9960
-```{r}
 
+#Alternative graph of model fits
+Alternative plot to visualize outlieers,  Site level (RL or GB) is on alternative y-axis, X-axis DOY, and Y-axis the focal species. We see the outliers are closer to start of the y-axis scale or towards the end. Columns here are years. SDD gradient can be ignored ( no variation)
+```{r}
 # note here aes  (aesthetics included 'fill' as well)
 plot_pars_years %>% 
   mutate(site= str_sub(plot_pars_years$plot,1,2)) %>% 
@@ -665,53 +656,43 @@ plot_pars_years %>%
 
 ggsave("figs/sanity_check_revised.png", width = 35, height = 20, units = "cm")
 ```
-<<<<<<< HEAD
 
-# Pairwise comparison of abservations for finding differences to track outliers
-Observations by trail / year / plot / species
-=======
-# Augmenting the analysis to do pairwise comparison of abservations for finding differences to track outliers
-
-## Observations by trail / year / plot / species - Sanity check on nuber of observations 
+#Observation Effort
+This code calculates the total number of observations for each plot / year / species combination.
 ```{r}
-PhenoDat %>% 
-  group_by(Transect,Year,Site_Code,Species)%>% 
+
+#This coce shows the total number of observations by plot / year / species
+PhenoSite_Focal %>% 
+  group_by(Transect.x,Year,Site_Code,Species)%>% 
   tally()
 
-
-# In dply lingo everything is a tibble , we are transforming it to a dataframe for compatibility
-tallyObservations_typs <- PhenoDat %>% 
-  group_by(Transect,Year,Site_Code,Species)%>% 
+#This code does the same thing, but transforms the tibble into a dataframe
+tallyObservations_typs <- PhenoSite_Focal %>% 
+  group_by(Transect.x,Year,Site_Code,Species)%>% 
   tally() %>% as.data.frame()
 ```
 
-# Below plot shows the variability of observations - notice a perfect cluster of # of observationsin 2015 Reflections lake. Also, what we see is the low number of observations for soe of the plots
->>>>>>> 5cb1190edb7cead8c7076aef276ed8e34c6c9960
+#Graph showing species/ year / transect observer effort
+Notice a perfect cluster of # of observationsin 2015 Reflections lake. Also, what we see is the low number of observations for some of the plot / species combinations
+
 ```{r}
-
-
 # In dply lingo everything is a tibble , we are transforming it to a dataframe for compatibility
 tallyObservations_typs %>% 
   ggplot() +
   geom_jitter(aes(as.factor(Year), n,color=Species))+
-  facet_grid(.~Transect) +
+  facet_grid(.~Transect.x) +
   labs(y="Number of observations",x="Year") +
   theme_minimal(base_size = 14) 
 
 ```
 
-<<<<<<< HEAD
-#Determine all pairwise differences in dates between all yes observations in each trail / year / plot / species combo, and identify any observation where the minimum value is > 7
-=======
+#Calculate outlier 'yes' observations
+This code calculates all pairwise differences in dates between all yes observations in each trail / year / plot / species combo, and identify any observation where the minimum value is > 7
 
-# Determine all pairwise differences in dates between all yes observations in each trail / year / plot / species combo, and identify any observation where the minimum value is > 7
+For example, imagine a specific query : Species =='ANOC' & Year=='2013' & Site_Code =='RL9'
 
-For eg. 
-
-Imagine a specific query : Species =='ANOC' & Year=='2013' & Site_Code =='RL9'
-
-? group_by orders the rows by given set of fields (in order)
-? lag gets the previous row
+1.*group_by* orders the rows by given set of fields (in order)
+2. *lag* gets the previous row
 
 Returns
 
@@ -729,19 +710,20 @@ Returns
 9 Reflection Lakes  2013 RL9       ANOC    8/10/2013 Bonnie Scott                           0
 
 Row # 7 and 8 is what we use to find the difference which is greater than 7 
->>>>>>> 5cb1190edb7cead8c7076aef276ed8e34c6c9960
+
+#TODO I suggest making pdif a variable we can play around with
+#Question - does this only look at the difference between each observation and a previous flowering observation, or also the difference between previous and next? In the latter case, what happens to the first observation of flowering (no previous observation?)
 
 ```{r}
-
-PhenoDat %>% 
+PhenoSite_Focal %>% 
   filter (Flower == 1) %>% 
   mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect,Year,Site_Code,Species) %>%
+  group_by(Transect.x,Year,Site_Code,Species) %>%
   mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
   filter (pdiff > 7) %>% 
   ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
    geom_jitter() +
-    facet_grid(Transect~Year)    +
+    facet_grid(Transect.x~Year)    +
   scale_fill_viridis_c(name = "Difference in DOY") +
     labs(title = 'Pairwise differences',
        subtitle = 'All species', 
@@ -750,6 +732,7 @@ PhenoDat %>%
 ```
 
 # Pairwise differences but filter it only by focal species
+#I got rid of this, as I changed code above to only look at focal species
 
 ```{r}
 
@@ -773,13 +756,13 @@ PhenoDat %>%
 # Plot pairwise for RL only, looks like 128 observations for RL (no jitter)
 
 ```{r}
-PhenoDat %>% 
-  filter (Transect== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
+PhenoSite_Focal %>% 
+  filter (Transect.x== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
   mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
+  group_by(Transect.x,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
   filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
    geom_point() +
-    facet_grid(Transect~Year)    +
+    facet_grid(Transect.x~Year)    +
   scale_fill_viridis_c(name = "Difference in DOY") +
     labs(title = 'Pairwise differences',
        subtitle = 'All species', 
@@ -790,14 +773,14 @@ PhenoDat %>%
 
 #Plot pairwise for RL only, looks like 128 observations for RL (with jitter)
 ```{r}
-PhenoDat %>% 
-  filter (Transect== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
+PhenoSite_Focal %>% 
+  filter (Transect.x== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
   mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
+  group_by(Transect.x,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
   filter (pdiff > 7) %>% 
   ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
    geom_jitter() +
-    facet_grid(Transect~Year)    +
+    facet_grid(Transect.x~Year)    +
   scale_fill_viridis_c(name = "Difference in DOY") +
     labs(title = 'Pairwise differences',
        subtitle = 'All species (jittered)', 
