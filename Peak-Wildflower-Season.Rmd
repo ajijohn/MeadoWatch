@@ -1,7 +1,7 @@
 ---
-title: "Wildflower Season from MeadoWatch Data"
+title: "Analyze MeadoWatch Data"
 author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
-date: "Updated 10/21/2020"
+date: "Updated 11/17/2020"
 output: html_document
 ---
 
@@ -163,7 +163,7 @@ This chunk of code uses several for loops to fit phenological curves to year-plo
 
 ##Code does the following:
 1. Pulls out data for each species / plot / year combo. Data in innermost loop is PhenoSite_YearPlotSpecies. Note - fitting only occurs if sufficient data, as defined by these two parameters (you can modify them):
-   + *totobs* (# observations for fitting, set at 10)
+   + *totobs* (# observations for fitting, set at 20)
    + *totyesobs* (# observations of flowering, set at 5)
 
 2. The functions nullfit and curvefit_perplot are fit to year-plot-species specific data.
@@ -384,11 +384,17 @@ legend(x="bottomleft",legend=species, pch=21,
 #Graph to visualize AIC for Null and Alt for Year, Plot and Species
 ## Visual plot, not a great plot as its not by plot/species, but one can see AIC of Alt model is lower than null
 
-Another option is to plot AIC null vs. AIC alt of all combos, and the 1:1 line. This should show most if not all AIC alt are less than AIC null. Could color code / change shapes depending on years / species
+#TODO Another option is to plot AIC null vs. AIC alt of all combos, and the 1:1 line. This should show most if not all AIC alt are less than AIC null. Could color code / change shapes depending on years / species
 ```{r}
+#Make a plot showing...
 aics_yrpltsp %>% pivot_longer(cols=c("AICnull","AICalt")) %>% mutate(value =as.numeric(value)) %>% ggplot(aes(x=year, y=value, fill=name,color=species,group=species)) +
     geom_bar(stat='identity', position='dodge') + theme_minimal(base_size = 14)+
   labs(fill='AIC value',y='AIC value',x="Year")
+
+#Make a plot showing AIC null vs. AICalt
+plot(aics_yrpltsp$AICnull, aics_yrpltsp$AICalt, pch=21, bg="grey")
+title("Compare Null to Curve")
+abline(0,1)
 ```
 
 #Fit phenology model for all species data
@@ -396,7 +402,7 @@ This code fits a predictive phenology model to all observations of flowering for
 
 1. Subset data for a particular species.
 
-2. For each species, use a for loop to assemble year-plot specific data for the species in question. This requires extracing year-plot specific data, assessing whether there is sufficient data (so only plots with *totobs* observations and *totyesobs* flowering observations) are included, and adding three no flowering observations before snowmelt (as was done for model fitting for individual year-plot-species data), and creating variables *days* (vector of DOY for all plots included), *phenophase* (vector of 1's and 0's observed), *SDD* (snow disappearance date at each plot for the observation in question) and *trlyr* which trail / year combo the observation came from (this is for fitting range, max parameters).
+2. For each species, use a for loop to assemble year-plot specific data for the species in question. This requires extracting year-plot specific data, assessing whether there is sufficient data (so only plots with *totobs* observations and *totyesobs* flowering observations) are included, and adding three no flowering observations before snowmelt (as was done for model fitting for individual year-plot-species data), and creating variables *days* (vector of DOY for all plots included), *phenophase* (vector of 1's and 0's observed), *SDD* (snow disappearance date at each plot for the observation in question) and *trlyr* which trail / year combo the observation came from (this is for fitting range, max parameters).
 
 3. Fit the maximum likelihood model (defined by *curvefit_allplot* above) to the data. This requires setting initial parameters first - which was done by fitting the relationship between peak flowering and SDD from year-plot-species specific data (in *pars_sppltsp*), and taking the average range and duration values for those same model fits.
 
@@ -587,14 +593,13 @@ write.csv(aics_sp, "data/AIC_speciesmodel.csv", quote=FALSE,
 
 
 #Calculate AIC species model vs. separate parameters for all plots
-#TODO **In progress**
 Note - this shows that the separate parameters for all plots does better, despite needing a lot more parameters. So we can't use model fit to justify this. A reasonable question would be - how much worse does the all species model do. 
 ```{r}
 aics_yrpltsp2 <- tapply(aics_yrpltsp$AICalt, aics_yrpltsp$species, sum)
 aics_comp <- cbind(aics_sp, aics_yrpltsp2)
 dimnames(aics_comp)[[2]][3] <- "AICalt"
 
-head(aics_comp)
+aics_comp
 ```
 
 
@@ -621,6 +626,7 @@ plot_pars_years %>%  mutate(site= str_sub(plot_pars_years$plot,1,2)) %>%ggplot()
 ggsave("figs/sanity_check.png",width = 70, height = 20, units = "cm")
 
 ``` 
+#plot of outliers 2
 Better plot, but it is at Site level (RL or GB)
 ```{r}
 
@@ -635,15 +641,15 @@ plot_pars_years %>% mutate(site= str_sub(plot_pars_years$plot,1,2)) %>% ggplot( 
 
 ggsave("figs/sanity_check_revised.png", width = 35, height = 20, units = "cm")
 ```
-# Pairwise comparison of abservations for finding differences to track outliers
 
+# Pairwise comparison of abservations for finding differences to track outliers
 Observations by trail / year / plot / species
 ```{r}
 
 PhenoDat %>% group_by(Transect,Year,Site_Code,Species) %>% tally()
 ```
 
-Determine all pairwise differences in dates between all yes observations in each trail / year / plot / species combo, and identify any observation where the minimum value is > 7
+#Determine all pairwise differences in dates between all yes observations in each trail / year / plot / species combo, and identify any observation where the minimum value is > 7
 
 ```{r}
 
