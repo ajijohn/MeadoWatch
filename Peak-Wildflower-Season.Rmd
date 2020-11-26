@@ -96,12 +96,12 @@ nspp <- length(species)
 
 ```
 
-#Observer effort / Outliers
+#Calculate and filter according to observer effort
 Add information to PhenoSite_Focal to allow for outlier detection
 1. Calculate total observations per plot / year / species
 2. Filter out plots with too little data (see below for parameters that can be modified)
-   + *totobs* (# observations for fitting, set at 30)
-   + *totyesobs* (# observations of flowering, set at 5)
+   + *totobs* (min # observations for fitting, currently set at 30)
+   + *totyesobs* (min # observations of flowering, currently set at 5)
 3. Calculate closest (in time) yes / no observation
 
 ```{r}
@@ -163,6 +163,18 @@ for(i in 1:dim(PhenoSite_Focal)[1]){
 }
 
 head(PhenoSite_Focal)
+
+#plot per species / trail
+Transects <- unique(PhenoSite_Focal$Transect.x)
+
+for(i in 1:2){
+  TransectDat <- PhenoSite_Focal[PhenoSite_FOcal$Transect.x==Transects[i],]
+  par(mforw=c(3,3), omi=c(0,0,0,0), mai=c(0.5,0.5,0.4,0.4),
+      tck=-0.02, mgp=c(1.25,0.5,0))
+  for(j in 1:length(Species)){
+    TransectSpDat <- TransectDat[TransectDat$Species==species[j],]
+  }
+}
      
 ```
 
