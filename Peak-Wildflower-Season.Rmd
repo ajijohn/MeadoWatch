@@ -1,7 +1,7 @@
 ---
 title: "Analyze MeadoWatch Data"
 author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
-date: "Updated 11/25/2020"
+date: "Updated 12/02/2020"
 output: html_document
 ---
 
@@ -96,13 +96,12 @@ nspp <- length(species)
 
 ```
 
-#Calculate and filter according to observer effort
+#Calculate observer effort and filter / remove observations with too few
 Add information to PhenoSite_Focal to allow for outlier detection
 1. Calculate total observations per plot / year / species
 2. Filter out plots with too little data (see below for parameters that can be modified)
    + *totobs* (min # observations for fitting, currently set at 30)
    + *totyesobs* (min # observations of flowering, currently set at 5)
-3. Calculate closest (in time) yes / no observation
 
 ```{r}
 #Calculate total number of observations
@@ -131,9 +130,14 @@ totyesobs <- 5
 
 PhenoSite_Focale <- PhenoSite_Focald[PhenoSite_Focald$Nobs>=totobs &
                                       PhenoSite_Focald$NobsY>totyesobs,]
+     
+```
 
+#Outliers
+Calculate for each observation the closest 'yes' and the closest 'no' observation. This could allow us to detect outliers (i.e. 'yes' observations that are more than a certain number of days separated from other yes observations)
+```{r}
 #For each observation, calculate nearest yes, no observation
-#I'm doing this by for loop but this is inefficient. any ideas?
+#TODO this takes a LONG time - any suggestions?
 distyes <- rep(NA, times=dim(PhenoSite_Focale)[1])
 distno <- rep(NA, times=dim(PhenoSite_Focale)[1])
 PhenoSite_Focal <- cbind(PhenoSite_Focale, distyes, distno)
@@ -145,10 +149,13 @@ for(i in 1:dim(PhenoSite_Focal)[1]){
   sp <- PhenoSite_Focal$Species[i]
   dy <- PhenoSite_Focal$DOY[i]
   
+  #exclude current observation
+  PhenoSite_Focal_comp <- PhenoSite_Focal[-i,]
+  
   #extract plot / year / species data
-  compdat <- PhenoSite_Focal[PhenoSite_Focal$Year==yr&
-                               PhenoSite_Focal$Site_Code==sc&
-                               PhenoSite_Focal$Species==sp,]
+  compdat <- PhenoSite_Focal_comp[PhenoSite_Focal_comp$Year==yr&
+                               PhenoSite_Focal_comp$Site_Code==sc&
+                               PhenoSite_Focal_comp$Species==sp,]
   #separate into yes and no
   compdatyes <- compdat[compdat$Flower==1,]
   compdatno <- compdat[compdat$Flower==0,]
@@ -162,18 +169,61 @@ for(i in 1:dim(PhenoSite_Focal)[1]){
   PhenoSite_Focal$distno[i] <- minno
 }
 
+#Examine file
 head(PhenoSite_Focal)
 
-#plot per species / trail
-Transects <- unique(PhenoSite_Focal$Transect.x)
+#Number of total observations, total yes, total yes very far from others
+out_thresh <- 21
+outliercheck <- PhenoSite_Focal[PhenoSite_Focal$Flower==1
+                                & PhenoSite_Focal$distyes>out_thresh,]
+write.csv(outliercheck, file="data/outliers.csv", quote = FALSE, row.names=FALSE)
 
-for(i in 1:2){
-  TransectDat <- PhenoSite_Focal[PhenoSite_FOcal$Transect.x==Transects[i],]
-  par(mforw=c(3,3), omi=c(0,0,0,0), mai=c(0.5,0.5,0.4,0.4),
-      tck=-0.02, mgp=c(1.25,0.5,0))
-  for(j in 1:length(Species)){
-    TransectSpDat <- TransectDat[TransectDat$Species==species[j],]
+Nobs <- dim(PhenoSite_Focal)[1]
+Nobsyes <- dim(PhenoSite_Focal[PhenoSite_Focal$Flower==1,])[1]
+Noutliers <- dim(outliercheck)[1]
+
+print("Total, Total Yes, Total outliers")
+print(c(Nobs, Nobsyes, Noutliers))
+
+#plot per species and year/plot combo
+for(i in 1:length(species)){
+  PhenoSite_Species <- PhenoSite_Focal[PhenoSite_Focal$Species==species[i],]
+  
+  #make unique identifier - year, site code
+  yrsite <- paste(PhenoSite_Species$Year, PhenoSite_Species$Site_Code)
+  yrsites <- unique(yrsite); nyrsite <- length(yrsites)
+  
+  #assess number of obs, outlier obs
+  nobsyes_sp <- dim(PhenoSite_Species[PhenoSite_Species$Flower==1,])[1]
+  noutliers_sp <- dim(PhenoSite_Species[PhenoSite_Species$Flower==1 
+                                    & PhenoSite_Species$distyes>out_thresh,])[1]
+  
+  #Make a dummy plot to add points to
+  namegraph <- paste("figs/",species[i],"_outliers.png", sep="", collapse=NULL)
+
+  png(filename = namegraph,
+    width = 480, height = 720, units = "px")
+
+  mxy <- max(PhenoSite_Species$distyes[PhenoSite_Species$Flower==1])
+  par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
+    tck=-0.02, mgp=c(1.1,0.5,0))
+  plot(1,1, type="n", xlim=c(0,mxy), ylim=c(0,(nyrsite+1)), yaxt="n",
+       xlab="time between observations", ylab="")
+  title(paste(species[i],"-", noutliers_sp, "outlier / ", nobsyes_sp, "total yes"))
+  #now add points and labels
+  for(j in nyrsite:1){
+    PhenoSite_plt <- PhenoSite_Species[yrsite==yrsites[j],]
+    PhenoSite_plt_ys <- PhenoSite_plt[PhenoSite_plt$Flower==1,] 
+    PhenoSite_plt_no <- PhenoSite_plt[PhenoSite_plt$Flower==0,] 
+    noy <- jitter(rep(j,times=dim(PhenoSite_plt_no)[1]), amount = 1/nyrsite)
+    yesy<- jitter(rep(j,times=dim(PhenoSite_plt_ys)[1]), amount = 1/nyrsite)
+    points(PhenoSite_plt_no$distyes, noy, pch=21, bg="grey")
+    points(PhenoSite_plt_ys$distyes, yesy, pch=21, bg="black", cex=1.5)
+    #labels
+    xposlab <- mxy*1/15
+    text(-xposlab,j,labels=yrsites[j],cex=0.5, adj=1, xpd=NA)
   }
+  dev.off()
 }
      
 ```
