@@ -21,6 +21,7 @@ source("./HRL_microclim_functions.R")
 library(data.table)
 library(xts)
 library(psych)
+library(lubridate)
 ```
 
 
@@ -29,6 +30,7 @@ library(psych)
 2. Formats individual year-plot files
 3. Cleans and checks data
 4. Extracts snow cover attributes
+5. Writes formatted/processed snow cover attributes to .csv
 
 ```{r paths, eval=FALSE}
 input_paths_soil <- c("./data/Microclimate/2014 RL",
@@ -58,4 +60,7 @@ snow_processed <- batch_extract_snow_vars(input_path="./temp/soil",
                                             output_path="./output/soil",
                                             output_metadata_filename="metadata_snow.txt",
                                             range_threshold=1,max_threshold=2,overwrite=FALSE)
+snow_processed$SDDDOY <-yday(snow_processed$snow_disappearance_date)+1
+snow_attributes <- snow_processed[, c(16:24)]
+write.csv(snow_attributes, "MW_snow.csv")
 ```

@@ -412,21 +412,6 @@ batch_extract_snow_vars <- function(input_path,input_metadata_filename="metadata
   out_merged$flag_short_record <- as.Date(out_merged$date_max) -  as.Date(out_merged$date_min) < 100
   out_merged$flagged <- with(out_merged, flag_sensor_fail | flag_temp_high | flag_temp_low | flag_high_calib | flag_no_snow | flag_short_record)
   
-  ##Moves .csv and .pdf graphics of flagged files to new directories
-  out_flagged <- out_merged[out_merged$flagged==TRUE,]
-  flagged_csvs <- out_flagged$out_filename
-  setwd(oldwd)
-  oldwd <- setwd(output_path)
-  dir.create("./flagged")
-  file.copy(paste(input_path,"/",as.character(flagged_csvs),sep=""),"./flagged")
-  
-  ##Moves .csv and .pdf graphics of unflagged files to a new directory
-  out_unflagged <- out_merged[out_merged$flagged==FALSE,]
-  unflagged_csvs <- out_unflagged$out_filename
-  setwd(oldwd)
-  oldwd <- setwd(output_path)
-  dir.create("./unflagged")
-  file.copy(paste(input_path,"/",as.character(unflagged_csvs),sep=""),"./unflagged")
   
   ##subsets data for the unflagged files
   out_unflagged<- out_merged[out_merged$flagged==FALSE,]
