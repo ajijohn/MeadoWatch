@@ -33,6 +33,7 @@ library(lubridate)
 5. Writes formatted/processed snow cover attributes to .csv
 
 ```{r paths, eval=FALSE}
+##For MeadoWatch Data
 input_paths_soil <- c("./data/Microclimate/2014 RL",
                       "./data/Microclimate/2015 GB",
                       "./data/Microclimate/2015 RL",
@@ -43,15 +44,29 @@ input_paths_soil <- c("./data/Microclimate/2014 RL",
                       "./data/Microclimate/2018 RL", 
                       "./data/Microclimate/2019 GB", 
                       "./data/Microclimate/2019 RL")
+
+##For Forest Demography data
+#input_paths_soil <- c("./data/Microclimate/ForestDemo2013",
+#                      "./data/Microclimate/ForestDemo2014",
+#                      "./data/Microclimate/ForestDemo2015",
+#                      "./data/Microclimate/ForestDemo2016",
+#                      "./data/Microclimate/ForestDemo2017", 
+#                      "./data/Microclimate/ForestDemo2018", 
+#                      "./data/Microclimate/ForestDemo2019")
                  
 ```
 
 ```{r csv processing1, eval=FALSE}
 snow_formatted <- batch_format_micro_csv(input_paths=input_paths_soil,
-                                         output_path="./temp/soil",
-                      file_prefixes=c("MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil","MW_soil"),
-                                         output_metadata_filename="metadata_soil.txt",
-                                         overwrite=FALSE)
+                  output_path="./temp/soil", 
+                  #file_prefixes=c("FD13_soil", "FD14_soil", "FD15_soil",
+                  #                "FD16_soil", "FD17_soil", "FD18_soil",
+                  #                "FD19_soil"),
+                  file_prefixes=c("MW_soil", "MW_soil", "MW_soil", "MW_soil",
+                                  "MW_soil", "MW_soil", "MW_soil", "MW_soil", 
+                                  "MW_soil", "MW_soil"),
+                  output_metadata_filename="metadata_soil.txt",
+                  overwrite=FALSE)
 ```
 
 ```{r snow processing, eval=FALSE}
@@ -62,5 +77,9 @@ snow_processed <- batch_extract_snow_vars(input_path="./temp/soil",
                                             range_threshold=1,max_threshold=2,overwrite=FALSE)
 snow_processed$SDDDOY <-yday(snow_processed$snow_disappearance_date)+1
 snow_attributes <- snow_processed[, c(16:24)]
+#Uncomment for MeadoWatch data
 write.csv(snow_attributes, "MW_snow.csv")
+
+#Uncomment for forest demo
+#write.csv(snow_attributes, "ForestDemo_snow.csv")
 ```
