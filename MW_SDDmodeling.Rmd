@@ -1,0 +1,89 @@
+---
+title: "MW_SDDModeling"
+author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
+date: "12/13/2020"
+output: html_document
+---
+
+#Setup for R script and R markdown
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Read in SDD data, subset
+```{r}
+# Read in SDD data from MeadoWatch
+MW_SDD <- read.csv("data/MeadoWatchSDD.csv", header=TRUE)
+MW_SDD_obs <- MW_SDD[is.na(MW_SDD$SDD)==FALSE,]
+
+# Read in Forest Demo data; remove rows with HOBO issues
+FD_SDD <- read.csv("data/ForestDemoSDD.csv", header=TRUE)
+FD_SDD <- FD_SDD[FD_SDD$Issue=="",]
+
+# Remove  stands that much lower elevation
+FD_stands <- substr(FD_SDD$Site_Loc, 1, 4)
+relevant_stands <- c("AB08", "AE10", "AM16", "AR07","AV06","PARA",
+                     "PP17", "SPRY", "SUNR")
+standskeep <- FD_stands %in% relevant_stands
+FD_SDD <- FD_SDD[standskeep,]
+
+# Read in MLS data; remove duplicate rows and plots with 1 measurement
+MLS_SDD <- read.csv("data/MeeraSDD.csv", header=TRUE)
+MLS_SDD <- MLS_SDD[MLS_SDD$duplicate=="",]
+MLS_SDD <- MLS_SDD[MLS_SDD$single=="",]
+
+# Read in EJT data; remove 2010-2012 data
+EJT_SDD <- read.csv("data/ElliSDD.csv", header=TRUE)
+EJT_SDD <- EJT_SDD[EJT_SDD$Year>2012,]
+
+```
+
+#Fit LM, plot predicted vs. observed all data
+```{r}
+# Now merge data
+Site_Loc <- as.factor(c(MW_SDD_obs$Site_Loc, FD_SDD$Site_Loc, 
+                        MLS_SDD$Site_Loc, EJT_SDD$Site_Loc))
+Year <- as.factor(c(MW_SDD_obs$Year, FD_SDD$Year, 
+                        MLS_SDD$Year, EJT_SDD$Year))
+SDD <- c(MW_SDD_obs$SDD, FD_SDD$SDD, MLS_SDD$SDD, EJT_SDD$SDD)
+SDDsource <- c(rep("lightblue", times=dim(MW_SDD)[1]), 
+               rep("green", times=dim(FD_SDD)[1]),
+               rep("orange", times=dim(MLS_SDD)[1]),
+               rep("pink", times=dim(EJT_SDD)[1]))
+
+# Now fit model
+SDDModel <- lm(SDD ~ Site_Loc + Year)
+SDDR2 <- round(summary(SDDModel)$r.squared, 3)
+
+# Graph of predicted vs. observed
+par(omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.4), tck=-0.02, 
+    pty="s", mgp=c(1.2,0.5,0))
+plot(SDDModel$fitted.values, SDD, pch=21, bg=SDDsource,
+     xlab="Predicted", ylab="Observed", main="SDD model - all data")
+abline(0,1)
+mtext(paste("R2=",SDDR2, sep=""), line=-1, side=3, adj=0.05, cex=0.75)
+legend(x="bottomright", legend=c("Mwatch","ForestDemo","MLS","EJT"),
+       pch=21, pt.bg=c("lightblue","green","orange","pink"),
+       cex = 0.75, pt.cex = 1)
+
+```
+
+#Predict missing SDD data, plot predicted vs. observed just MW
+```{r}
+MW_SDD$Year <- as.factor(MW_SDD$Year)
+SDD_pred <- predict.lm(SDDModel, MW_SDD)
+
+# Graph of predicted vs. observed: only MW
+par(omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.4), tck=-0.02, 
+    pty="s", mgp=c(1.2,0.5,0))
+plot(SDD_pred, MW_SDD$SDD, pch=21, bg="lightblue",
+     xlab="Predicted", ylab="Observed", main="MeadoWatch only")
+abline(0,1)
+
+# Now write data
+MW_SDD$predSDD <- SDD_pred
+write.csv(MW_SDD, "data/MW_SDDall.csv", quote=FALSE,
+          row.names=FALSE)
+
+```
+
