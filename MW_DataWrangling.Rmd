@@ -23,27 +23,24 @@ library(readr)
 
 #Read in data, reconfigure
 1. Read in raw data, remove NA's
-2. Merge plot-specific snowmelt data and individual observations
-3. Remove unneeded columns
-4. Calculate and add Julian day (DOY) to data
-5. Reorganize data columns and rename to PhenoSite
+2. Remove unneeded columns
+3. Calculate and add Julian day (DOY) to data
+4. Rename to PhenoSite
 
 ```{r}
-# Read in phenology data, station data
+# Read in phenology data
 PhenoDatall <- read.csv("data/MW_PhenoDat_2013_2019.csv", header=TRUE)
-StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE) 
 
 # Remove rows where any phenophases were coded as NA
-PhenoDat <- PhenoDatall[complete.cases(PhenoDatall[,c(12, 14, 16, 18)]),] 
+PhenoPhases <- PhenoDatall[,c("Bud","Flower","Fruit","Disperse")] 
+PhenoDat <- PhenoDatall[complete.cases(PhenoPhases),]
 
-# Merge by the rows in both the files (Year, Site_Code)
-MergePhenoStation <- merge(StationDat,PhenoDat, by=c("Year","Site_Code"))
+# Extract data columns of interest
+PhenoSite_0 <- PhenoDat[,c("Year", "Transect","Site_Code",
+                           "Date", "Observer","QA.QC",
+                           "Species","Snow","Flower")]
 
-# Remove unneeded columns
-#TODO - might be a better way to do this in case column names change
-PhenoSite_0 <- MergePhenoStation[,c(1:6, 9, 12, 15:16, 18:20, 22, 24, 26, 28)]
-
-# Calculate Julian Days of observations; DSS=days since snow; add to PhenoSite
+# Calculate Julian Days of observations
 PhenoSite_0 <- PhenoSite_0[order(PhenoSite_0$Year),] #order by year
 yrs <- unique(PhenoSite_0$Year);
 DOY <- c()
@@ -58,18 +55,15 @@ for(i in 1:length(yrs)){
 }
 
 # Now add day of year (DOY) to Phenosite Data
-PhenoSite_0 <- cbind(PhenoSite_0, DOY)
+PhenoSite <- cbind(PhenoSite_0, DOY)
 
-# Finally, reorganize data and rename as PhenoSite
-PhenoSite <- PhenoSite_0[,c(1,3,2,4,8,18,7,10,11,14)] #reorganize data
-
-#Examine the data
+# Examine the data
 head(PhenoSite)
 
 ```
 
 
-#Calculate observer effort and filter / remove observations with too few
+#Calculate observer effort per plot / year species, remove those with too few
 Add information to PhenoSite to allow for outlier detection
 1. Calculate total observations per plot / year / species
 2. Filter out plots with too little data (see below for parameters that can be modified)
@@ -80,25 +74,26 @@ Add information to PhenoSite to allow for outlier detection
 #Calculate total number of observations
 PhenoSite_0 <- PhenoSite
 
-#Start calculating
+# Start calculating
 Nobs <- PhenoSite_0 %>% 
-  group_by(Transect.x,Year,Site_Code,Species)%>% 
+  group_by(Transect,Year,Site_Code,Species)%>% 
   tally() %>% as.data.frame()
 
-#Calculate total number of yes observations
+# Calculate total number of yes observations
 PhenoSite_1 <- PhenoSite_0[PhenoSite_0$Flower==1,]
 Nobsyes <- PhenoSite_1 %>% 
-  group_by(Transect.x,Year,Site_Code,Species)%>% 
+  group_by(Transect,Year,Site_Code,Species)%>% 
   tally() %>% as.data.frame()
 
-#merge PhenoSite_Focal.. with Nobs, Nobsyes
+# Merge PhenoSite with Nobs, Nobsyes
 PhenoSite_2 <- merge(PhenoSite_0, Nobs,
-                         by=c("Year","Transect.x",
+                         by=c("Year","Transect",
                               "Site_Code","Species"))
 PhenoSite_3 <- merge(PhenoSite_2, Nobsyes,
-                         by=c("Year","Transect.x",
+                         by=c("Year","Transect",
                               "Site_Code","Species"))
-dimnames(PhenoSite_3)[[2]][11:12] <- c("Nobs","NobsY")
+ncols_P3 <- dim(PhenoSite_3)[2]
+dimnames(PhenoSite_3)[[2]][(ncols_P3 -1):ncols_P3] <- c("Nobs","NobsY")
 
 #Filter out plots with fewer than totobs, totyesobs observations
 totobs <- 30
@@ -106,7 +101,6 @@ totyesobs <- 5
 
 PhenoSite_4 <- PhenoSite_3[PhenoSite_3$Nobs>=totobs &
                           PhenoSite_3$NobsY>totyesobs,]
-
 head(PhenoSite_4)
      
 ```
@@ -147,11 +141,11 @@ for(i in 1:dim(PhenoSite_5)[1]){
   PhenoSite_5$distno[i] <- minno
 }
 
-#Examine file
+# Examine file
 head(PhenoSite_5)
 
-#Write to data
-write.csv(PhenoSite_5, "data/PhenoSite_Dirty.csv", quote=FALSE,
+# Write data file
+write.csv(PhenoSite_5, "data/PhenoSite_Dirty.csv", quote=TRUE,
           row.names=FALSE)
 
 ```
@@ -160,27 +154,27 @@ write.csv(PhenoSite_5, "data/PhenoSite_Dirty.csv", quote=FALSE,
 Make graphs for each species to examine outliers, and eliminate those at certain thresholds. 
 ```{r}
 #Read in data with distyes / distno
-PhenoSite_5 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
+PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
 
 #Number of total observations, total yes, total yes very far from others
 out_thresh <- 21
-outliercheck <- PhenoSite_5[PhenoSite_5$Flower==1
-                                & PhenoSite_5$distyes>out_thresh,]
+outliercheck <- PhenoSite_6[PhenoSite_6$Flower==1
+                                & PhenoSite_6$distyes>out_thresh,]
 filename <- paste("data/outliers","-",out_thresh,".csv", sep="")
 write.csv(outliercheck, file=filename, quote = FALSE, row.names=FALSE)
 
-Nobs <- dim(PhenoSite_5)[1]
-Nobsyes <- dim(PhenoSite_5[PhenoSite_5$Flower==1,])[1]
+Nobs <- dim(PhenoSite_6)[1]
+Nobsyes <- dim(PhenoSite_6[PhenoSite_6$Flower==1,])[1]
 Noutliers <- dim(outliercheck)[1]
 
 print("Total, Total Yes, Total outliers")
 print(c(Nobs, Nobsyes, Noutliers))
 
 #plot per species and year/plot combo
-species <- unique(PhenoSite_5$Species)
+species <- unique(PhenoSite_6$Species)
 
 for(i in 1:length(species)){
-  PhenoSite_Species <- PhenoSite_5[PhenoSite_5$Species==species[i],]
+  PhenoSite_Species <- PhenoSite_6[PhenoSite_6$Species==species[i],]
   
   #make unique identifier - year, site code
   yrsite <- paste(PhenoSite_Species$Year, PhenoSite_Species$Site_Code)
@@ -202,8 +196,10 @@ for(i in 1:length(species)){
     tck=-0.02, mgp=c(1.1,0.5,0))
   plot(1,1, type="n", xlim=c(0,mxy), ylim=c(0,(nyrsite+1)), yaxt="n",
        xlab="time between observations", ylab="")
-  title(paste(species[i],"-", noutliers_sp, "outlier / ", nobsyes_sp, "total yes"))
+  title(paste(species[i],"-", noutliers_sp, "outlier / ", 
+              nobsyes_sp, "total yes"))
   abline(v=out_thresh)
+  
   #now add points and labels
   for(j in nyrsite:1){
     PhenoSite_plt <- PhenoSite_Species[yrsite==yrsites[j],]
@@ -226,10 +222,10 @@ outlierid <- rep(0, length=dim(PhenoSite_5)[1])
 outlierid[PhenoSite_5$distyes>out_thresh&PhenoSite_5$Flower==1] <- 1
 
 #Now exclude outliers
-PhenoSite_6 <- PhenoSite_5[outlierid==0,]
+PhenoSite_7 <- PhenoSite_6[outlierid==0,]
 
-#Write data file
-write.csv(PhenoSite_6, "data/PhenoSite_Clean.csv", quote=FALSE,
+# Write clean data file
+write.csv(PhenoSite_7, "data/PhenoSite_Clean.csv", quote=TRUE,
           row.names=FALSE)
      
 ```
