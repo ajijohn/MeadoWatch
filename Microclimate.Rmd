@@ -38,12 +38,15 @@ input_paths_soil <- c("./data/Microclimate/2014 RL",
                       "./data/Microclimate/2015 GB",
                       "./data/Microclimate/2015 RL",
                       "./data/Microclimate/2016 GB",
+                      "./data/Microclimate/2016 RL",
                       "./data/Microclimate/2017 GB", 
                       "./data/Microclimate/2017 RL", 
                       "./data/Microclimate/2018 GB", 
                       "./data/Microclimate/2018 RL", 
                       "./data/Microclimate/2019 GB", 
-                      "./data/Microclimate/2019 RL")
+                      "./data/Microclimate/2019 RL",
+                      "./data/Microclimate/2020 GB", 
+                      "./data/Microclimate/2020 RL")
 
 ##For Forest Demography data
 #input_paths_soil <- c("./data/Microclimate/ForestDemo2013",
@@ -64,7 +67,8 @@ snow_formatted <- batch_format_micro_csv(input_paths=input_paths_soil,
                   #                "FD19_soil"),
                   file_prefixes=c("MW_soil", "MW_soil", "MW_soil", "MW_soil",
                                   "MW_soil", "MW_soil", "MW_soil", "MW_soil", 
-                                  "MW_soil", "MW_soil"),
+                                  "MW_soil", "MW_soil", "MW_soil", "MW_soil",
+                                  "MW_soil"),
                   output_metadata_filename="metadata_soil.txt",
                   overwrite=FALSE)
 ```
