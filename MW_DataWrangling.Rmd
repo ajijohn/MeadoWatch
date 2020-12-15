@@ -1,7 +1,7 @@
 ---
 title: "MeadoWatch Data Wrangling"
 author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
-date: "Updated 12/10/2020"
+date: "12/15/2020"
 output: html_document
 ---
 
@@ -150,27 +150,132 @@ write.csv(PhenoSite_5, "data/PhenoSite_Dirty.csv", quote=TRUE,
 
 ```
 
+#Examine observation effort over time
+Create graphs showing observation effort across the growing season
+```{r}
+# Read in data
+PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
+trails <- unique(PhenoSite_6$Transect)
+
+# For loop to create graph
+for(i in 1:2){
+  # Extract trail specific data
+  PhenoSite_trail <- PhenoSite_6[PhenoSite_6$Transect==trails[i],]
+
+  # Define years for trail
+  yr1 <- min(PhenoSite_trail$Year); yr2 <- max(PhenoSite_trail$Year)
+  nyr_trail <- yr2 - yr1
+  minDOY <- min(PhenoSite_trail$DOY); maxDOY <- max(PhenoSite_trail$DOY)
+  season <- seq(minDOY, maxDOY)
+  nobsseason <- season
+  
+  #Make a dummy plot to add points to
+  par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
+      tck=-0.02, mgp=c(1.1,0.5,0))
+  plot(1,1, type="n", xlim=c(minDOY, maxDOY), ylim=c(0,(nyr_trail+2)), yaxt="n",
+       xlab="observation date", ylab="")
+  title(trails[i])
+  
+  #now add points and labels
+  for(j in yr1:yr2){
+    #Determine unique observers / dates
+    PhenoSite_trailyr <- PhenoSite_trail[PhenoSite_trail$Year==j,]
+    ObsDates <- paste(PhenoSite_trailyr$Observer,PhenoSite_trailyr$DOY)
+    Nobs_year <- length(unique(ObsDates))
+    ObsDOYs <- data.frame(cbind(ObsDates, PhenoSite_trailyr$DOY))
+    dimnames(ObsDOYs)[[2]] <- c("Observer","DOY")
+    ObsDOYs$DOY <- as.numeric(ObsDOYs$DOY)
+    ObsDOY <- distinct(ObsDOYs)
+    
+    #Determine y value
+    posy <- (j-yr1+1)
+    obsy <- jitter(rep(posy,times=dim(ObsDOY)[1]),
+                   amount = 0.5/nyr_trail)
+    points(ObsDOY$DOY, obsy, pch=21, bg="grey")
+
+    #labels
+    xposlab <- minDOY - (maxDOY-minDOY)*1/15
+    text(xposlab,posy,labels=j,cex=0.5, adj=1, xpd=NA)
+    
+    #Now calculate how many visits within the week
+    nobsseasontmp <- rep(NA, times=length(season))
+    for(k in 1:length(season)){
+      if(season[k]<min(min(ObsDOY$DOY))){next}
+      if(season[k]>max(max(ObsDOY$DOY))){next}
+      lowwindow <- season[k]-4
+      highwindow <- season[k]+4
+      nobsseasontmp[k] <- length(ObsDOY$DOY[ObsDOY$DOY>lowwindow &
+                                           ObsDOY$DOY<highwindow])
+    }
+    nobsseason <- cbind(nobsseason, nobsseasontmp)
+  }
+  if(i==1){RL_nobs <- nobsseason; dimnames(RL_nobs)[[2]]<-c("DOY", seq(yr1,yr2))}
+  if(i==2){GB_nobs <- nobsseason; dimnames(GB_nobs)[[2]]<-c("DOY", seq(yr1,yr2))}
+}
+
+##Reflection Lakes
+#Average number of observations per week
+print("Reflection Lakes; data collection season")
+for(i in 2:dim(RL_nobs)[2]){
+  tmpseason <- RL_nobs[is.na(RL_nobs[,i])==FALSE,]
+  frst <- min(tmpseason[,1]); lst <- max(tmpseason[,1])
+  ttl <- lst - frst
+  print(paste(dimnames(RL_nobs)[[2]][i],"- first, last, length", sep=""))
+  print(c(frst,lst,ttl))
+}
+
+print("Reflection Lakes; average observations per week")
+colMeans(RL_nobs[,-1], na.rm = TRUE)
+
+print("Reflection Lakes; min and max # observations per week")
+apply(RL_nobs[,-1],2,min, na.rm = TRUE)
+apply(RL_nobs[,-1],2,max, na.rm=TRUE)
+
+print("Reflection Lakes; days with 1 week gap")
+for(i in 2:dim(RL_nobs)[2]){
+  ndaysgap <- sum(na.omit(RL_nobs[,i])==0)
+  print(paste(dimnames(RL_nobs)[[2]][i],"-",ndaysgap), sep="")
+}
+
+#Glacier basin
+#Average number of observations per week
+print("Glacier Basin; data collection season")
+for(i in 2:dim(GB_nobs)[2]){
+  tmpseason <- GB_nobs[is.na(GB_nobs[,i])==FALSE,]
+  frst <- min(tmpseason[,1]); lst <- max(tmpseason[,1])
+  ttl <- lst - frst
+  print(paste(dimnames(GB_nobs)[[2]][i],"- first, last, length", sep=""))
+  print(c(frst,lst,ttl))
+}
+
+print("Glacier; average observations per week")
+colMeans(GB_nobs[,-1], na.rm = TRUE)
+
+print("Glacier Basin; min and max # observations per week")
+apply(GB_nobs[,-1],2,min, na.rm = TRUE)
+apply(GB_nobs[,-1],2,max, na.rm=TRUE)
+
+print("Glacier Basin; days with 1 week gap")
+for(i in 2:dim(GB_nobs)[2]){
+  ndaysgap <- sum(na.omit(GB_nobs[,i])==0)
+  print(paste(dimnames(GB_nobs)[[2]][i],"-",ndaysgap), sep="")
+}
+
+
+
+```
+
+
 #Examine outliers, eliminate, write clean data file
 Make graphs for each species to examine outliers, and eliminate those at certain thresholds. 
 ```{r}
-#Read in data with distyes / distno
+# Read in data with distyes / distno
 PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
 
-#Number of total observations, total yes, total yes very far from others
+# Define threshold (max distance between yes observations)
 out_thresh <- 21
-outliercheck <- PhenoSite_6[PhenoSite_6$Flower==1
-                                & PhenoSite_6$distyes>out_thresh,]
-filename <- paste("data/outliers","-",out_thresh,".csv", sep="")
-write.csv(outliercheck, file=filename, quote = FALSE, row.names=FALSE)
 
-Nobs <- dim(PhenoSite_6)[1]
-Nobsyes <- dim(PhenoSite_6[PhenoSite_6$Flower==1,])[1]
-Noutliers <- dim(outliercheck)[1]
-
-print("Total, Total Yes, Total outliers")
-print(c(Nobs, Nobsyes, Noutliers))
-
-#plot per species and year/plot combo
+# Create plots of outliers
 species <- unique(PhenoSite_6$Species)
 
 for(i in 1:length(species)){
@@ -217,11 +322,24 @@ for(i in 1:length(species)){
   dev.off()
 }
 
-#remove those above threshold
-outlierid <- rep(0, length=dim(PhenoSite_5)[1])
-outlierid[PhenoSite_5$distyes>out_thresh&PhenoSite_5$Flower==1] <- 1
+# Write file of outliers to check
+outliercheck <- PhenoSite_6[PhenoSite_6$Flower==1
+                                & PhenoSite_6$distyes>out_thresh,]
+filename <- paste("data/outliers","-",out_thresh,".csv", sep="")
+write.csv(outliercheck, file=filename, quote = FALSE, row.names=FALSE)
 
-#Now exclude outliers
+Nobs <- dim(PhenoSite_6)[1]
+Nobsyes <- dim(PhenoSite_6[PhenoSite_6$Flower==1,])[1]
+Noutliers <- dim(outliercheck)[1]
+
+print("Total, Total Yes, Total outliers")
+print(c(Nobs, Nobsyes, Noutliers))
+
+# identify outliers as defined by out_tresh
+outlierid <- rep(0, length=dim(PhenoSite_6)[1])
+outlierid[PhenoSite_6$distyes>out_thresh&PhenoSite_6$Flower==1] <- 1
+
+# Create new data file to exclude outliers
 PhenoSite_7 <- PhenoSite_6[outlierid==0,]
 
 # Write clean data file
