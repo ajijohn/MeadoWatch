@@ -190,10 +190,10 @@ This code takes estimates of peak flowering from year-plot-species specific mode
 par(mfrow=c(1,1),omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2), 
     tck=-0.01, mgp=c(1.25,0.25,0), xpd=TRUE)
 
-#set plotting colors - 16 total to accommodate all species if needed
+#set plotting colors - 17 total to accommodate all species if needed
 plotcol <- c("yellowgreen","magenta","orange","purple","yellow","springgreen",
              "pink","purple","navyblue","azure4","yellow4","orchid",
-             "turquoise","salmon","maroon","black")
+             "turquoise","salmon","maroon","black","grey")
 
 #create plot to add points to
 #earlypk <- min(spyrpltpars$peak); latepk <- max(spyrpltpars$peak)
@@ -241,11 +241,6 @@ legend(x="bottomleft",legend=species, pch=21,
 
 #Second graph plots AIC null vs. AIC alt of all combos, and the 1:1 line. This should show most if not all AIC alt are less than AIC null. Could color code / change shapes depending on years / species
 ```{r}
-#Make a plot showing...
-aics_yrpltsp %>% pivot_longer(cols=c("AICnull","AICalt")) %>% mutate(value =as.numeric(value)) %>% ggplot(aes(x=year, y=value, fill=name,color=species,group=species)) +
-    geom_bar(stat='identity', position='dodge') + theme_minimal(base_size = 14)+
-  labs(fill='AIC value',y='AIC value',x="Year")
-
 #Make a plot showing AIC null vs. AICalt
 plot(aics_yrpltsp$AICnull, aics_yrpltsp$AICalt, pch=21, bg="grey",
      xlab="AIC Null", ylab="AIC Curve")
@@ -253,12 +248,78 @@ title("Compare Null to Curve")
 abline(0,1)
 ```
 
-
-#Explore Outliers
-The following graphs are intended to detect outliers and model fitting issues
-
 ##Graph of plot / Species / Year-specific model fits
-In this graph, the predicted peak flowering day of the year (DOY) of each species is graphed by year/plot id. X-axis is the years, Y-axis is DOY, and colors indicate all the species. This allows us to identify species / plot year fits that are anomolous (indicating potential model fitting issues) 
+Graph of all year-plot specific flowering curves for each species, on the same plot, with different colored lines per year. 
+```{r}
+#extract species
+species <- unique(pars_yrpltsp$species)
+yrcols <- c("green","lightblue","orange","purple","pink","red","grey")
+xx_DOY <- seq(120,270)
+
+for(i in 1:length(species)){
+  sp_pars <- pars_yrpltsp[pars_yrpltsp$species==species[i],]
+  yrcolind <- sp_pars$year - 2012
+  
+  #make a dummy plot to add lines to
+  par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
+      tck=-0.02, mgp=c(1.1,0.5,0))
+  plot(1,1, type="n", xlim=c(min(xx_DOY),max(xx_DOY)),
+       ylim=c(0,1), xlab="", ylab="P(flowering", pin=c(6,4),
+       xaxp=c(min(xx_DOY),max(xx_DOY),(max(xx_DOY)-min(xx_DOY))/30))
+  title(species[i])
+  legend(x="topleft", legend=yrs, col=yrcols, lwd=2)
+  
+  #Now go through all estimates, add lines
+  for(j in 1:dim(sp_pars)[1]){
+    pars <- c(sp_pars$peak[j], sp_pars$duration[j], sp_pars$max[j])
+    predf <- predflower(xx_DOY, pars)
+    lines(xx_DOY, predf, col=yrcols[yrcolind[j]], lwd=2)
+  }
+}
+
+```
+
+##Graph of SDD vs peak flowering
+Graph of SDD vs. peak flowering for each species, different colored lines per year
+
+```{r}
+#extract species
+species <- unique(pars_yrpltsp$species)
+yrcols <- c("green","lightblue","orange","purple","pink","red","grey")
+
+##Plot SDD vs. peak per species
+for(i in 1:length(species)){
+  sp_pars <- pars_yrpltsp[pars_yrpltsp$species==species[i],]
+  yrcolind <- sp_pars$year - 2012
+  
+  #correlate SDD to peak snowmelt
+  SDDtest <- cor.test(sp_pars$SDD, sp_pars$peak)
+  
+  #make a dummy plot to add lines to
+  par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
+      tck=-0.02, mgp=c(1.1,0.5,0))
+  plot(sp_pars$SDD, sp_pars$peak, fin=c(3,3),
+       pch=21, bg=yrcols[yrcolind], cex=1.5,
+       xlab="Snow Disappearance Date", ylab="Peak Flowering")
+  abline(0,1)
+  title(species[i])
+  legend(x="topleft", legend=yrs, pt.bg=yrcols, pch=21)
+  
+  #add cor.test results
+  mtext(paste("r=",round(SDDtest$estimate,3),", p=", round(SDDtest$p.value, 3),
+              sep="", collapse=NULL), side=3, line=-1, cex=0.75)
+}
+
+```
+###########
+ODDS AND ENDS BELOW (mostly figures)
+
+
+
+
+
+
+################
 ```{r}
 plot_pars_years <- read_csv("data/PerPlotCurves.csv") 
 
