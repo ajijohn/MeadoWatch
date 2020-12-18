@@ -35,6 +35,9 @@ c("ANOC", "ARLA", "ASLE", "CAMI", "CAPA", "ERMO", "ERPE", "LIGR", "LUAR", "PEBR"
 3. From this, *nspp* (number of species) and *nyears* (number of years) are defined, which are used in for loops
 
 ```{r}
+# read in maximum likelihood functions
+source("./HRL_phenology_functions.R")
+
 # Read in clean dataset; merge with SDD data
 PhenoSite_0 <- read.csv("data/PhenoSite_Clean.csv", header=TRUE)
 SDDdat_0 <- read.csv("data/MW_SDDall.csv", header=TRUE)
@@ -57,8 +60,8 @@ PhenoSite <- merge(PhenoSite_0,SDDdat,
                    by=c("Year", "Site_Code", "Transect"))
 
 # Define the wildflower community: which species to include
-species <- c("ANOC", "ARLA", "ASLE", "CAMI", "CAPA", "ERMO", "ERPE", "LIGR",
-             "LUAR", "PEBR", "POBI", "VASI")
+species <- c("ANOC", "ARLA", "ASLE", "CAMI", "CAPA", "ERMO", "ERGR", "ERPE",
+             "LIGR", "LUAR", "PEBR", "POBI", "VASI")
 
 # Create PhenoSite_Focal - data set with just species of interest
 specieskeep <- PhenoSite$Species %in% species
@@ -98,6 +101,7 @@ pars_spp_peak <- c() #save peak parameters for per species fit
 pars_spp_range <- c() #save range parameters for per species fit
 pars_spp_max <- c() #save max parameters for per species fit
 aics_sp <-c() #save AIC of overall model 
+pars_cor <- c()
 
 #Read in per plot model fits, to use for initiatl parameters
 pars_yrpltsp <- read.csv("data/PerPlotCurves.csv", header=TRUE) 
@@ -151,13 +155,21 @@ for(i in 1:nspp){ #loop for each species, to assemble data
   
   #first use individual year-plot-species to come up with starting points
   #slope & intercept for SDD vs optim
-  optimcoef <- unlist(coef(lm(pars_yrpltsp$peak~pars_yrpltsp$SDD)))
+  pars_yrpltspsp <- pars_yrpltsp[pars_yrpltsp$species==species[i],]
+  lmtest <- lm(pars_yrpltspsp$peak~pars_yrpltspsp$SDD)
+  optimcoef <- unlist(coef(lmtest))
+  #optimcoef <- c(0,1)
   spdur <- median(pars_yrpltsp$duration[pars_yrpltsp$species==species[i]])
   spmx <- median(pars_yrpltsp$max[pars_yrpltsp$species==species[i]])
 
   #specify initial parameters (note, optim can be fussy)
   param <- c(optimcoef, rep(spdur, times=ntrlyr), rep(spmx, times=ntrlyr))
-  modelsnowmod <- optim(param, curvefit_allplot, control = list(maxit = 50000))
+  modelsnowmod <- optim(param, curvefit_allplot, control = list(maxit = 50000)) #,
+                        #method = "SANN"
+                        #method = "BFGS")
+
+  
+  if(modelsnowmod$convergence == 1){print(paste(species[i],"-issues",sep=""))}
 
   #Determine which years / trails (for plotting, saving)
   trails <- "both"
@@ -171,8 +183,12 @@ for(i in 1:nspp){ #loop for each species, to assemble data
   tmppeakpars <- c(species[i],modelsnowmod$par[1:2])
   pars_spp_peak <- rbind(pars_spp_peak,tmppeakpars)
   
+  #intercept and slope of simple lm
+  tmpparscor <- c(species[i], unlist(coef(lmtest)))
+  pars_cor <- rbind(pars_cor, tmpparscor)
+  
   #save AIC
-  tmpaic <- c(species[i],round(2*modelsnowmod$value+length(param),2))
+  tmpaic <- c(species[i],round(2*(modelsnowmod$value+length(param)),2))
   aics_sp <- rbind(aics_sp,tmpaic)
   
   #now range and max pars
@@ -227,17 +243,20 @@ dimnames(pars_spp_peak) <- list(c(), c("species","peakint", "peakSDDslope"))
 dimnames(pars_spp_range) <- list(c(), c("species","site", "year","range"))
 dimnames(pars_spp_max) <- list(c(), c("species","site", "year","max"))
 dimnames(aics_sp) <- list(c(), c("species","AIC"))
+dimnames(pars_cor) <- list(c(), c("species","intercept","slope"))
 
 #Change to data frame
 pars_spp_peak <- data.frame(pars_spp_peak)
 pars_spp_range <- data.frame(pars_spp_range)
 pars_spp_max <- data.frame(pars_spp_max)
+pars_cor <- data.frame(pars_cor)
 aics_sp <- data.frame(aics_sp)
 
 #change storage type 
 pars_spp_peak$species <- as.factor(pars_spp_peak$species)
 pars_spp_range$species <- as.factor(pars_spp_range$species)
 pars_spp_max$species <- as.factor(pars_spp_max$species)
+pars_cor$species <- as.factor(pars_cor$species)
 pars_spp_range$site <- as.factor(pars_spp_range$site)
 pars_spp_max$site <- as.factor(pars_spp_max$site)
 aics_sp$species <- as.factor(aics_sp$species)
@@ -245,6 +264,7 @@ aics_sp$AIC <- as.numeric(aics_sp$AIC)
 
 for(i in 2:3){
   pars_spp_peak[,i] <- as.numeric(pars_spp_peak[,i])
+  pars_cor[,i] <- as.numeric(pars_cor[,i])
   pars_spp_range[,i+1] <- as.numeric(pars_spp_range[,i+1])
   pars_spp_max[,i+1] <- as.numeric(pars_spp_max[,i+1])
 }
@@ -268,7 +288,7 @@ write.csv(aics_sp, "data/AIC_speciesmodel.csv", quote=FALSE,
 
 
 #Calculate AIC species model vs. separate parameters for all plots
-Note - this shows that the separate parameters for all plots does better, despite needing a lot more parameters. So we can't use model fit to justify this. A reasonable question would be - how much worse does the all species model do.
+Note - this shows that the separate parameters for all plots does better, despite needing a lot more parameters. So we can't use model fit to justify this. A reasonable question would be - how much worse does the all species model do in predicting peak (the main parameter we use), and perhaps round out some oddities.
 ```{r}
 aics_yrpltsp <- read.csv("data/AIC_plotmodel.csv", header = TRUE)
 aics_yrpltsp2 <- tapply(aics_yrpltsp$AICalt, aics_yrpltsp$species, sum)
@@ -280,5 +300,41 @@ dimnames(aics_comp)[[2]][2] <- "snowmodel"
 dimnames(aics_comp)[[2]][3] <- "plotmodel"
 
 aics_comp
+```
+
+# Show plot-level peak fits vs. fitted coefficients
+
+```{r}
+
+#Read in per plot model fits, so individual plot fits can be used
+pars_yrpltsp <- read.csv("data/PerPlotCurves.csv", header=TRUE) 
+
+#extract species
+#species <- pars_spp_peak$species
+yrcols <- c("green","lightblue","orange","purple","pink","red","grey")
+
+##Plot SDD vs. peak per species
+for(i in 1:length(species)){
+  sp_pars <- pars_yrpltsp[pars_yrpltsp$species==species[i],]
+  yrcolind <- sp_pars$year - 2012
+  
+  #make a dummy plot to add lines to
+  par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
+      tck=-0.02, mgp=c(1.1,0.5,0))
+  plot(sp_pars$SDD, sp_pars$peak, pty="s",
+       pch=21, bg=yrcols[yrcolind], cex=1.5,
+       xlab="Snow Disappearance Date", ylab="Peak Flowering")
+  #text(sp_pars$SDD, (sp_pars$peak+tiny), labels=sp_pars$plot, cex=0.5) 
+  title(species[i])
+  legend(x="topleft", legend=yrs, pt.bg=yrcols, pch=21)
+  
+  #add line
+  intSDD <- pars_spp_peak$peakint[pars_spp_peak$species==species[i]]
+  slSDD <- pars_spp_peak$peakSDDslope[pars_spp_peak$species==species[i]]
+  abline(intSDD, slSDD)
+  abline(0,1, col="lightblue", lty=2, lwd=2)
+  
+}
+
 ```
 

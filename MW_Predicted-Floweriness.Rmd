@@ -1,0 +1,352 @@
+---
+title: "Calculate Flowering Indices from MeadoWatch Model Fits"
+author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
+date: "12/17/2020"
+output: html_document
+---
+
+#Goal / Objective
+The goal of this R markdown is to estimate, per DOY, various metrics correlated to the flowering season. This file takes as input parameter fits from phenological curves fit to MeadoWatch data (see *Peak-Wildflower-Season.Rmd*)
+
+#Setup for R script and R markdown
+1. Load all libraries
+2. Specify string behavior
+3. Load packages
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(stringsAsFactors = FALSE)
+library(boot)
+ 
+```
+
+
+#Read in necessary data: parameter fits and trail specific SDD data
+These parameter fits are from maximum likelihood models fit to a subset of MeadoWatch data (see *Peak-Wildflower-Season.Rmd*). The snow disappearance data were measured using hobos, modeled or observed on the MeadoWatch trails (these observations are used to describe the snow dynamics of each year / trail). There are 5 data frames to be read in:
+1. *PerPlotCurves.csv*: includes peak, range and max parameters (for a unimodal curve describing the relationship between DOY and flowering probability) for focal species, in each year, trail, plot in which they were observed. In other words, this model was separately fit to year-trail-plot-species specific data.
+
+2. A second set of models were fit to each species data separately. This model assumed the same functional form - with the relationship between DOY and flowering probability determined by 3 parameters. However, the 3 sets of parameters were not individually fit per year-plot-trail. Instead:
+    + A. The peak parameter varied with plot specific snow duration. The slope and intercept parameters describing this relationship are contained in the file *PeakSddRelationship.csv* (in the data folder)
+    + B. The range / duration parameter describing phenological curves are assumed to vary by year and trail (if the species occurred on both trails). These parameters are contained in the file *YearTrailRange.csv*
+    + C. Similarly, the max parameter describing phenological curves are assumed to vary by year and trail (if the species occurred on both trails).These parameters are contained in the file *YearTrailMax.csv*
+
+3. *StationDat.csv* includes snow disappearance data collected from each trail / plot.
+    
+```{r}
+# Read in phenology data, station data
+PlotPheno_pars <- read.csv("data/PerPlotCurves.csv", header=TRUE)
+PeakSDD_pars <- read.csv("data/PeakSDDRelationship.csv", header=TRUE)
+Range_pars <- read.csv("data/YearTrailRange.csv", header=TRUE) 
+Max_pars <- read.csv("data/YearTrailMax.csv", header=TRUE)
+StationDat <- read.csv("data/MW_SiteDat_2013_2019.csv", header=TRUE)
+
+#Change Station Dat Transect data to acronym
+StationDat$Transect[StationDat$Transect=="Reflection Lakes"] <- "RL"
+StationDat$Transect[StationDat$Transect=="Glacier Basin"] <- "GB"
+
+#Determine unique species, years included in parameters
+species <- unique(PeakSDD_pars$species)
+nspp <- length(species)
+yrs <- unique(PlotPheno_pars$year)
+nyrs <- length(yrs)
+trails <- c("GB", "RL")
+
+#Reminder of species, # years included
+print(paste("Data examines phenology of", nspp, "species", sep=" "))
+print("Species include:"); print(species)
+print(paste("Data includes observations from", nyrs, "years", sep=" "))
+print("Years of data included:"); print(yrs)      
+
+#Examine data frames     
+head(PlotPheno_pars)
+head(PeakSDD_pars)
+head(Range_pars)
+head(Max_pars)
+
+#SDD data
+head(StationDat)
+
+```
+
+#Functions to predict probability of flowering
+```{r}
+#Predicts flowering probability as a function of DOY, param (peak, range, max)
+predflowertrail <- function (xx, param){ 
+  days    <- xx
+	peakearly  <- param[1]
+	peaklate  <- param[2]
+	range <- param[3]
+	max   <- param[4]
+	predmax <- inv.logit(max)
+	ptrailflower <- rep(predmax, time=length(days))
+	predearly <- inv.logit(range * (days - peakearly)^2 + max)
+	predlate <- inv.logit(range * (days - peaklate)^2 + max)
+	ptrailflower[days[]<peakearly] <- predearly[days[]<peakearly]
+	ptrailflower[days[]>peaklate] <- predlate[days[]>peaklate]
+	ptrailflower[ptrailflower<0.005] <- 0
+	return(ptrailflower)
+}
+
+#Predicts yes / no flowering ~f(DOY, peak); used for richness
+predrichtrail <- function (xx, param){ 
+  days    <- xx
+	peakearly  <- param[1]
+	peaklate  <- param[2]
+	predmax <- inv.logit(max)
+	predearly <- inv.logit(range * (days - peakearly)^2 + max)
+	predlate <- inv.logit(range * (days - peaklate)^2 + max)
+	pyesnoflower <- rep(1, time=length(days))
+	pyesnoflower[predearly[]<0.5*predmax & days[]<peakearly] <- 0
+	pyesnoflower[predearly[]<0.5*predmax & days[]>peaklate] <- 0
+	return(ptrailflower)
+}
+```
+
+
+
+#Trail-wide flowering prob & richness (per species, entire community) **IN PROGRESS**
+This chunk of code estimates the probability of observing flowering of focal species along each MeadoWatch trail (RL and GB) for each year, between March 15 and October 15 (7 months). It also redefines flowering as yes / no (as long as p(flowering) > 0.5 * max flowering). This is done in the following way:
+
+1. For each trail and year, determine the earliest and latest snowmelt observed in plots (assumptions, this a reasonable proxy for range of snowmelt observed along the entire trail).
+
+2. For each trail, year and focal species on the trail, extract the following parameters:
+    + A. Earliest peak flowering and latest peakflowering (*peakearly* and *peaklate*) on the trail, from the relationship between SDD and peak flowering (PeakSDD_pars).
+    + B. Year-trail specific range and max parameters (*range_yrtrl* and *max_yrtrl*), from the appropriate data frames (Range_pars and Max_pars)
+    
+3. Year, species and trail wide probability of flowering by DOY is calculated as follows:
+    + DOY < *peakearly*; predict using *peakearly*, *range_yrtrl* and *maxyrtrl*
+    + DOY >= *peakearly* and <= *peaklate*, probability of flowering is inv.logit(*max_yrtrl*). This assumes that somewhere on the trail the visitor is observing flowering at the maximum probability.
+    + DOY > *peaklate*, predict using *peaklate*, *range_yrtrl* and *maxyrtrl*
+    
+4. The above can be used to calculate the probability of observing all focal species flowering, and at least one focal species flowering. 
+
+5. A yes / no probability of flowering is also calculated, as follows:
+    + Probability of flowering > 0.5*max flowering = yes; < = no
+    
+6. The above can be used to calculate flowering richness.
+
+7. Species-specific and community flowering by DOY, year and trail are written to a data frame
+
+*Note that an issue with this is that we are assuming that yes / no observations of a specific species in a 2 x 1 meter plot correlate with abundance / number of flowers. This may be a flawed assumption; see below for an alternative approach.*
+    
+```{r}
+DOY_pred <- seq(105,285) #approximate April 15 - October 15
+outputGB_p <- c()
+outputRL_p <- c()
+outputGB_r <- c()
+outputRL_r <- c()
+
+for(i in 1:nyrs){ #each year
+    outputboth <- cbind(rep(yrs[i], times=length(DOY_pred)),DOY_pred)
+    dimnames(outputboth) <- list(c(), c("year","DOY"))
+    outputRL_yr_p <- outputboth; outputGB_yr_p <- outputboth
+    outputRL_yr_r <- outputboth; outputGB_yr_r <- outputboth
+    
+    for(j in 1:2){ #each trail
+        #Extract max and min SDD
+        SDD_obs <- StationDat$SDD[StationDat$Year==yrs[i] &
+                                  StationDat$Transect==trails[j]]
+        if(length(SDD_obs)==0){next} #break if no obs - GB 2013, 2014
+        SDD_max <- max(SDD_obs); SDD_min <- min(SDD_obs)
+        
+        #Extract year / trail specific range, max parameters (all focal)
+        rng_yrtrlall <- Range_pars[Range_pars$year==yrs[i]
+                                    & Range_pars$site==trails[j],]
+        max_yrtrlall <- Max_pars[Max_pars$year==yrs[i]
+                                & Max_pars$site==trails[j],]
+        
+        #Extract focal species 
+        spp_trl <- unique(PeakSDD_pars$species)
+        
+        for(k in 1:length(spp_trl)){
+            #determine early, late peak
+            int_spp <- PeakSDD_pars$peakint[PeakSDD_pars$species==spp_trl[k]]
+            slp_spp <- PeakSDD_pars$peakSDDslope[PeakSDD_pars$species
+                                                 ==spp_trl[k]]
+            peakearly <- int_spp + slp_spp*SDD_min
+            peaklate <- int_spp + slp_spp*SDD_max
+            
+            #determine max, range
+            max_yrtrl <- max_yrtrlall$max[max_yrtrlall$species==spp_trl[k]]
+            rng_yrtrl <- rng_yrtrlall$range[rng_yrtrlall$species
+                                                ==spp_trl[k]]
+            
+            #if zero, make mean
+            if(length(max_yrtrl)==0){max_yrtrl <-
+              mean(Max_pars$max[Max_pars$species==spp_trl[k]])}
+            if(length(rng_yrtrl)==0){rng_yrtrl <-
+              mean(Range_pars$range[Range_pars$species==spp_trl[k]])}   
+              
+            #Now assess predflower
+            param <- c(peakearly, peaklate, rng_yrtrl, max_yrtrl)
+            ptrailf <- predflowertrail(DOY_pred,param)
+            ptrailr <- ptrailf
+            ptrailr[ptrailf>=0.5*max(ptrailf)] <- 1
+            ptrailr[ptrailf<0.5*max(ptrailf)] <- 0
+            
+            #Now include in output files
+            if(j==1){
+              outputGB_yr_p <- cbind(outputGB_yr_p, ptrailf)
+              dimnames(outputGB_yr_p)[[2]][k+2] <- spp_trl[k]
+              outputGB_yr_r <- cbind(outputGB_yr_r, ptrailr)
+              dimnames(outputGB_yr_r)[[2]][k+2] <- spp_trl[k]
+              }
+            if(j==2){
+              outputRL_yr_p <- cbind(outputRL_yr_p, ptrailf)
+              dimnames(outputRL_yr_p)[[2]][k+2] <- spp_trl[k]
+              outputRL_yr_r <- cbind(outputRL_yr_r, ptrailr)
+              dimnames(outputRL_yr_r)[[2]][k+2] <- spp_trl[k]
+          }
+        }
+    if(j==1){outputGB_p <- rbind(outputGB_p,outputGB_yr_p)
+             outputGB_r <- rbind(outputGB_r,outputGB_yr_r)}
+    if(j==2){outputRL_p <- rbind(outputRL_p,outputRL_yr_p)
+             outputRL_r <- rbind(outputRL_r,outputRL_yr_r)}
+    }
+}
+
+#Calculate probability of flowering indices
+#probability all focal species flower
+allflGB <- apply(outputGB_p[,3:dim(outputGB_p)[2]], 1, prod)
+allflRL <- apply(outputRL_p[,3:dim(outputRL_p)[2]], 1, prod)
+
+#probability any focal species flowers
+pnoGBa <- 1-outputGB_p[,3:dim(outputGB_p)[2]]
+pnoRLa <- 1-outputRL_p[,3:dim(outputRL_p)[2]]
+anyflGB <- 1-apply(pnoGBa, 1, prod)
+anyflRL <- 1-apply(pnoRLa, 1, prod)
+
+#append
+outputGB_p <- data.frame(cbind(outputGB_p, anyflGB,allflGB))
+outputRL_p <- data.frame(cbind(outputRL_p, anyflRL,allflRL))
+
+#Calculate richness indices - i.e. stairstep functions
+richGB <- apply(outputGB_r[,3:dim(outputGB_r)[2]], 1, sum)
+richRL <- apply(outputRL_r[,3:dim(outputRL_r)[2]], 1, sum)
+
+#append
+outputGB_r <- data.frame(cbind(outputGB_r, richGB))
+outputRL_r <- data.frame(cbind(outputRL_r, richRL))
+
+#Examine output
+head(outputGB_p) 
+head(outputRL_p)
+head(outputGB_r)
+head(outputRL_r)
+
+#estimate species in GB, RL
+nsppRL <- dim(outputRL_p)[2]-4
+nsppGB <- dim(outputGB_p)[2]-4
+
+```
+
+#Graphs to show all three metrics for all years, trails
+```{r}
+
+for(i in 2013:2019){
+  ntrail <- 2; if(i<2015){ntrail <- 1}
+
+  #setup file name to write results to  
+  figname <- paste("figs/FloweringMetrics-",i,".png",sep="")
+  
+  #write file to png
+  png(filename=figname,width=(ntrail*240), height=720)
+  
+  #Set up plot
+  par(mfcol=c(3,ntrail), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2), 
+    tck=-0.01, mgp=c(1.25,0.25,0), xpd=TRUE)
+
+  for(j in 1:ntrail){
+    if(j==1){
+      yrdat_p <- outputRL_p[outputRL_p$year==i,]
+      yrdat_r <- outputRL_r[outputRL_r$year==i,]
+      dimnames(yrdat_p)[[2]][3+nsppRL]<- "anyfl"
+      dimnames(yrdat_p)[[2]][4+nsppRL]<- "allfl"
+      dimnames(yrdat_r)[[2]][3+nsppRL]<- "rich"
+      yrdat_r$rich <- yrdat_r$rich/nsppRL
+    }
+  
+    if(j==2){
+      yrdat_p <- outputGB_p[outputGB_p$year==i,]
+      yrdat_r <- outputGB_r[outputGB_r$year==i,]
+      dimnames(yrdat_p)[[2]][3+nsppGB]<- "anyfl"
+      dimnames(yrdat_p)[[2]][4+nsppGB]<- "allfl"
+      dimnames(yrdat_r)[[2]][3+nsppGB]<- "rich"
+      yrdat_r$rich <- yrdat_r$rich/nsppGB
+    }
+    
+   #graph showing the probability of seeing at least one flower  
+   plot(yrdat_p$DOY,yrdat_p$anyfl, type="l", col="violet", lwd=2, 
+       xaxt="n", xlab="DOY", ylab="probability", 
+       main=paste("P(any species flowering)", sep=" "), ylim=c(0,1))
+   text(c(105,135,165,195,225,255,285),-0.05,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))
+
+   #graph showing the probability of seeing all focal flowers  
+   plot(yrdat_p$DOY,yrdat_p$allfl, type="l", col="violet", lwd=2, 
+       xaxt="n",xlab="DOY", ylab="probability", 
+       main=paste("P(all species)", sep=" "), ylim=c(0,0.2))
+   text(c(105,135,165,195,225,255,285),-0.01,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))
+
+   #graph showing the richness  
+   plot(yrdat_r$DOY,yrdat_r$rich, type="l", col="violet", lwd=2, 
+       xaxt="n",xlab="DOY", ylab="probability", 
+       main=paste("P(total richness)", sep=" "), ylim=c(0,1))
+   text(c(105,135,165,195,225,255,285),-0.05,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))
+  }
+  dev.off()
+}
+```
+
+
+#Graph showing richness of all years, on all plots
+```{r}
+  
+#Set up plot
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.5,0.4,0.4,0.2), 
+    tck=-0.01, mgp=c(1.25,0.25,0), xpd=TRUE)
+
+yrcols <- c("chartreuse","cyan","darkorange","darkorchid1","darkgreen",
+            "deeppink3","cornflowerblue")
+
+#first plot Reflection lakes
+for(i in 2013:2019){
+    yrdat_r <- outputRL_r[outputRL_r$year==i,]
+    dimnames(yrdat_r)[[2]][3+nsppRL]<- "rich"
+    yrdat_r$rich <- yrdat_r$rich/nsppRL
+    
+   #graph richness: create if 2013, add lines if later years
+   if(i==2013){
+   plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
+       lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
+       main=paste("RL - Richness", sep=" "), ylim=c(0,1));
+   text(c(105,135,165,195,225,255,285),-0.05,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}
+   if(i>2013){
+     lines(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],lwd=2)}
+}
+
+#Now Glacier Basin
+for(i in 2015:2019){
+    yrdat_r <- outputGB_r[outputGB_r$year==i,]
+    dimnames(yrdat_r)[[2]][3+nsppGB]<- "rich"
+    yrdat_r$rich <- yrdat_r$rich/nsppGB
+    
+   #graph richness: create if 2013, add lines if later years
+   if(i==2015){
+   plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
+       lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
+       main=paste("GB - Richness", sep=" "), ylim=c(0,1));
+   text(c(105,135,165,195,225,255,285),-0.05,
+       labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}
+   if(i>2015){
+     lines(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012], lwd=2)}
+}
+
+legend(x="topleft",legend=c(2013:2019), cex=0.75,
+       col=yrcols, lwd=2)
+
+```
+

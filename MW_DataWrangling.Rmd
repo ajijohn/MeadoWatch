@@ -97,7 +97,7 @@ dimnames(PhenoSite_3)[[2]][(ncols_P3 -1):ncols_P3] <- c("Nobs","NobsY")
 
 #Filter out plots with fewer than totobs, totyesobs observations
 totobs <- 30
-totyesobs <- 5
+totyesobs <- 4
 
 PhenoSite_4 <- PhenoSite_3[PhenoSite_3$Nobs>=totobs &
                           PhenoSite_3$NobsY>totyesobs,]
@@ -273,7 +273,7 @@ Make graphs for each species to examine outliers, and eliminate those at certain
 PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
 
 # Define threshold (max distance between yes observations)
-out_thresh <- 21
+out_thresh <- 20
 
 # Create plots of outliers
 species <- unique(PhenoSite_6$Species)

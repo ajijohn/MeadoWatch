@@ -298,9 +298,13 @@ for(i in 1:length(species)){
   #make a dummy plot to add lines to
   par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
       tck=-0.02, mgp=c(1.1,0.5,0))
-  plot(sp_pars$SDD, sp_pars$peak, fin=c(3,3),
+  tiny <- 0.05*(max(sp_pars$peak)-min(sp_pars$peak))
+  ylms <- c(min(sp_pars$peak)-tiny, max(sp_pars$peak)+tiny)
+  plot(sp_pars$SDD, sp_pars$peak, ylim=ylms, pty="s",
        pch=21, bg=yrcols[yrcolind], cex=1.5,
        xlab="Snow Disappearance Date", ylab="Peak Flowering")
+  tiny <- 0.05*(max(sp_pars$peak)-min(sp_pars$peak))
+  text(sp_pars$SDD, (sp_pars$peak+tiny), labels=sp_pars$plot, cex=0.5) 
   abline(0,1)
   title(species[i])
   legend(x="topleft", legend=yrs, pt.bg=yrcols, pch=21)
@@ -311,6 +315,8 @@ for(i in 1:length(species)){
 }
 
 ```
+
+
 ###########
 ODDS AND ENDS BELOW (mostly figures)
 
