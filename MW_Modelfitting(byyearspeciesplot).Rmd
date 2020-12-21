@@ -39,9 +39,11 @@ SDDfin <- SDDdat_0$SDD
 SDDfin[is.na(SDDdat_0$SDD)==TRUE] <- 
   round(SDDdat_0$predSDD[is.na(SDDdat_0$SDD)==TRUE],0)
 # this removes unwanted columns, including SDD and pred SDD
-SDDdat <- subset(SDDdat_0, select=-c(Site_Num, Site_Loc, calibration,
-                                     snow_appearance_date, snow_disappearance_date,
-                                     snow_cover_duration, minimum_soil_temp, SDD,
+SDDdat <- subset(SDDdat_0, select=-c(Site_Num, calibration,
+                                     snow_appearance_date, 
+                                     snow_disappearance_date,
+                                     snow_cover_duration, 
+                                     minimum_soil_temp, SDD,
                                      notes,predSDD))
 # This adds SDDfin back to data frame as SDD
 SDDdat$SDD <- SDDfin
@@ -91,7 +93,7 @@ for(i in 1:nyrs){ # First for loop: runs through years
   PhenoSite_Year <- PhenoSite[PhenoSite$Year==yrs[i],]
   
   #pull out unique plots for year in question
-  plots <- unique(PhenoSite$Site_Code)
+  plots <- unique(PhenoSite_Year$Site_Code)
   
   #Nested for loop for each plot
   for(j in 1:length(plots)){ # Second for loop: each plot
@@ -105,8 +107,12 @@ for(i in 1:nyrs){ # First for loop: runs through years
     for(k in 1:length(spinplt)){ #Third for loop: each species in the pot
 
       #Extract data for the species in question      
-      PhenoSite_YearPlotSpecies <- 
-        PhenoSite_YearPlot[PhenoSite_YearPlot$Species==spinplt[k],]
+      PhenoSite_YearPlotSpecies <- PhenoSite_YearPlot[
+                                   PhenoSite_YearPlot$Species==spinplt[k],]
+      
+      #Extract other parameters
+      trsct <- PhenoSite_YearPlotSpecies$Transect[1]
+      stcd <- PhenoSite_YearPlotSpecies$Site_Loc[1]
       
       #define parameters for curvefitting
       days <- PhenoSite_YearPlotSpecies$DOY #explanatory variable: DOY 
@@ -136,7 +142,7 @@ for(i in 1:nyrs){ # First for loop: runs through years
                         as.character(spinplt[k]),AICnull,AICalt)
       
       #save parameters to spyrpltpars
-      tmp_pars <- c(yrs[i], as.character(plots[j]), SDDplt, 
+      tmp_pars <- c(yrs[i], trsct, stcd, as.character(plots[j]), SDDplt, 
                     as.character(spinplt[k]), model1$par[1:3])
       
       pars_yrpltsp <- rbind(pars_yrpltsp, tmp_pars)
@@ -147,12 +153,14 @@ for(i in 1:nyrs){ # First for loop: runs through years
 }
   
 # turn spyrpltpars into a data frame
-dimnames(pars_yrpltsp) <- list(c(), c("year", "plot", "SDD", "species",
-                                     "peak", "duration", "max"))
+dimnames(pars_yrpltsp) <- list(c(), c("year","transect","site_code","plot",
+                                      "SDD","species","peak","duration","max"))
 pars_yrpltsp <- data.frame(pars_yrpltsp)
 
 #change storage type to numeric - all except plot (since a few plots have a, b)
 pars_yrpltsp$year <- as.numeric(pars_yrpltsp$year)
+pars_yrpltsp$transect <- as.factor(pars_yrpltsp$transect)
+pars_yrpltsp$site_code <- as.factor(pars_yrpltsp$site_code)
 pars_yrpltsp$species <- as.factor(pars_yrpltsp$species)
 pars_yrpltsp$SDD <- as.numeric(pars_yrpltsp$SDD)
 pars_yrpltsp$peak <- as.numeric(pars_yrpltsp$peak)
@@ -160,7 +168,8 @@ pars_yrpltsp$duration <- as.numeric(pars_yrpltsp$duration)
 pars_yrpltsp$max <- as.numeric(pars_yrpltsp$max)
 
 # turn aic vector to dataframe
-dimnames(aics_yrpltsp) <- list(c(), c("year", "plot", "species", "AICnull", "AICalt"))
+dimnames(aics_yrpltsp) <- list(c(), c("year", "plot", "species", 
+                                      "AICnull", "AICalt"))
 aics_yrpltsp <- data.frame(aics_yrpltsp)
 aics_yrpltsp$year <- as.numeric(aics_yrpltsp$year)
 aics_yrpltsp$species <- as.factor(aics_yrpltsp$species)
@@ -182,7 +191,7 @@ write.csv(aics_yrpltsp, "data/AIC_plotmodel.csv", quote=FALSE,
 ```
 
 
-#Graph to visualize peak flowering by year  trail
+#Graph to visualize peak flowering by year & trail
 This code takes estimates of peak flowering from year-plot-species specific model fits (in pars_yrpltsp) and plots those estimates by year (year on the x-axis, DOY on the y axis) and by trail.
 
 ```{r}
@@ -236,10 +245,8 @@ legend(x="bottomleft",legend=species, pch=21,
        pt.bg=plotcol[1:length(species)], cex=0.75, pt.cex=1.25)
 ```
 
-#Graph to visualize AIC for Null and Alt for Year, Plot and Species
-## Visual plot, not a great plot as its not by plot/species, but one can see AIC of Alt model is lower than null
-
-#Second graph plots AIC null vs. AIC alt of all combos, and the 1:1 line. This should show most if not all AIC alt are less than AIC null. Could color code / change shapes depending on years / species
+#AIC graph
+This graph plots the AIC for the null model (flowering probability does not vary over time) vs. the alternative model (flowering probability is a unimodal curve over time). Plotted also is the 1:1 line. Each point represents a year / plot / species fit.
 ```{r}
 #Make a plot showing AIC null vs. AICalt
 plot(aics_yrpltsp$AICnull, aics_yrpltsp$AICalt, pch=21, bg="grey",
@@ -253,6 +260,7 @@ Graph of all year-plot specific flowering curves for each species, on the same p
 ```{r}
 #extract species
 species <- unique(pars_yrpltsp$species)
+species <- species[order(species)]
 yrcols <- c("green","lightblue","orange","purple","pink","red","grey")
 xx_DOY <- seq(120,270)
 
@@ -285,6 +293,7 @@ Graph of SDD vs. peak flowering for each species, different colored lines per ye
 ```{r}
 #extract species
 species <- unique(pars_yrpltsp$species)
+species <- species[order(species)]
 yrcols <- c("green","lightblue","orange","purple","pink","red","grey")
 
 ##Plot SDD vs. peak per species
@@ -313,6 +322,48 @@ for(i in 1:length(species)){
   mtext(paste("r=",round(SDDtest$estimate,3),", p=", round(SDDtest$p.value, 3),
               sep="", collapse=NULL), side=3, line=-1, cex=0.75)
 }
+
+```
+
+
+#Plot-level parameters related to SDD, year
+A quick lm analysis examining the relationship between the three sets of parameters and SDD and year. On the whole, peak clearly varies with SDD, and for several species that relationship also varies by year. The max and duration parameters generally don't vary by SDD, but in a few cases vary by year. 
+```{r}
+# First test peak flowering - per species
+species <- species[order(species)]
+peak_pars <- c()
+
+for(i in 1:length(species)){
+  sp_dat <- pars_yrpltsp[pars_yrpltsp$species==species[i],]
+  peak_test_all <- lm(peak~SDD*as.factor(year), data=sp_dat)
+  print(species[i])
+  print(anova(peak_test_all))
+  peak_test <- lm(peak~SDD, data=sp_dat)
+  tmpout <- c(as.character(species[i]),coef(peak_test),
+              summary(peak_test)$adj.r.squared)
+  peak_pars <- rbind(peak_pars, tmpout)
+}
+
+dimnames(peak_pars) <- list(c(), c("species","intercept","slope","Rsquared"))
+peak_pars <- data.frame(peak_pars)
+for(i in 2:4){peak_pars[,i] <- as.numeric(peak_pars[,i])}
+head(peak_pars)
+
+# range and duration parameters - test wheter affected by SDD, year
+for(i in 1:length(species)){
+  sp_dat <- pars_yrpltsp[pars_yrpltsp$species==species[i],]
+  ntrans <- length(unique(sp_dat$transect))
+  range_test <- lm(duration~as.factor(year)*SDD, data=sp_dat)
+  max_test <- lm(max~as.factor(year)*SDD, data=sp_dat)
+
+  print(species[i])
+  print("range")
+  print(anova(range_test))
+  print("max")
+  print(anova(max_test))
+  print(""); print("")
+ }
+
 
 ```
 
