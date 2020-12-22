@@ -1,0 +1,138 @@
+---
+title: "MW_WTAanalysis"
+author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
+date: "12/22/2020"
+output: html_document
+---
+
+# Setup R markdown, load packages
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+```
+
+#Clean up WTA data files
+This code chunk reads in the raw WTA data files, and does some cleaning and prepping for analysis. Specifically:
+1. Unneeded columns are removed
+2. Sentiment scores are averaged across reviewers.
+3. Month and day information are transformed to DOY (day of year)
+
+```{r}
+# Read in data
+WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
+WTA_dat_1 <- subset(WTA_dat_0, select=-c(pre.2013, dummy.random.order, link,
+                                         other.trails, other.trails.mw, author, 
+                                         flowers.in.pics.spp, spp.mentioned,
+                                         wildflower.value.terms, value.terms, 
+                                         flag, flag.comment, 
+                                         flag.resolved.comment))
+  
+# Remove rows with NAs in overall sentiment
+WTA_dat_2 <- WTA_dat_1[is.na(WTA_dat_1$overall.report.sentiment)==FALSE,]
+
+# Only include years in which MW data was collected
+WTA_dat_3 <- WTA_dat_2[WTA_dat_2$year>2014,]
+
+# new data set: average score (this may not be the best way to go) 
+reports <- unique(WTA_dat_3$orig.position)
+WTA_dat <- c()
+
+for(i in 1:length(reports)){
+  report_dat <- WTA_dat_3[WTA_dat_3$orig.position==reports[i],]
+  info <- report_dat[1,c(1,3:12)]
+  bug_s <- mean(report_dat$bugs.sentiment,na.rm=TRUE)
+  wild_s <- mean(report_dat$wildlife.sentiment,na.rm=TRUE)
+  crowd_s <- mean(report_dat$crowding.sentiment,na.rm=TRUE)
+  trail_s <- mean(report_dat$trail.condition.sentiment,na.rm=TRUE)
+  weather_s <- mean(report_dat$weather.sentiment,na.rm=TRUE)
+  view_s <- mean(report_dat$view.sentiment,na.rm=TRUE)
+  wildflower_s <- mean(report_dat$wildflower.sentiment,na.rm=TRUE)
+  total_s <- mean(report_dat$overall.report.sentiment,na.rm=TRUE)
+  newrow <- cbind(info,bug_s, wild_s, crowd_s, trail_s, 
+              weather_s, view_s, wildflower_s, total_s)
+  WTA_dat <-rbind(WTA_dat,newrow)
+}
+
+# Now add DOY
+# Calculate Julian Days of observations
+DOY <- c()
+
+# Convert the 'Date' - observed date to Julian (DOY)
+for(i in 1:dim(WTA_dat)[1]){
+  year <- WTA_dat$year[i]
+  month <- WTA_dat$month[i]
+  day <- WTA_dat$day[i]
+  tmpdate <- paste(month,day,year, sep=" ")
+  Jan1Jul <- as.Date(paste(year,"-01-01", sep=""))
+  ObsJulDayYr <- julian(as.Date(tmpdate,"%B %d %Y"),
+                        origin=Jan1Jul)
+  DOY <- c(DOY,ObsJulDayYr)
+}
+
+WTA_dat$DOY <- DOY
+
+# make data frame
+WTA_dat <- data.frame(WTA_dat)
+WTA_dat$year <- as.factor(WTA_dat$year)
+WTA_dat$flowerbadge <- as.factor(WTA_dat$flowerbadge)
+head(WTA_dat)
+
+```
+
+#Explore WTA data
+This chunk of code makes several figures to explore WTA data
+```{r}
+
+# Various graphs over time
+# Violin plot of trip reports in each year
+ggplot(WTA_dat, aes(x=DOY, y=year)) + 
+  geom_violin(trim=FALSE, fill=year)  +
+  scale_x_continuous(breaks=seq(0,360,30)) +
+  labs(title="Visits to Glacier Basin", 
+       x="Day of Year", y = "Year")
+
+# Violin plot of trip reports over all years vs. flower badges
+ggplot(WTA_dat, aes(x=DOY, y=flowerbadge, fill=flowerbadge)) + 
+  geom_violin(trim=FALSE)  +
+  scale_x_continuous(breaks=seq(0,360,30)) +
+  labs(title="Visits to Glacier Basin", 
+       x="Day of Year", y = "Flower Badge")
+  
+# Fit phenology curve to flower badges, plot all years
+source("./HRL_phenology_functions.R")
+
+#make a dummy plot to add lines to
+yrs <- unique(WTA_dat$year); yrs <- yrs[order(yrs)]; nyrs <- length(yrs)
+yrcols <- c("purple","blue","orange","yellowgreen","pink")
+par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
+      tck=-0.02, mgp=c(1.1,0.5,0))
+plot(1,1, type="n", xlim=c(120,300),
+       ylim=c(0,1), xlab="", ylab="Flower Badges", pin=c(6,4),
+       xaxp=c(120, 300, 6))
+title("Flower Badge Phenology")
+legend(x="topleft", legend=yrs, col=yrcols, lwd=2)
+  
+# Now estimate for each year, add line
+for(i in 1:nyrs){
+  XX_DOY <- seq(120,300)
+  WTA_dat_yr <- WTA_dat[WTA_dat$year==yrs[i],]
+  days <- WTA_dat_yr$DOY
+  phenophase <- rep(0, times=dim(WTA_dat_yr)[1])
+  phenophase[WTA_dat_yr$flowerbadge=="yes"] <- 1
+  param <- c(mean(days[phenophase[]==1]), -0.001, 0)
+  FBmod <- optim(param, curvefit_perplot, control = list(maxit = 50000))
+  predf <- predflower(XX_DOY, FBmod$par)
+  lines(XX_DOY, predf, col=yrcols[i], lwd=2)
+}
+
+# now check how overall satisfaction varies by DOY
+
+```
+
+
+
+#Merge MeadoWatch Flowering data with WTA data
+```{r}
+
+```
+
