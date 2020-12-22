@@ -91,25 +91,6 @@ predflowertrail <- function (xx, param){
   return(ptrailflower)
 }
 
-# Similar to the function above, but calculates richness.
-# This function takes as input DOY (days since January 1) and 4 parameters 
-# describing the earliest peak flowering observed along the trail, the latest
-# peak flowering observed along the trail, and parameters describing the duration
-# and maximum probability of flowering. 
-
-predrichtrail <- function (xx, param){ 
-  days    <- xx
-  peakearly  <- param[1]
-  peaklate  <- param[2]
-  predmax <- inv.logit(max)
-  predearly <- inv.logit(range * (days - peakearly)^2 + max)
-  predlate <- inv.logit(range * (days - peaklate)^2 + max)
-  pyesnoflower <- rep(1, time=length(days))
-  pyesnoflower[predearly[]<0.5*predmax & days[]<peakearly] <- 0
-  pyesnoflower[predearly[]<0.5*predmax & days[]>peaklate] <- 0
-  return(ptrailflower)
-}
-
 
 #########FOR POSTERITY - no longer in use
 

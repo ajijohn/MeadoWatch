@@ -54,8 +54,8 @@ SDDfin[is.na(SDDdat_0$SDD)==TRUE] <-
 SDDdat <- subset(SDDdat_0, select=-c(Site_Num, Site_Loc, calibration,
                                      snow_appearance_date, 
                                      snow_disappearance_date,
-                                     snow_cover_duration, minimum_soil_temp, 
-                                     SDD, notes, predSDD))
+                                     snow_cover_duration, minimum_soil_temp,
+                                     SDD, predSDD))
 # This adds SDDfin back to data frame as SDD
 SDDdat$SDD <- SDDfin
 
@@ -148,7 +148,7 @@ for(i in 1:nspp){ #loop for each species, to assemble data
   modelsnowmod1 <- opm(param, curvefit_species, 
                       method = c("BFGS","hjn", "Nelder-Mead"),
                       control = list(maxit = 50000))
-  #print(species[i]); print(modelsnowmod1)
+  print(species[i]); print(modelsnowmod1)
   
   #Now refit using Nelder Mead, using initials from previous
   ind <- which(modelsnowmod1$value==min(modelsnowmod1$value))
@@ -198,7 +198,7 @@ write.csv(aics_sp, "data/AIC_speciesmodel.csv", quote=FALSE,
 
 
 #Calculate AIC species model vs. separate parameters for all plots
-Note - this shows that the separate parameters for all plots does better, despite needing a lot more parameters. So we can't use model fit to justify this. A reasonable question would be - how much worse does the all species model do in predicting peak (the main parameter we use), and perhaps round out some oddities.
+Note - this shows that assuming separate parameters provides a better model fit, despite needing a lot more parameters. So we can't use model fit to justify fitting the all species model. However, looking below you can see this model does a pretty good job predicting peak flowering, which is the main thing we are interested in.
 ```{r}
 aics_yrpltsp <- read.csv("data/AIC_plotmodel.csv", header = TRUE)
 aics_yrpltsp2 <- tapply(aics_yrpltsp$AICalt, aics_yrpltsp$species, sum)

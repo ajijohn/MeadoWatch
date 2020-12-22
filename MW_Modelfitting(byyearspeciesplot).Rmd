@@ -44,7 +44,7 @@ SDDdat <- subset(SDDdat_0, select=-c(Site_Num, calibration,
                                      snow_disappearance_date,
                                      snow_cover_duration, 
                                      minimum_soil_temp, SDD,
-                                     notes,predSDD))
+                                     notes, predSDD))
 # This adds SDDfin back to data frame as SDD
 SDDdat$SDD <- SDDfin
 
