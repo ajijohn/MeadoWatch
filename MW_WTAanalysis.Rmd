@@ -9,15 +9,24 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
+library(MASS)
 ```
 
 #Clean up WTA data files
-This code chunk reads in the raw WTA data files, and does some cleaning and prepping for analysis. Specifically:
-1. Unneeded columns are removed
-2. Sentiment scores are averaged across reviewers.
-3. Month and day information are transformed to DOY (day of year)
+This code chunk reads in the raw data files, and does some cleaning and prepping for analysis. Specifically:
+1. Phenology functions are read in
+2. WTA data is read in, and:
+     +Unneeded columns are removed
+     +Sentiment scores are averaged across reviewers
+     +Month and day information are transformed to DOY (day of year)
+4. MW flowering richness predictions are read in, and merged with WTA data
+
+**IN PROGRESS: code will need to be modified to deal with Skyline trail data**
 
 ```{r}
+# Read in phenology functions
+source("./HRL_phenology_functions.R")
+
 # Read in data
 WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
 WTA_dat_1 <- subset(WTA_dat_0, select=-c(pre.2013, dummy.random.order, link,
@@ -35,22 +44,29 @@ WTA_dat_3 <- WTA_dat_2[WTA_dat_2$year>2014,]
 
 # new data set: average score (this may not be the best way to go) 
 reports <- unique(WTA_dat_3$orig.position)
-WTA_dat <- c()
+WTA_dat_4 <- c()
 
 for(i in 1:length(reports)){
   report_dat <- WTA_dat_3[WTA_dat_3$orig.position==reports[i],]
   info <- report_dat[1,c(1,3:12)]
   bug_s <- mean(report_dat$bugs.sentiment,na.rm=TRUE)
+  if(is.nan(bug_s)==TRUE){bug_s <- NA}
   wild_s <- mean(report_dat$wildlife.sentiment,na.rm=TRUE)
+  if(is.nan(wild_s)==TRUE){wild_s <- NA}
   crowd_s <- mean(report_dat$crowding.sentiment,na.rm=TRUE)
+  if(is.nan(crowd_s)==TRUE){crowd_s <- NA}
   trail_s <- mean(report_dat$trail.condition.sentiment,na.rm=TRUE)
+  if(is.nan(trail_s)==TRUE){trail_s <- NA}
   weather_s <- mean(report_dat$weather.sentiment,na.rm=TRUE)
+  if(is.nan(weather_s)==TRUE){weather_s <- NA}
   view_s <- mean(report_dat$view.sentiment,na.rm=TRUE)
+  if(is.nan(view_s)==TRUE){view_s <- NA}
   wildflower_s <- mean(report_dat$wildflower.sentiment,na.rm=TRUE)
+  if(is.nan(wildflower_s)==TRUE){wildflower_s <- NA}
   total_s <- mean(report_dat$overall.report.sentiment,na.rm=TRUE)
   newrow <- cbind(info,bug_s, wild_s, crowd_s, trail_s, 
               weather_s, view_s, wildflower_s, total_s)
-  WTA_dat <-rbind(WTA_dat,newrow)
+  WTA_dat_4 <-rbind(WTA_dat_4,newrow)
 }
 
 # Now add DOY
@@ -58,10 +74,10 @@ for(i in 1:length(reports)){
 DOY <- c()
 
 # Convert the 'Date' - observed date to Julian (DOY)
-for(i in 1:dim(WTA_dat)[1]){
-  year <- WTA_dat$year[i]
-  month <- WTA_dat$month[i]
-  day <- WTA_dat$day[i]
+for(i in 1:dim(WTA_dat_4)[1]){
+  year <- WTA_dat_4$year[i]
+  month <- WTA_dat_4$month[i]
+  day <- WTA_dat_4$day[i]
   tmpdate <- paste(month,day,year, sep=" ")
   Jan1Jul <- as.Date(paste(year,"-01-01", sep=""))
   ObsJulDayYr <- julian(as.Date(tmpdate,"%B %d %Y"),
@@ -69,13 +85,25 @@ for(i in 1:dim(WTA_dat)[1]){
   DOY <- c(DOY,ObsJulDayYr)
 }
 
-WTA_dat$DOY <- DOY
+WTA_dat_4$DOY <- DOY
+
+# Change WTA_dat trail name to GB, RL (for merging)
+WTA_dat_4$trail[WTA_dat_4$trail=="glacier basin"] <- "GB"
+WTA_dat_4$trail[WTA_dat_4$trail=="skyline trail"] <- "RL"
+
+# add meadowatch flowering
+MW_dat <- read.csv("data/FloweringRichness.csv", header=TRUE)
+
+# merge WTA_dat with flowering richness
+WTA_MW_dat <- merge(WTA_dat_4, MW_dat, by = c("trail","year","DOY"))
 
 # make data frame
-WTA_dat <- data.frame(WTA_dat)
-WTA_dat$year <- as.factor(WTA_dat$year)
-WTA_dat$flowerbadge <- as.factor(WTA_dat$flowerbadge)
-head(WTA_dat)
+WTA_MW_dat <- data.frame(WTA_MW_dat)
+
+# change storage mode
+WTA_MW_dat$year <- as.factor(WTA_MW_dat$year)
+WTA_MW_dat$flowerbadge <- as.factor(WTA_MW_dat$flowerbadge)
+head(WTA_MW_dat)
 
 ```
 
@@ -85,14 +113,14 @@ This chunk of code makes several figures to explore WTA data
 
 # Various graphs over time
 # Violin plot of trip reports in each year
-ggplot(WTA_dat, aes(x=DOY, y=year)) + 
+ggplot(WTA_MW_dat, aes(x=DOY, y=year)) + 
   geom_violin(trim=FALSE, fill=year)  +
   scale_x_continuous(breaks=seq(0,360,30)) +
   labs(title="Visits to Glacier Basin", 
        x="Day of Year", y = "Year")
 
 # Violin plot of trip reports over all years vs. flower badges
-ggplot(WTA_dat, aes(x=DOY, y=flowerbadge, fill=flowerbadge)) + 
+ggplot(WTA_MW_dat, aes(x=DOY, y=flowerbadge, fill=flowerbadge)) + 
   geom_violin(trim=FALSE)  +
   scale_x_continuous(breaks=seq(0,360,30)) +
   labs(title="Visits to Glacier Basin", 
@@ -102,7 +130,7 @@ ggplot(WTA_dat, aes(x=DOY, y=flowerbadge, fill=flowerbadge)) +
 source("./HRL_phenology_functions.R")
 
 #make a dummy plot to add lines to
-yrs <- unique(WTA_dat$year); yrs <- yrs[order(yrs)]; nyrs <- length(yrs)
+yrs <- unique(WTA_MW_dat$year); yrs <- yrs[order(yrs)]; nyrs <- length(yrs)
 yrcols <- c("purple","blue","orange","yellowgreen","pink")
 par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
       tck=-0.02, mgp=c(1.1,0.5,0))
@@ -110,12 +138,12 @@ plot(1,1, type="n", xlim=c(120,300),
        ylim=c(0,1), xlab="", ylab="Flower Badges", pin=c(6,4),
        xaxp=c(120, 300, 6))
 title("Flower Badge Phenology")
-legend(x="topleft", legend=yrs, col=yrcols, lwd=2)
+legend(x="topright", legend=yrs, col=yrcols, lwd=2)
   
 # Now estimate for each year, add line
 for(i in 1:nyrs){
   XX_DOY <- seq(120,300)
-  WTA_dat_yr <- WTA_dat[WTA_dat$year==yrs[i],]
+  WTA_dat_yr <- WTA_MW_dat[WTA_MW_dat$year==yrs[i],]
   days <- WTA_dat_yr$DOY
   phenophase <- rep(0, times=dim(WTA_dat_yr)[1])
   phenophase[WTA_dat_yr$flowerbadge=="yes"] <- 1
@@ -125,14 +153,84 @@ for(i in 1:nyrs){
   lines(XX_DOY, predf, col=yrcols[i], lwd=2)
 }
 
-# now check how overall satisfaction varies by DOY
+# correlations between sentiment scores
+sentiments <- subset(WTA_MW_dat, select=c(bug_s, wild_s, crowd_s,
+                                       trail_s, weather_s,
+                                       view_s, wildflower_s, total_s))
+                     
+
+panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...){ 
+  #begin panel.cor function
+	usr <- par("usr"); on.exit(par(usr))
+	par(usr = c(0, 1, 0, 1))
+	r <- abs(cor(x, y, use="pairwise.complete.obs", method="kendall"))
+	txt <- format(c(r, 0.123456789), digits=digits)[1]
+	txt <- paste(prefix, txt, sep="")
+	if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+	text(0.5, 0.5, txt, cex = cex.cor * r)
+} #end function
+
+par(omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.3), 
+      tck=-0.01, mgp=c(1.0,0.35,0))
+
+pairs(sentiments, pch=21, bg="grey", lower.panel=panel.cor, 
+      upper.panel=panel.smooth) #plots correlations in sentiment
+
+# Focuses in on total, view, wildflower, wildlife sentiment
+sentiments2 <- sentiments #[,-c(bug_s,crowd_s,trail_s, weather_s)]
+sentiments2$bug_s <- NULL
+sentiments2$crowd_s <- NULL
+sentiments2$trail_s <- NULL
+sentiments2$weather_s <- NULL
+pairs(sentiments2, pch=21, bg="grey", lower.panel=panel.cor, 
+      upper.panel=panel.smooth) #plots correlations in sentiment  
 
 ```
 
-
-
-#Merge MeadoWatch Flowering data with WTA data
+# Preliminary analysis exploring sentiment scores
 ```{r}
+# Recategorize sentiment (i.e. round so between 1 & 5) 
+# for ordinal regression
+WTA_MW_dat$total_s2 <- as.factor(round(WTA_MW_dat$total_s))
+
+# Test correlations between wildflower, view, bug sentiment
+WTA_MW_dat2 <- WTA_MW_dat[is.na(WTA_MW_dat$wildflower_s)==FALSE,]
+test_ord_sent <- polr(total_s2~wildflower_s, data=WTA_MW_dat2)
+test_ord_sent_0 <- polr(total_s2~1, data=WTA_MW_dat2)
+anova(test_ord_sent, test_ord_sent_0)
+summary(test_ord_sent)
+
+#Average sentiment in trip reports w and w/o flower badges
+test_lm_flwr <- lm(total_s ~ flowerbadge*year, data=WTA_MW_dat)
+summary(test_lm_flwr)
+summary(step(test_lm_flwr))
+test_lm_rich <- lm(total_s ~ rich*year, data=WTA_MW_dat)
+summary(test_lm_rich)
+summary(step(test_lm_rich))
+
+# sentiment as function of DOY and DOY^2
+test_ord_null <- polr(total_s2 ~ 1, data=WTA_MW_dat)
+test_ord_doy <- polr(total_s2 ~ DOY, data=WTA_MW_dat)
+test_ord_doy2 <- polr(total_s2 ~ DOY+DOY^2, data=WTA_MW_dat)
+anova(test_ord_null,test_ord_doy, test_ord_doy2)
+AIC(test_ord_null,test_ord_doy, test_ord_doy2)
+summary(test_ord_doy2)
+
+
+# Year, flower badge and richness vs. total sentiment
+# To be honest, I don't really know how to interpret the output
+test_ord_null <- polr(total_s2 ~ 1, data=WTA_MW_dat)
+test_ord_flwr <- polr(total_s2 ~ flowerbadge, data=WTA_MW_dat)
+test_ord_rich <- polr(total_s2 ~ rich, data=WTA_MW_dat)
+test_ord_yr <- polr(total_s2 ~ year, data=WTA_MW_dat)
+test_ord_yrflwr <- polr(total_s2 ~ year*flowerbadge, data=WTA_MW_dat)
+test_ord_yrrich <- polr(total_s2 ~ year*rich, data=WTA_MW_dat)
+
+anova(test_ord_null,test_ord_flwr,test_ord_rich,
+      test_ord_yr,test_ord_yrflwr,test_ord_yrrich)
+AIC(test_ord_null,test_ord_flwr,test_ord_rich,
+      test_ord_yr,test_ord_yrflwr,test_ord_yrrich)
+summary(test_ord_yrrich)
 
 ```
 
