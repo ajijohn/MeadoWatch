@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 #Read in SDD data (all sources)
-This code chunk reads in SDD data from MeadoWatch, Forest Demography, Elli's phenology plots, and Meera's phenology / herbivory plots. Some observations are removed due to data issues (those with faulty hobo's) in Meera and the FD dataset. Additionally, data from years not covered by the MeadoWatch data set are removed from Elli's data. Finally, the FD data set was pared down to only include higher elevation stands (above 1000 meters) and stands closer by the trails (SW and NE parts of the park)
+This code chunk reads in SDD data from several data sets: MeadoWatch, Forest Demography, Elli's phenology plots, and Meera's phenology / herbivory plots. Some observations are removed due to data issues (those with faulty hobo's) in Meera and the FD dataset. Additionally, data from years where MeadoWatch data were not collected are removed from Elli's data. Finally, the FD data set was pared down to only include higher elevation stands (above 1000 meters) and stands in the SW and NE parts of the park (where MeadoWatch trails are located).
 ```{r}
 # Read in SDD data from MeadoWatch
 MW_SDD <- read.csv("data/MeadoWatchSDD.csv", header=TRUE)
@@ -53,6 +53,18 @@ SDDsource <- c(rep("lightblue", times=dim(MW_SDD)[1]),
                rep("orange", times=dim(MLS_SDD)[1]),
                rep("pink", times=dim(EJT_SDD)[1]))
 
+yrcol <- c(MW_SDD_obs$Year, FD_SDD$Year, MLS_SDD$Year, EJT_SDD$Year)
+yrcol[yrcol==2013] <- "yellowgreen"
+yrcol[yrcol==2014] <- "navyblue"
+yrcol[yrcol==2015] <- "orange"
+yrcol[yrcol==2016] <- "darkgreen"
+yrcol[yrcol==2017] <- "pink"
+yrcol[yrcol==2018] <- "lightblue"
+yrcol[yrcol==2019] <- "purple"
+yrcol[yrcol==2020] <- "red"
+
+
+
 # Now fit model
 SDDModel <- lm(SDD ~ Site_Loc + Year)
 SDDR2 <- round(summary(SDDModel)$r.squared, 3)
@@ -60,9 +72,9 @@ SDDR2 <- round(summary(SDDModel)$r.squared, 3)
 # Examine model fits
 anova(SDDModel)
 
-# Graph of predicted vs. observed
+# Graph of predicted vs. observed; color by data source
 par(omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.4), tck=-0.02, 
-    pty="s", mgp=c(1.2,0.5,0))
+    pty="s", mgp=c(1.2,0.35,0))
 plot(SDDModel$fitted.values, SDD, pch=21, bg=SDDsource,
      xlab="Predicted", ylab="Observed", main="SDD model - all data")
 abline(0,1)
@@ -70,6 +82,19 @@ mtext(paste("R2=",SDDR2, sep=""), line=-1, side=3, adj=0.05, cex=0.75)
 legend(x="bottomright", legend=c("Mwatch","ForestDemo","MLS","EJT"),
        pch=21, pt.bg=c("lightblue","green","orange","pink"),
        cex = 0.75, pt.cex = 1)
+
+# Graph of predicted vs. observed; color by year (Fig B1 in Appendix B)
+par(omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.4), tck=-0.02, 
+    pty="s", mgp=c(1.2,0.35,0))
+plot(SDDModel$fitted.values, SDD, pch=21, bg=yrcol,
+     xlab="Predicted", ylab="Observed", main="SDD model")
+abline(0,1)
+mtext(paste("R2=",SDDR2, sep=""), line=-1, side=3, adj=0.05, cex=0.75)
+legend(x="bottomright", legend=c(seq(2013,2020)), title="Year",
+       pch=21, pt.bg=c("yellowgreen", "navyblue", "orange", "darkgreen",
+                       "pink", "lightblue", "purple", "red"),
+       cex = 0.75, pt.cex = 1)
+
 
 ```
 
