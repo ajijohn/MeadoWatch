@@ -65,7 +65,7 @@ PhenoSite <- merge(PhenoSite_0,SDDdat,
 
 # Define the wildflower community: which species to include
 species <- c("ANOC", "ARLA", "ASLE", "CAMI", "CAPA", "ERMO", "ERGR", "ERPE",
-             "LIGR", "LUAR", "PEBR", "POBI", "VASI")
+             "LIGR", "LUAR", "MIAL", "PEBR", "POBI", "VASI")
 
 # Create PhenoSite_Focal - data set with just species of interest
 specieskeep <- PhenoSite$Species %in% species

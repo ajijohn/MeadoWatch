@@ -69,8 +69,22 @@ yrcol[yrcol==2020] <- "red"
 SDDModel <- lm(SDD ~ Site_Loc + Year)
 SDDR2 <- round(summary(SDDModel)$r.squared, 3)
 
+# Other models
+SDDModel_0 <- lm(SDD ~ 1)
+SDDModel_yr <- lm(SDD ~ Year)
+SDDModel_loc <- lm(SDD ~ Site_Loc)
+SDDModel_int <- lm(SDD ~ Site_Loc*Year)
+
 # Examine model fits
 anova(SDDModel)
+anova(SDDModel_0, SDDModel_yr, SDDModel_loc, 
+      SDDModel, SDDModel_int)
+
+# Rsquared
+summary(SDDModel)$r.squared
+summary(SDDModel_yr)$r.squared
+summary(SDDModel_loc)$r.squared
+summary(SDDModel_int)$r.squared
 
 # Graph of predicted vs. observed; color by data source
 par(omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.4), tck=-0.02, 

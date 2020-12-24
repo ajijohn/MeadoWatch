@@ -104,8 +104,10 @@ This chunk of code estimates the probability of observing flowering of focal spe
 DOY_pred <- seq(105,285) #approximate April 15 - October 15
 output_p <- c()
 output_r <- c()
-f_thresh <- 0.5 #between 0 and 1, this can be set, currently at 0.5
-         #at what p(max flowering) does a species contribute to richness
+f_thresh <- 1.0 #between 0 and 1, modifies at what proportion of max flowering,
+                # for example, at 0.5, implies than when 50% max close to peak
+                # at 1.0, only when at peak flowering do species contribute
+         
 
 for(i in 1:nyrs){ #each year
     outputGB <- cbind(rep(yrs[i], times=length(DOY_pred)),
@@ -214,7 +216,7 @@ yrcols <- c("chartreuse","cyan","darkorange","darkorchid1","darkgreen",
 
 #first plot Reflection lakes
 trldat_r <- output_r_fin[output_r_fin$trail=="RL",]
-maxspp <- max(trldat_r$rich)
+maxspp <- max(output_r_fin$rich)
 
 for(i in 2013:max(yrs)){
     yrdat_r <- trldat_r[trldat_r$year==i,]
@@ -224,7 +226,7 @@ for(i in 2013:max(yrs)){
    plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
        lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
        main=paste("RL - Richness", sep=" "), ylim=c(0,maxspp));
-   text(c(105,135,165,195,225,255,285),-0.05,
+   text(c(105,135,165,195,225,255,285),-1,
        labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}
     
    if(i>2013){
@@ -242,8 +244,8 @@ for(i in 2015:max(yrs)){
    if(i==2015){
    plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
        lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
-       main=paste("RL - Richness", sep=" "), ylim=c(0,maxspp));
-   text(c(105,135,165,195,225,255,285),-0.05,
+       main=paste("GB - Richness", sep=" "), ylim=c(0,maxspp));
+   text(c(105,135,165,195,225,255,285),-1,
        labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}
     
    if(i>2015){
