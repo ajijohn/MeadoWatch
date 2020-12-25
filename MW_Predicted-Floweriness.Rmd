@@ -24,13 +24,13 @@ library(boot)
 #Read in necessary data: parameter fits and trail specific SDD data
 Parameter fits are from maximum likelihood models fit to a subset of MeadoWatch data (see *MW_Modelfitting(byspecies).Rmd*). The snow disappearance data were measured using hobos, modeled or observed on the MeadoWatch trails (these observations are used to describe the snow dynamics of each year / trail). The following needs to be read in:
 
-1. *PerPlotCurves.csv*: includes peak, range and max parameters (for a unimodal curve describing the relationship between DOY and flowering probability), in each year, trail, plot in which species were observed. In other words, this model was separately fit to year-trail-plot-species specific data.
+1. *output/Parameters_plotmodel.csv*: includes peak, range and max parameters (for a unimodal curve describing the relationship between DOY and flowering probability), in each year, trail, plot in which species were observed. In other words, this model was separately fit to year-trail-plot-species specific data.
 
-2. A second set of models were fit to each species data. This model assumed the same functional form - with the relationship between DOY and flowering probability in each plot determined by 4 parameters (in *SpeciesPeakRangeMax.csv*. In this model, however, the following was assumed:
+2. A second set of models were fit to each species data. This model assumed the same functional form - with the relationship between DOY and flowering probability in each plot determined by 4 parameters (in *output/Parameters_speciesmodel.csv*. In this model, however, the following was assumed:
     + A. The peak parameter varied with plot specific snow duration. The slope and intercept parameters describing this relationship are the first two parameters.
     + B. The range / duration parameter describing phenological curves are assumed to be constant across species (fit across all years / plots)
 
-3. *MW_SDDall.csv* includes observed and predicted snow disappearance data collected from each trail / plot.
+3. *cleandata/MW_SDDall.csv* includes observed and predicted snow disappearance data collected from each trail / plot.
 
 4. Also read in the necessary phenological functions (*HRL_phenology_functions.R*)
     
@@ -39,9 +39,9 @@ Parameter fits are from maximum likelihood models fit to a subset of MeadoWatch 
 source("./HRL_phenology_functions.R")
 
 # Read in phenology data, station data
-PlotPheno_pars <- read.csv("data/PerPlotCurves.csv", header=TRUE)
-Species_pars <- read.csv("data/SpeciesPeakRangeMax.csv", header=TRUE)
-SDDdat_0 <- read.csv("data/MW_SDDall.csv", header=TRUE)
+PlotPheno_pars <- read.csv("output/Parameters_plotmodel.csv", header=TRUE)
+Species_pars <- read.csv("output/Parameters_speciesmodel.csv", header=TRUE)
+SDDdat_0 <- read.csv("cleandata/MW_SDDall.csv", header=TRUE)
 
 # Create new SDD - observed when present, predicted when not
 SDDfin <- SDDdat_0$SDD
@@ -196,9 +196,9 @@ head(output_p_fin)
 head(output_r_fin)
 
 #write output
-write.csv(output_p_fin, "data/FloweringProbabilities.csv", quote=FALSE,
+write.csv(output_p_fin, "output/FloweringProbabilities.csv", quote=FALSE,
           row.names=FALSE)
-write.csv(output_r_fin, "data/FloweringRichness.csv", quote=FALSE,
+write.csv(output_r_fin, "output/FloweringRichness.csv", quote=FALSE,
           row.names=FALSE)
 
 ```

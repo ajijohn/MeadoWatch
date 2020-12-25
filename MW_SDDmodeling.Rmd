@@ -132,7 +132,7 @@ mtext(paste("r=", round(test$estimate,3), sep=""), line=-1, cex=0.75, adj=0.05)
 
 # Now write data
 MW_SDD$predSDD <- SDD_pred
-write.csv(MW_SDD, "data/MW_SDDall.csv", quote=FALSE,
+write.csv(MW_SDD, "cleandata/MW_SDDall.csv", quote=FALSE,
           row.names=FALSE)
 
 ```

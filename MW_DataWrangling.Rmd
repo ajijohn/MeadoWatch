@@ -151,7 +151,7 @@ write.csv(PhenoSite_5, "data/PhenoSite_Dirty.csv", quote=TRUE,
 ```
 
 #Examine observation effort over time
-Create graphs showing observation effort across the growing season
+Create graphs showing observation effort across the growing season. These are graphs in Appendix D.
 ```{r}
 # Read in data
 PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
@@ -172,10 +172,11 @@ for(i in 1:2){
   #Make a dummy plot to add points to
   par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
       tck=-0.02, mgp=c(1.1,0.5,0))
-  plot(1,1, type="n", xlim=c(minDOY, maxDOY), ylim=c(0,(nyr_trail+2)), yaxt="n",
+  plot(1,1, type="n", xlim=c(135, 285), 
+       ylim=c(0,(nyr_trail+2)), xaxt="n", yaxt="n",
        xlab="observation date", ylab="")
   title(trails[i])
-  
+
   #now add points and labels
   for(j in yr1:yr2){
     #Determine unique observers / dates
@@ -187,15 +188,25 @@ for(i in 1:2){
     ObsDOYs$DOY <- as.numeric(ObsDOYs$DOY)
     ObsDOY <- distinct(ObsDOYs)
     
+    #print out # visits
+    print(paste(trails[i],j,sep="-"))
+    print(Nobs_year)
+    
     #Determine y value
     posy <- (j-yr1+1)
     obsy <- jitter(rep(posy,times=dim(ObsDOY)[1]),
                    amount = 0.5/nyr_trail)
     points(ObsDOY$DOY, obsy, pch=21, bg="grey")
 
-    #labels
-    xposlab <- minDOY - (maxDOY-minDOY)*1/15
+    # y axis labels
+
+    xposlab <- 135 - (285-135)*1/15
     text(xposlab,posy,labels=j,cex=0.5, adj=1, xpd=NA)
+    
+    # x axis labels
+    posy2 <- (yr2-yr1)*-0.1
+    text(c(135, 165, 195, 225, 255, 285), posy2, 
+     labels=c("May", "Jun", "Jul", "Aug", "Sept", "Oct"), xpd=NA) 
     
     #Now calculate how many visits within the week
     nobsseasontmp <- rep(NA, times=length(season))
@@ -325,7 +336,7 @@ for(i in 1:length(species)){
 # Write file of outliers to check
 outliercheck <- PhenoSite_6[PhenoSite_6$Flower==1
                                 & PhenoSite_6$distyes>out_thresh,]
-filename <- paste("data/outliers","-",out_thresh,".csv", sep="")
+filename <- paste("output/outliers","-",out_thresh,".csv", sep="")
 write.csv(outliercheck, file=filename, quote = FALSE, row.names=FALSE)
 
 Nobs <- dim(PhenoSite_6)[1]
@@ -343,7 +354,7 @@ outlierid[PhenoSite_6$distyes>out_thresh&PhenoSite_6$Flower==1] <- 1
 PhenoSite_7 <- PhenoSite_6[outlierid==0,]
 
 # Write clean data file
-write.csv(PhenoSite_7, "data/PhenoSite_Clean.csv", quote=TRUE,
+write.csv(PhenoSite_7, "cleandata/PhenoSite_Clean.csv", quote=TRUE,
           row.names=FALSE)
      
 ```

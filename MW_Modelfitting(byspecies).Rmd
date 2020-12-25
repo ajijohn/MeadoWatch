@@ -42,8 +42,8 @@ c("ANOC", "ARLA", "ASLE", "CAMI", "CAPA", "ERMO", "ERPE", "LIGR", "LUAR", "PEBR"
 source("./HRL_phenology_functions.R")
 
 # Read in clean dataset; merge with SDD data
-PhenoSite_0 <- read.csv("data/PhenoSite_Clean.csv", header=TRUE)
-SDDdat_0 <- read.csv("data/MW_SDDall.csv", header=TRUE)
+PhenoSite_0 <- read.csv("cleandata/PhenoSite_Clean.csv", header=TRUE)
+SDDdat_0 <- read.csv("cleandata/MW_SDDall.csv", header=TRUE)
 
 # Create new SDD - observed when present, predicted when not
 SDDfin <- SDDdat_0$SDD
@@ -98,7 +98,7 @@ pars_spp <- c() #save parameters
 aics_sp <-c() #save AIC of overall model 
 
 # Read in per plot model fits, to use for initial parameters
-pars_yrpltsp <- read.csv("data/PerPlotCurves.csv", header=TRUE) 
+pars_yrpltsp <- read.csv("output/Parameters_plotmodel.csv", header=TRUE)
 
 # Now nested for loops to fit curves for all years, species, plots
 for(i in 1:nspp){ #loop for each species, to assemble data
@@ -171,7 +171,8 @@ for(i in 1:nspp){ #loop for each species, to assemble data
 }
 
 #make par_spp_peak, pars_spp_range, and pars_spp_max, data frames
-dimnames(pars_spp) <- list(c(), c("species","peakint", "peakSDDslope","range","max"))
+dimnames(pars_spp) <- list(c(), c("species","peakint", "peakSDDslope",
+                                  "range","max"))
 dimnames(aics_sp) <- list(c(), c("species","AIC"))
 
 #Change to data frame
@@ -189,9 +190,9 @@ head(pars_spp)
 head(aics_sp)
 
 #Write fitted parameters
-write.csv(pars_spp, "data/SpeciesPeakRangeMax.csv", quote=FALSE,
+write.csv(pars_spp, "output/Parameters_speciesmodel.csv", quote=FALSE,
           row.names=FALSE)
-write.csv(aics_sp, "data/AIC_speciesmodel.csv", quote=FALSE,
+write.csv(aics_sp, "output/AIC_speciesmodel.csv", quote=FALSE,
           row.names=FALSE)
 
 ```
@@ -200,13 +201,13 @@ write.csv(aics_sp, "data/AIC_speciesmodel.csv", quote=FALSE,
 #Calculate AIC species model vs. separate parameters for all plots
 Note - this shows that assuming separate parameters provides a better model fit, despite needing a lot more parameters. So we can't use model fit to justify fitting the all species model. However, looking below you can see this model does a pretty good job predicting peak flowering, which is the main thing we are interested in.
 ```{r}
-aics_yrpltsp <- read.csv("data/AIC_plotmodel.csv", header = TRUE)
+aics_yrpltsp <- read.csv("output/AIC_plotmodel.csv", header = TRUE)
 aics_yrpltsp2 <- tapply(aics_yrpltsp$AICalt, aics_yrpltsp$species, sum)
 aics_yrpltsp3 <- data.frame(names(aics_yrpltsp2),aics_yrpltsp2)
 colnames(aics_yrpltsp3) <- c("species","plotmodel")
 rownames(aics_yrpltsp3) <- c()
 aics_comp <- merge(aics_sp, aics_yrpltsp3)
-dimnames(aics_comp)[[2]][2] <- "snowmodel"
+dimnames(aics_comp)[[2]][2] <- "speciesmodel"
 dimnames(aics_comp)[[2]][3] <- "plotmodel"
 
 aics_comp
@@ -217,7 +218,7 @@ This graph shows the plot level fits of peak flowering vs. SDD found at the site
 ```{r}
 
 #Read in per plot model fits, so individual plot fits can be used
-pars_yrpltsp <- read.csv("data/PerPlotCurves.csv", header=TRUE) 
+pars_yrpltsp <- read.csv("output/Parameters_plotmodel.csv", header=TRUE) 
 
 #extract species
 #species <- pars_spp_peak$species

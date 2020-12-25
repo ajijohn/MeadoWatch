@@ -29,9 +29,9 @@ This chunk of code:
 2. Reads in SDD data, merges it with PhenoSite data
 
 ```{r}
-# Read in tidy data
-PhenoSite_0 <- read.csv("data/PhenoSite_Clean.csv", header=TRUE)
-SDDdat_0 <- read.csv("data/MW_SDDall.csv", header=TRUE)
+# Read in clean data
+PhenoSite_0 <- read.csv("cleandata/PhenoSite_Clean.csv", header=TRUE)
+SDDdat_0 <- read.csv("cleandata/MW_SDDall.csv", header=TRUE)
 
 # Create new SDD - observed when present, predicted when not
 SDDfin <- SDDdat_0$SDD
@@ -181,11 +181,11 @@ head(pars_yrpltsp)
 head(aics_yrpltsp)
 
 #Write output to data folder
-write.csv(pars_yrpltsp, "data/PerPlotCurves.csv", quote=FALSE,
+write.csv(pars_yrpltsp, "output/Parameters_plotmodel.csv", quote=FALSE,
           row.names=FALSE)
 
 #Write AIC output to data folder
-write.csv(aics_yrpltsp, "data/AIC_plotmodel.csv", quote=FALSE,
+write.csv(aics_yrpltsp, "output/AIC_plotmodel.csv", quote=FALSE,
           row.names=FALSE)
 
 ```
@@ -321,6 +321,12 @@ for(i in 1:length(species)){
   #add cor.test results
   mtext(paste("r=",round(SDDtest$estimate,3),", p=", round(SDDtest$p.value, 3),
               sep="", collapse=NULL), side=3, line=-1, cex=0.75)
+  
+  # print average days after snowmelt the species is at peak flower
+  daysafter <- mean (sp_pars$SDD - sp_pars$peak)
+  print(paste(species[i], "days after SDD in peak flower", 
+              round(daysafter,2), sep="-"))
+  
 }
 
 ```

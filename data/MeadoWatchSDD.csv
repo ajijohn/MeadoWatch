@@ -73,7 +73,7 @@ Year,Transect,Site_Num,Site_Code,Site_Loc,calibration,snow_appearance_date,snow_
 2016,Glacier Basin,6,GB6,GB6_15,0,11/11/2015,4/16/2016,136,0.232,107,
 2017,Glacier Basin,5,GB5,GB6_15,0,12/10/2016,5/28/2017,132,0.453,148,
 2018,Glacier Basin,5,GB5,GB6_15,0,10/12/2017,5/6/2018,182,0.232,126,
-2019,Glacier Basin,5,GB5,GB6_15,0,11/23/2018,3/31/2019,45,0.784,90,
+2019,Glacier Basin,5,GB5,GB6_15,NA,NA,NA,NA,NA,NA,problematic estimate deleted
 2020,Glacier Basin,5,GB5,GB6_15,NA,NA,NA,NA,NA,NA,
 2017,Glacier Basin,6,GB6,GB6_17,NA,NA,NA,NA,NA,NA,
 2018,Glacier Basin,6,GB6,GB6_17,0,10/11/2017,5/22/2018,198,0.343,142,

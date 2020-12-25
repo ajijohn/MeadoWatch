@@ -27,7 +27,10 @@ This code chunk reads in the raw data files, and does some cleaning and prepping
 # Read in phenology functions
 source("./HRL_phenology_functions.R")
 
-# Read in data
+# Read in MeadoWatch flowering probabilites
+MW_dat <- read.csv("output/FloweringRichness.csv", header=TRUE)
+
+# Read in WTA data
 WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
 WTA_dat_1 <- subset(WTA_dat_0, select=-c(pre.2013, dummy.random.order, link,
                                          other.trails, other.trails.mw, author, 
@@ -90,9 +93,6 @@ WTA_dat_4$DOY <- DOY
 # Change WTA_dat trail name to GB, RL (for merging)
 WTA_dat_4$trail[WTA_dat_4$trail=="glacier basin"] <- "GB"
 WTA_dat_4$trail[WTA_dat_4$trail=="skyline trail"] <- "RL"
-
-# add meadowatch flowering
-MW_dat <- read.csv("data/FloweringRichness.csv", header=TRUE)
 
 # merge WTA_dat with flowering richness
 WTA_MW_dat <- merge(WTA_dat_4, MW_dat, by = c("trail","year","DOY"))
