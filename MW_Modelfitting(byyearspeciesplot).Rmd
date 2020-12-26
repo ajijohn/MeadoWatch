@@ -373,6 +373,102 @@ for(i in 1:length(species)){
 
 ```
 
+#Model fit to QA/QC vs. non QA/QC data
+This code checks to see whether model fits of volunteers vs. professional scientists vary.
+**In Progress**
+```{r}
+#define object in which to save parameters
+pars_QAQC <- c()
+
+#set # years, species
+yrs <- unique(PhenoSite$Year)
+nyrs <- length(yrs)
+species <- unique(PhenoSite$Species)
+
+#For loops to fit curves per year/plot/species, save parameters, plot 
+for(i in 1:nyrs){ # First for loop: runs through years
+
+  #extract data for that year
+  PhenoSite_Year <- PhenoSite[PhenoSite$Year==yrs[i],]
+  
+  #pull out unique plots for year in question
+  plots <- unique(PhenoSite_Year$Site_Code)
+  
+  #Nested for loop for each plot
+  for(j in 1:length(plots)){ # Second for loop: each plot
+    PhenoSite_YearPlot <- PhenoSite_Year[PhenoSite_Year$Site_Code==plots[j],]
+
+    #Identify species in plot
+    spinplt <- unique(PhenoSite_YearPlot$Species)
+    if(length(spinplt)==0){next} #break if focal spp not in plot
+    
+    #Nested for loop for each species
+    for(k in 1:length(spinplt)){ #Third for loop: each species in the pot
+
+      #Extract data for the species in question      
+      PhenoSite_yps <- PhenoSite_YearPlot[PhenoSite_YearPlot$Species
+                                          ==spinplt[k],]
+      PhenoSite_QAQC <- PhenoSite_yps[PhenoSite_yps$QA.QC==1,]
+      if(dim(PhenoSite_QAQC)[1]<9){next}
+      
+      #Extract other parameters
+      trsct <- PhenoSite_QAQC$Transect[1]
+      stcd <- PhenoSite_QAQC$Site_Loc[1]
+      
+      #define parameters for curvefitting
+      days <- PhenoSite_QAQC$DOY #explanatory variable: DOY 
+      phenophase <- PhenoSite_QAQC$Flower #yes / no flowering
+	    
+	    #add three weeks of zeroes before earliest SDD in those plots
+	    SDDplt <- min(PhenoSite_QAQC$SDD)
+	    days <- c(SDDplt-21, SDDplt-14, SDDplt-7,days)
+	    phenophase <- c(0,0,0,phenophase)
+	    
+	    if(sum(phenophase)<2){next}
+
+      #now fit null model
+      model0 <- optimize(nullfit, c(0.000001,0.999999)) #fit null model
+	
+      #now fit alternative model - curve
+      param <- c(mean(days[phenophase[]==1]), -0.001, 0) # initial parameters
+      model1 <- optim(param, curvefit_perplot, control = list(maxit = 50000))
+      if(model1$convergence==1){
+        print(paste(spinplt[k],"no convergence", sep="-"))}
+
+      #save parameters
+      tmp_pars <- c(yrs[i], trsct, stcd, as.character(plots[j]), SDDplt, 
+                    as.character(spinplt[k]), model1$par[1:3])
+      
+      pars_QAQC <- rbind(pars_QAQC, tmp_pars)
+      
+    }
+  }
+}
+  
+# turn pars_QAQC into a data frame
+dimnames(pars_QAQC) <- list(c(), c("year","transect","site_code","plot",
+                                      "SDD","species","peak_Q","duration_Q","max_Q"))
+pars_QAQC <- data.frame(pars_QAQC)
+
+#change storage type to numeric - all except plot (since a few plots have a, b)
+pars_QAQC$year <- as.numeric(pars_QAQC$year)
+pars_QAQC$transect <- as.factor(pars_QAQC$transect)
+pars_QAQC$site_code <- as.factor(pars_QAQC$site_code)
+pars_QAQC$species <- as.factor(pars_QAQC$species)
+pars_QAQC$SDD <- as.numeric(pars_QAQC$SDD)
+pars_QAQC$peak_Q <- as.numeric(pars_QAQC$peak_Q)
+pars_QAQC$duration_Q <- as.numeric(pars_QAQC$duration_Q)
+pars_QAQC$max_Q <- as.numeric(pars_QAQC$max_Q)
+
+#merge with pars_yrpltsp
+pars_comp <- merge(pars_QAQC, pars_yrpltsp, by=c("year","transect","site_code",
+                                                 "plot","species","SDD"))
+
+#make graphs comparing parameters
+
+```
+
+
 
 ###########
 ODDS AND ENDS BELOW (mostly figures)
