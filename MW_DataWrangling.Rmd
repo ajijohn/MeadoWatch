@@ -13,11 +13,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(stringsAsFactors = FALSE)
-library(tidyverse)
-library(leaflet)
-library(lubridate)
+#library(tidyverse)
+#library(leaflet)
+#library(lubridate)
 library(boot)
-library(readr) 
+#library(readr) 
 ```
 
 
@@ -109,7 +109,7 @@ head(PhenoSite_4)
 Calculate for each observation the closest 'yes' flowering and the closest 'no' flowering observation. We will use this to detect outliers (i.e. 'yes' observations that are more than a certain number of days separated from other yes observations).
 ```{r}
 #For each observation, calculate nearest yes, no observation
-#TODO this takes a LONG time - any suggestions?
+#TODO this takes a LONG time - should try to optimize
 distyes <- rep(NA, times=dim(PhenoSite_4)[1])
 distno <- rep(NA, times=dim(PhenoSite_4)[1])
 PhenoSite_5 <- cbind(PhenoSite_4, distyes, distno)
@@ -336,7 +336,7 @@ for(i in 1:length(species)){
 # Write file of outliers to check
 outliercheck <- PhenoSite_6[PhenoSite_6$Flower==1
                                 & PhenoSite_6$distyes>out_thresh,]
-filename <- paste("output/outliers","-",out_thresh,".csv", sep="")
+filename <- paste("output/outliers","-",(out_thresh+1),".csv", sep="")
 write.csv(outliercheck, file=filename, quote = FALSE, row.names=FALSE)
 
 Nobs <- dim(PhenoSite_6)[1]
