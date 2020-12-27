@@ -10,6 +10,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(MASS)
+library(boot)
 ```
 
 #Clean up WTA data files
@@ -189,6 +190,19 @@ pairs(sentiments2, pch=21, bg="grey", lower.panel=panel.cor,
 
 # Preliminary analysis exploring sentiment scores
 ```{r}
+#histogram of all sentiments
+par(mfrow=c(2,4), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.4), 
+    mgp=c(1.2,0.4,0), tck=-0.02)
+
+hist(WTA_MW_dat$bug_s, xlim=c(1,5), main="Bugs", xlab="")
+hist(WTA_MW_dat$wild_s, xlim=c(1,5), main="Wildlife", xlab="")
+hist(WTA_MW_dat$crowd_s, xlim=c(1,5), main="Crowding", xlab="")
+hist(WTA_MW_dat$trail_s, xlim=c(1,5), main="Trail condition", xlab="")
+hist(WTA_MW_dat$weather_s, xlim=c(1,5), main="Weather", xlab="")
+hist(WTA_MW_dat$view_s, xlim=c(1,5), main="Views", xlab="")
+hist(WTA_MW_dat$wildflower_s, xlim=c(1,5), main="Wildflowers", xlab="")
+hist(WTA_MW_dat$total_s, xlim=c(1,5), main="Total", xlab="")
+
 # Recategorize sentiment (i.e. round so between 1 & 5) 
 # for ordinal regression
 WTA_MW_dat$total_s2 <- as.factor(round(WTA_MW_dat$total_s))
