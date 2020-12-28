@@ -409,13 +409,14 @@ for(i in 1:nyrs){ # First for loop: runs through years
       PhenoSite_yps <- PhenoSite_YearPlot[PhenoSite_YearPlot$Species
                                           ==spinplt[k],]
       PhenoSite_QAQC <- PhenoSite_yps[PhenoSite_yps$QA.QC==1,]
+      PhenoSite_vol <- PhenoSite_yps[PhenoSite_yps$QA.QC!=1,]
       if(dim(PhenoSite_QAQC)[1]<9){next}
       
       #Extract other parameters
       trsct <- PhenoSite_QAQC$Transect[1]
       stcd <- PhenoSite_QAQC$Site_Loc[1]
       
-      #define parameters for curvefitting
+      #define parameters for curvefitting: QAQC
       days <- PhenoSite_QAQC$DOY #explanatory variable: DOY 
       phenophase <- PhenoSite_QAQC$Flower #yes / no flowering
 	    
@@ -426,18 +427,32 @@ for(i in 1:nyrs){ # First for loop: runs through years
 	    
 	    if(sum(phenophase)<2){next}
 
-      #now fit null model
-      model0 <- optimize(nullfit, c(0.000001,0.999999)) #fit null model
-	
-      #now fit alternative model - curve
+      # fit phenological model
       param <- c(mean(days[phenophase[]==1]), -0.001, 0) # initial parameters
       model1 <- optim(param, curvefit_perplot, control = list(maxit = 50000))
       if(model1$convergence==1){
         print(paste(spinplt[k],"no convergence", sep="-"))}
 
-      #save parameters
+      #define parameters for curvefitting: volunteers
+      days <- PhenoSite_vol$DOY #explanatory variable: DOY 
+      phenophase <- PhenoSite_vol$Flower #yes / no flowering
+	    
+	    #add three weeks of zeroes before earliest SDD in those plots
+	    SDDplt <- min(PhenoSite_vol$SDD)
+	    days <- c(SDDplt-21, SDDplt-14, SDDplt-7,days)
+	    phenophase <- c(0,0,0,phenophase)
+	    
+	    if(sum(phenophase)<2){next}
+	    
+	    # fit phenological model
+      param <- c(mean(days[phenophase[]==1]), -0.001, 0) # initial parameters
+      model2 <- optim(param, curvefit_perplot, control = list(maxit = 50000))
+      if(model2$convergence==1){
+        print(paste(spinplt[k],"no convergence", sep="-"))}
+
+	    #save parameters
       tmp_pars <- c(yrs[i], trsct, stcd, as.character(plots[j]), SDDplt, 
-                    as.character(spinplt[k]), model1$par[1:3])
+                    as.character(spinplt[k]), model1$par[1:3], model2$par[1:3])
       
       pars_QAQC <- rbind(pars_QAQC, tmp_pars)
       
@@ -447,7 +462,8 @@ for(i in 1:nyrs){ # First for loop: runs through years
   
 # turn pars_QAQC into a data frame
 dimnames(pars_QAQC) <- list(c(), c("year","transect","site_code","plot",
-                                      "SDD","species","peak_Q","duration_Q","max_Q"))
+                                   "SDD","species","peak_Q","duration_Q",
+                                   "max_Q", "peak_v","duration_v", "max_v"))
 pars_QAQC <- data.frame(pars_QAQC)
 
 #change storage type to numeric - all except plot (since a few plots have a, b)
@@ -459,16 +475,40 @@ pars_QAQC$SDD <- as.numeric(pars_QAQC$SDD)
 pars_QAQC$peak_Q <- as.numeric(pars_QAQC$peak_Q)
 pars_QAQC$duration_Q <- as.numeric(pars_QAQC$duration_Q)
 pars_QAQC$max_Q <- as.numeric(pars_QAQC$max_Q)
+pars_QAQC$peak_v <- as.numeric(pars_QAQC$peak_v)
+pars_QAQC$duration_v <- as.numeric(pars_QAQC$duration_v)
+pars_QAQC$max_v <- as.numeric(pars_QAQC$max_v)
 
-#merge with pars_yrpltsp
-pars_comp <- merge(pars_QAQC, pars_yrpltsp, by=c("year","transect","site_code",
-                                                 "plot","species","SDD"))
-
-#make graphs comparing parameters
+#show pars_QAQC
+head(pars_QAQC)
 
 ```
 
+# Species-level comparison: parameters
+These graphs show fitted peak, max and duration parameters as fit to data collected by lab members vs those collected by volunteers.
+```{r}
+# make graphs comparing parameters
+for(i in 1:length(species)){
+  #set up plot
+  par(mfrow=c(1,3), omi=c(0,0,0,0), mai=c(0.5,0.5,0.4,0.3), 
+      mgp=c(1.2,0.5,0), tck=-0.02, pty="s")
 
+  # extract data for species in question
+  pars_QAQC_sp <- pars_QAQC[pars_QAQC$species==species[i],]
+  
+  # plot peak, range, duration
+  plot(pars_QAQC_sp$peak_Q, pars_QAQC_sp$peak_v, pch=21, bg="grey", 
+       cex=1.25, xlab="peak-prof", ylab="peak-vol")
+  abline(0,1)
+  plot(pars_QAQC_sp$duration_Q, pars_QAQC_sp$duration_v, pch=21, bg="grey", 
+       cex=1.25, xlab="duration-prof", ylab="duration-vol",
+       main=species[i])
+  abline(0,1)
+  plot(pars_QAQC_sp$max_Q, pars_QAQC_sp$max_v, pch=21, bg="grey", 
+       cex=1.25, xlab="max-prof", ylab="max-vol")
+  abline(0,1)
+}
+```
 
 ###########
 ODDS AND ENDS BELOW (mostly figures)
