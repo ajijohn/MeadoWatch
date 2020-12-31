@@ -311,7 +311,7 @@ for(i in 1:length(species)){
   par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
     tck=-0.02, mgp=c(1.1,0.5,0))
   plot(1,1, type="n", xlim=c(0,mxy), ylim=c(0,(nyrsite+1)), yaxt="n",
-       xlab="time between observations", ylab="")
+       xlab="Time between yes observations", ylab="")
   title(paste(species[i],"-", noutliers_sp, "outlier / ", 
               nobsyes_sp, "total yes"))
   abline(v=out_thresh)
@@ -359,4 +359,57 @@ write.csv(PhenoSite_7, "cleandata/PhenoSite_Clean.csv", quote=TRUE,
      
 ```
 
+
+#Make a graph for all species with a histograms of the distance between yes observations, with the cutoff, and # observations excluded
+```{r}
+# Read in data with distyes / distno
+PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
+
+# Define threshold (-1 = max distance between yes observations)
+out_thresh <- 20
+
+# remove a few species
+PhenoSite_7 <- PhenoSite_6[PhenoSite_6$Species!="ANAR"&
+                           PhenoSite_6$Species!="LICA"&
+                           PhenoSite_6$Species!="MEPA",]
+
+species <- unique(PhenoSite_7$Species)
+species <- species[order(species, decreasing = TRUE)]
+nsp <- length(species)
+
+# Figure out max
+mxy <- max(PhenoSite_7$distyes[PhenoSite_7$Flower==1])
+
+par(mfrow=c(1,1), omi=c(0,0.75,0,0.75), mai=c(0.5,0.5,0.5,0.4), 
+    tck=-0.01, mgp=c(1.1,0.35,0))
+
+plot(1,1, type="n", xlim=c(0,(mxy*1.2)), ylim=c(0.5,(nsp+0.5)), yaxt="n",
+       xlab="Time between yes observations", ylab="")
+
+abline(v=(out_thresh+1))
+
+for(i in 1:length(species)){
+  PhenoSite_Species <- PhenoSite_6[PhenoSite_6$Species==species[i],]
+  PhenoSite_spF <- PhenoSite_Species[PhenoSite_Species$Flower==1,]
+  PhenoSite_spFo <- PhenoSite_spF[PhenoSite_spF$distyes>out_thresh,]
+  
+  # identify # outliers
+  nout <- dim(PhenoSite_spFo)[1]
+  ntotF <- dim(PhenoSite_spF)[1]
+
+  # create jittered y position
+  yesy<- jitter(rep(i,times=dim(PhenoSite_spF)[1]), amount = 1.5/nsp)
+  points(PhenoSite_spF$distyes, yesy, pch=21, bg="grey", cex=1.5)
+  
+  #labels
+  xposlab <- mxy*1/15
+  text(-xposlab,i,labels=species[i],cex=0.75, adj=1, xpd=NA)
+  
+  #observations
+  text((mxy*1.2), i, labels=paste(nout,"/",ntotF, sep=""), 
+       cex=0.75, adj=1)
+}
+
+     
+```
 
