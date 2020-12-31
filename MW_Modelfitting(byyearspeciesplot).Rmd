@@ -375,7 +375,6 @@ for(i in 1:length(species)){
 
 #Model fit to QA/QC vs. non QA/QC data
 This code checks to see whether model fits of volunteers vs. professional scientists vary.
-**In Progress**
 ```{r}
 #define object in which to save parameters
 pars_QAQC <- c()
@@ -486,6 +485,10 @@ head(pars_QAQC)
 
 # Species-level comparison: parameters
 These graphs show fitted peak, max and duration parameters as fit to data collected by lab members vs those collected by volunteers.
+
+Note - peak parameters are very well correlated (with one exception, LUAR in 2018 GB plot 9* - see note below*), but max and duration parameters are not. Max parameters represent the overall probability across all observing flowers across all observations, and volunteers vs HRL lab members have a different frequency of visitation, so this is unsurprising. The duration parameter is correlated with the max parameter, which may also influence the comparison.
+
+* LUAR in GB plot 9 in 2018 seems to have flowered twice (potentially b/c the plant was herbivorized, potentially because there were 2 plants in the plot on a very different schedule, potentially b/c it rained mid summer providing a second flush of flowers). Because the second batch of flowering occurred very near the last day volunteers collected data, the estimate of peak flowering for volunteers in that plot / year is unrealistically late.
 ```{r}
 # make graphs comparing parameters
 for(i in 1:length(species)){
@@ -507,6 +510,54 @@ for(i in 1:length(species)){
   plot(pars_QAQC_sp$max_Q, pars_QAQC_sp$max_v, pch=21, bg="grey", 
        cex=1.25, xlab="max-prof", ylab="max-vol")
   abline(0,1)
+}
+```
+
+
+#QAQC graph - peak flowering comparison volunteer vs. professional
+```{r}
+
+#set up plot
+par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.5), 
+      mgp=c(1.35,0.45,0), tck=-0.02, pty="s")
+
+#remove species not considered: MEPA, ANAR, LICA
+pars_QAQC2 <- pars_QAQC[pars_QAQC$species!="ANAR"&pars_QAQC$species!="LICA"&
+                        pars_QAQC$species!="MEPA",]
+species2 <- unique(pars_QAQC2$species); species2 <- species2[order(species2)]
+
+spcols <- c("yellowgreen","gold3","pink","orange","magenta","yellow",
+            "lightyellow2","plum1","lightsteelblue4","purple","goldenrod4",
+            "greenyellow","navyblue","grey")
+
+#make dummy plot
+plot(180,180, type="n", xlim=c(160,275), ylim=c(160,275),
+     xlab="Estimate - Ecologist", ylab="Estimate -Volunteers")
+abline(0,1)
+legend(x="bottomright", legend=species2, pt.bg=spcols, pch=21, 
+       pt.cex=1.25,cex=0.65)
+
+#correlation
+pars_QAQC3 <- pars_QAQC2[pars_QAQC2$peak_v<280,]
+ctest <- cor.test(pars_QAQC3$peak_Q, pars_QAQC3$peak_v)
+Qcor <- round(ctest$estimate,3)
+Qp0 <- round(ctest$p.value,3)
+ifelse(Qp0==0,Qp<-"p<0.001",Qp<-paste("p=",Qp0,sep==""))
+mtext(paste("cor=",Qcor,sep=""),side=3, adj=0.025, line=-0.9, cex=0.8)
+mtext(Qp, side=3, adj=0.025, line=-1.8, cex=0.8)
+
+#add text
+
+
+# make graphs comparing parameter
+for(i in 1:length(species2)){
+  # extract data for species in question
+  pars_QAQC_sp <- pars_QAQC2[pars_QAQC2$species==species2[i],]
+  
+  # plot peak, range, duration
+  points(pars_QAQC_sp$peak_Q, pars_QAQC_sp$peak_v, 
+         pch=21, bg=spcols[i], cex=1.25)
+
 }
 ```
 
