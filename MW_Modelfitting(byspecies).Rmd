@@ -214,7 +214,7 @@ aics_comp
 ```
 
 # Show plot-level peak fits vs. fitted coefficients
-This graph shows the plot level fits of peak flowering vs. SDD found at the site, and the fitted relationship from the model fit across species (black line). Shown additionally is the snowmelt date (blue dashed line) and the line describing a linear model of the plot level peak parameters vs. SDD.
+These graphs shows the plot level fits of peak flowering vs. SDD found at the site, and the fitted relationship from the model fit across species (black line). Shown additionally is the snowmelt date (blue dashed line) and the line describing a linear model of the plot level peak parameters vs. SDD.
 ```{r}
 
 #Read in per plot model fits, so individual plot fits can be used
@@ -258,3 +258,32 @@ for(i in 1:length(species)){
 }
 
 ```
+#Appendix F: One figure, multi-panel of the same results (for Appendix G)
+
+```{r}
+#Read in per plot model fits, so individual plot fits can be used
+pars_yrpltsp <- read.csv("output/Parameters_plotmodel.csv", header=TRUE) 
+
+#extract species
+#species <- pars_spp_peak$species
+par(mfrow=c(4,4), omi=c(0,0,0,0), mai=c(0.25,0.25,0.25,0.1), 
+      tck=-0.02, mgp=c(1.0,0.2,0), din=c(5,5), pty="s")
+  
+##Plot SDD vs. peak per species
+for(i in 1:length(species)){
+  sp_pars <- pars_yrpltsp[pars_yrpltsp$species==species[i],]
+
+  #Plot points showing plot SDD and plot level peak fits
+  plot(sp_pars$SDD, sp_pars$peak, pch=21, bg="grey",
+       xlab="SDDDOY", ylab="Peak flower")
+  title(species[i])
+  
+  #add line showing modeled relationship between SDD and peak
+  intSDD <- pars_spp$peakint[pars_spp$species==species[i]]
+  slSDD <- pars_spp$peakSDDslope[pars_spp$species==species[i]]
+  abline(intSDD, slSDD)
+  
+}
+
+```
+
