@@ -1,0 +1,156 @@
+---
+title: "MW_WTASentiment.Rmd"
+author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
+date: "12/22/2020"
+output: html_document
+---
+
+**IN PROGRESS: exploratory in nature**
+# This notebook expands on **MW_WTAanalysis.Rmd**
+
+
+# Setup R markdown, load packages
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(randomForest)
+```
+
+## Visualize the sentiments
+```{r }
+WTA_MW_dat %>% 
+  filter (trail=='GB') %>%
+  ggplot() + geom_point(aes(year,total_s,color=month)) + geom_jitter(aes(year,total_s,color=month)) + theme_minimal(base_size = 18) +
+  labs(x="Year", y="Overall score", color="Month")
+```
+
+## By year, and month what is the spread.
+```{r, echo=FALSE}
+WTA_MW_dat %>% 
+  filter (trail=='GB') %>%
+  ggplot() + geom_point(aes(year,month,color=as.factor(total_s))) + geom_jitter(aes(year,month,color=as.factor(total_s))) + theme_minimal(base_size = 18) +
+ # scale_y_discrete(limits=c('January','May','June','July','August','September','October')) +
+  labs(x="Year", y="Overall score", color="Score")
+```
+
+## By year, and month what is the spread - histogram
+```{r, echo=FALSE}
+WTA_MW_dat %>% 
+  filter (trail=='GB') %>%
+  ggplot() + geom_bar(aes(month,fill=as.factor(round(total_s,digits = 1)))) + 
+  theme_minimal(base_size = 18) +
+  facet_grid(.~year)+
+  #coord_flip() +
+  scale_x_discrete(limits=c('May','June','July','August','September','October')) +
+  labs(x="Month", y="Count", fill="Score") +
+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+## Overlap the sentiment score with richness
+
+```{r, echo=FALSE}
+
+Factor <- 1
+WTA_MW_dat %>% 
+  filter (trail=='GB') %>%
+  ggplot() + 
+  geom_bar(aes(month,fill=as.factor(round(total_s,digits = 1)))) +
+  geom_smooth(aes(month,rich), method="loess", col="red") +
+  theme_minimal(base_size = 18) +
+  scale_y_continuous(name="Score", sec.axis=sec_axis(~./Factor, name="Richness")) +
+  facet_grid(.~year)+
+  #coord_flip() +
+  scale_x_discrete(limits=c('May','June','July','August','September','October')) +
+  labs(x="Month", y="Count", fill="Score") +
+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+##
+```{r, echo=FALSE}
+
+Factor <- 1
+WTA_MW_dat %>% 
+  filter (trail=='GB') %>%
+  ggplot() + 
+  geom_bar(aes(DOY,fill=as.factor(round(total_s,digits = 1)))) +
+  geom_smooth(aes(DOY,rich/10), col="red") +
+  theme_minimal(base_size = 18) +
+  facet_grid(.~year)+
+  scale_y_continuous(name="Count", sec.axis=sec_axis(~./10, name="Richness")) +
+  #coord_flip() +
+  #scale_x_discrete(limits=c('May','June','July','August','September','October')) +
+  labs(x="DOY", y="Count", fill="Score") +
+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+## See if the sentiment overlaps with species richness 
+```{r, echo=FALSE}
+
+scaleFactor = 2
+WTA_MW_dat %>% filter (trail=='GB') %>%
+  ggplot() + geom_point(aes(DOY,total_s)) + 
+  geom_smooth(aes(DOY,total_s)) +
+  geom_smooth(aes(DOY,y=rich/scaleFactor), method="loess", col="red") +
+  scale_y_continuous(name="Score", sec.axis=sec_axis(~./scaleFactor, name="Richness")) +
+  theme_minimal(base_size = 18) +
+  facet_grid(.~year)+
+  labs(x="DOY", y="Score",title = "GB - Richness vs Score")
+```
+## Importance of individual sentiment scores on final sentiment
+```{r }
+
+WTA_MW_dat_notnull <- WTA_MW_dat[,c('bug_s','wild_s',
+                                    'crowd_s','trail_s',
+                                    'weather_s','view_s',
+                                    'wildflower_s','total_s')]
+
+bag.sentiments<-randomForest(total_s ~ . ,data=WTA_MW_dat_notnull,importance=TRUE,keep.inbag = TRUE,ntree=500,na.action = na.omit)
+# View the forest results.
+print(bag.sentiments) 
+# Importance of each predictor.
+print(importance(bag.sentiments,type = 2)) 
+```
+
+Trail sentiment contributes the most to the final score
+```{r }
+importrf <- importance(bag.sentiments,type = 2)
+importrf <-importrf %>% as.data.frame()
+importrf$variables <- c("bug_s",  "wild_s" ,  "crowd_s" ,  "trail_s" ,  "weather_s"  ,  "view_s",  "wildflower_s"  )
+importrf<-importrf%>% arrange(desc(IncNodePurity) )
+importrf%>% ggplot() + geom_col(aes(x=reorder(variables, -IncNodePurity),IncNodePurity)) +
+  theme_minimal(base_size = 18) +
+  labs(x="Variables","Importance") +
+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+## Is it - Trail sentiment is correlated with Wildflower sentiment 
+
+```{r }
+rel_trail_wildflower <- lm(data = WTA_MW_dat_notnull,trail_s~wildflower_s)
+
+summary(rel_trail_wildflower)
+```
+
+Not really.
+
+
+## check if trail sentiment was sufficient to explain the total sentiment
+
+```{r }
+rel_total_trail <- lm(data = WTA_MW_dat_notnull,total_s~trail_s)
+summary(rel_total_trail)
+```
+Singificant, and explains 15% of the variation.
+
+## Lets check the richness
+
+```{r }
+
+WTA_MW_dat_richness <- WTA_MW_dat[,c('bug_s','wild_s',
+                                    'crowd_s','trail_s',
+                                    'weather_s','view_s',
+                                    'wildflower_s','total_s','total_s2','rich')]
+rel_total_richness <- lm(data = WTA_MW_dat_richness,total_s~rich)
+
+summary(rel_total_richness)
+```
