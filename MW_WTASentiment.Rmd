@@ -93,7 +93,8 @@ WTA_MW_dat %>% filter (trail=='GB') %>%
   scale_y_continuous(name="Score", sec.axis=sec_axis(~./scaleFactor, name="Richness")) +
   theme_minimal(base_size = 18) +
   facet_grid(.~year)+
-  labs(x="DOY", y="Score",title = "GB - Richness vs Score")
+  labs(x="DOY", y="Score",title = "GB - Richness vs Score")+
+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 ## Importance of individual sentiment scores on final sentiment
 ```{r }
@@ -142,7 +143,7 @@ summary(rel_total_trail)
 ```
 Singificant, and explains 15% of the variation.
 
-## Lets check the richness
+## Lets check the richness and total sentiment
 
 ```{r }
 
@@ -154,3 +155,29 @@ rel_total_richness <- lm(data = WTA_MW_dat_richness,total_s~rich)
 
 summary(rel_total_richness)
 ```
+Not really correlated.
+
+
+## Visitation and sentiment related ?
+```{r }
+
+MR_Visitation <- read_csv('./data/Visitation by Month.csv')
+# Reshaping the dataframe -
+MR_Visitation_reshaped <- MR_Visitation %>%
+ pivot_longer(-Year, names_to = "Month", values_to = "Visitation")
+head(MR_Visitation_reshaped)
+```
+
+```{r }
+MR_Visitation_reshaped %>% 
+  filter(Year %in% c(2015:2019)) %>%
+  ggplot() + geom_point(aes(Month,Visitation, color=as.factor(Year))) +
+   scale_x_discrete(limits=c('JAN','FEB','MAR','APR','MAY',
+                             'JUN','JUL','AUG','SEP','OCT','NOV','DEC')) +
+  theme_minimal(base_size = 18)+
+  labs(color='Year') +
+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+Highest visitations in 2019, especially in peak months - July and August. Seems to link to trail sentiments. 
+
