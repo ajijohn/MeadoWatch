@@ -1,7 +1,7 @@
 ---
 title: "Analyze MeadoWatch Data"
 author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
-date: "Updated 12/17/2020"
+date: "13/01/2021"
 output: html_document
 ---
 
@@ -65,7 +65,7 @@ PhenoSite <- merge(PhenoSite_0,SDDdat,
 
 # Define the wildflower community: which species to include
 species <- c("ANOC", "ARLA", "ASLE", "CAMI", "CAPA", "ERMO", "ERGR", "ERPE",
-             "LIGR", "LUAR", "MIAL", "PEBR", "POBI", "VASI")
+             "LIGR", "LUAR", "PEBR", "POBI", "VASI")
 
 # Create PhenoSite_Focal - data set with just species of interest
 specieskeep <- PhenoSite$Species %in% species
