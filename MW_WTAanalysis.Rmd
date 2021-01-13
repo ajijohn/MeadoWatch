@@ -137,6 +137,8 @@ plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,mxvis),
 title("NPS visition")
 text(c(4,5,6,7,8,9), mxvis*-0.1, xpd=NA, 
       labels=c("Apr","May","June","July","Aug","Sep"))
+legend(x="topleft", legend=c("Average climate year", "CC analog year"), 
+       cex=0.75, pch=21, pt.bg=c("grey","orange"), pt.cex=c(1.25, 2))
 
 for(i in 1:length(yrs)){
   yrvisits <- NPS_dat[NPS_dat$year==yrs[i],]
@@ -154,8 +156,8 @@ month_num <- match(WTA_dat$month, month.abb)
 WTA_dat$month_num <- month_num
 
 plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,0.5),
-     xlab="Month", ylab="Trip Reports")
-title("WTA Trip Reports")
+     xlab="Month", ylab="Proportion")
+title("WTA Trip Reports: GB")
 text(c(4,5,6,7,8,9), -0.05, xpd=NA, 
       labels=c("Apr","May","June","July","Aug","Sep"))
 
@@ -177,8 +179,8 @@ month_num <- match(MW_dat$month, month.abb)
 MW_dat$month_num <- month_num
 
 plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,0.8),
-     xlab="Month", ylab="Peak Flowering")
-title("MeadoWatch Peak Flowering")
+     xlab="Month", ylab="Proportion")
+title("Peak Flowering: GB")
 text(c(4,5,6,7,8,9),-0.08, xpd=NA, 
       labels=c("Apr","May","June","July","Aug","Sep"))
 
