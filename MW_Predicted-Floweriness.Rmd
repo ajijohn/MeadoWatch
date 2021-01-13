@@ -1,7 +1,7 @@
 ---
 title: "Calculate Flowering Indices from MeadoWatch Model Fits"
 author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
-date: "12/17/2020"
+date: "13/01/2021"
 output: html_document
 ---
 
@@ -42,20 +42,30 @@ source("./HRL_phenology_functions.R")
 PlotPheno_pars <- read.csv("output/Parameters_plotmodel.csv", header=TRUE)
 Species_pars <- read.csv("output/Parameters_speciesmodel.csv", header=TRUE)
 SDDdat_0 <- read.csv("cleandata/MW_SDDall.csv", header=TRUE)
+SiteInfo <- read.csv("data/MW_SiteInfo_2013_2020.csv", header=TRUE)
+
+# Merge SDDdat_0 with SiteInfo
+SDDdat_1 <- merge(SDDdat_0, SiteInfo, by = c("Site_Loc"))
 
 # Create new SDD - observed when present, predicted when not
-SDDfin <- SDDdat_0$SDD
+SDDfin <- SDDdat_1$SDD
 # This substitutes in predicted SDD where sensors failed = NA
-SDDfin[is.na(SDDdat_0$SDD)==TRUE] <- 
-  round(SDDdat_0$predSDD[is.na(SDDdat_0$SDD)==TRUE],0)
+SDDfin[is.na(SDDdat_1$SDD)==TRUE] <- 
+  round(SDDdat_0$predSDD[is.na(SDDdat_1$SDD)==TRUE],0)
+
 # this removes unwanted columns, including SDD and pred SDD
-SDDdat <- subset(SDDdat_0, select=-c(Site_Num, Site_Loc, calibration,
+SDDdat_2 <- subset(SDDdat_1, select=-c(Site_Num, Site_Loc, calibration,
                                      snow_appearance_date, 
                                      snow_disappearance_date,
                                      snow_cover_duration, minimum_soil_temp,
-                                     SDD, predSDD))
+                                     SDD, predSDD, Latitude, 
+                                     Longitude, Elevation))
+
 # This adds SDDfin back to data frame as SDD
-SDDdat$SDD <- SDDfin
+SDDdat_2$SDD <- SDDfin
+
+# Subset so Forest Types aren't included
+SDDdat <- SDDdat_2[SDDdat_2$Type!="Forest",]
 
 # Determine unique species, years included in parameters
 species <- unique(Species_pars$species)
@@ -104,7 +114,7 @@ This chunk of code estimates the probability of observing flowering of focal spe
 DOY_pred <- seq(105,285) #approximate April 15 - October 15
 output_p <- c()
 output_r <- c()
-f_thresh <- 1.0 #between 0 and 1, modifies at what proportion of max flowering,
+f_thresh <- 0.5 #between 0 and 1, modifies at what proportion of max flowering,
                 # for example, at 0.5, implies than when 50% max close to peak
                 # at 1.0, only when at peak flowering do species contribute
          
@@ -226,7 +236,7 @@ for(i in 2013:max(yrs)){
    plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
        lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
        main=paste("RL - Richness", sep=" "), ylim=c(0,maxspp));
-   text(c(105,135,165,195,225,255,285),-1,
+   text(c(105,135,165,195,225,255,285),-1*maxspp/12,
        labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}
     
    if(i>2013){
