@@ -11,29 +11,26 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(MASS)
 library(boot)
+library(dplyr)
 ```
 
-#Clean up WTA data files
-This code chunk reads in the raw data files, and does some cleaning and prepping for analysis. Specifically:
-1. Read in necessary data, reconfigure
+#Objective 1
+This code chunk:
+1. Reads in necessary data
      +read in NPS visitation data
      +read in peak flowering data (per plot, year, species)
      +read in WTA data
-     +read in MeadoWatch predicted flowering by day
-2. Obj. 1: Create data frame of NPS visits, peak flowering, WTA posts
-     +reconfigure NPS visitation data
-     +turn peak flowering estimates into month data
-     +WTA data - remove years / cols, average by trip report
-4. Obj. 2: Create data frame of sentiment scores
-     +average across reviewers (after omitting NA)
-5. Obj. 3: Create dataframe of sentiment scores, WTA data
-6. Read in phenology functions
+     +read flowering richness by day
+2. Creates a data frame of NPS visits, peak flowering, WTA posts
+     +reconfigure NPS visitation data, subset to years / months
+     +WTA data: count # reports per year month
+     +turn peak flowering estimates (julian day) into monthly data
+3. Makes a figure of visits, WTA reports, peak flowering
+4. Analysis?
 
 **IN PROGRESS: code will need to be modified to deal with Skyline trail data**
 
-```{r}
-# Read in phenology functions
-source("./HRL_phenology_functions.R")
+```{r fig1, fig.height=6, fig.width=3, fig.align="center"}
 
 # Read in all necessary data
 MW_rich_dat <- read.csv("output/FloweringRichness.csv", header=TRUE)
@@ -42,24 +39,26 @@ WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
 NPS_dat_0 <- read.csv("data/Visitation by Month.csv")
 
 ## FOR OBJECTIVE 1
-# Create timing data frame with 6 columns
-# year, type (visitor, WTA, peak), trail, species, month, # items
+# Create timing data frame with 5 columns
+# year, type (visitor, WTA, peak), trail, month, # items
 # Note - constrain to April, May, Jun, Jul, Aug, Sep
-# First visitation data
+# TODO - this code seems really inefficient, not sure how to improve...
+
+#  NPS data - recreational visits
 yr_nps <- rep(NPS_dat_0$Year, times=6)
-typ_nps <- rep("NPS", times=length(yr_nps))
+typ_nps <- as.factor(rep("NPS", times=length(yr_nps)))
 trail_nps <- rep(NA, times=length(yr_nps))
-species_nps <- rep(NA, times=length(yr_nps))
-month_nps <- rep(c("Apr","May","Jun","Jul","Aug","Sep"),
-                 each=length(yr_nps))
+month_nps <- as.factor(rep(c("Apr","May","Jun","Jul","Aug","Sep"),
+                      each=dim(NPS_dat_0)[1]))
 nitems_nps <- c(NPS_dat_0$APR, NPS_dat_0$MAY, NPS_dat_0$JUN, 
                 NPS_dat_0$JUL, NPS_dat_0$AUG, NPS_dat_0$SEP)
-NPS_dat_1 <- cbind(yr_nps, typ_nps, trail_nps, 
-                   species_nps, month_nps, nitems_nps)
-NPS_dat_2 <- data.frame(NPS_dat_1)
-NPS_dat <- NPS_dat_2[NPS_dat_2$yr_nps>2012,]
+NPS_dat_1 <- data.frame(yr_nps, typ_nps, trail_nps, 
+                   month_nps, nitems_nps)
+NPS_dat <- NPS_dat_1[NPS_dat_1$yr_nps>2012,]
+dimnames(NPS_dat)[[2]] <- c("year","type","trail",
+                            "month","n")
 
-# now WTA data
+# WTA data - # reports per month
 WTA_dat_1 <- subset(WTA_dat_0, select=c(orig.position, trail, year, month))
 WTA_dat_2 <- distinct(WTA_dat_1)
 WTA_dat_3 <- WTA_dat_2[WTA_dat_2$year>2014,]
@@ -71,23 +70,144 @@ mnthskeep <- WTA_dat_3$month %in% mnths
 WTA_dat_4 <- WTA_dat_3[mnthskeep,]
 WTA_dat_4$trail <- as.factor(WTA_dat_4$trail)
 WTA_dat_4$month <- as.factor(WTA_dat_4$month)
-WTA_dat_5b <- WTA_dat_4 %>% 
+WTA_dat_5a <- WTA_dat_4 %>% 
   group_by(year, trail, month)%>% 
   tally() %>% as.data.frame()
 
-#Add zeros
-yr_wta <- rep(c(2015, 2016, 2017, 2018, 2019), each=6)
-typ_wta <- rep("WTA", times=length(yr_wta))
-trail_wta <- rep("GB", times=length(yr_wta))
-species_wta <- rep(NA, times=length(yr_wta))
-month_wta <- rep(c("Apr","May","Jun","Jul","Aug","Sep"),
-                 each=length(yr_wta))
-WTA_dat_5a <- as.data.frame(cbind(yr_wta, typ_wta, 
-                    trail_wta, species_wta, month_wta))
-WTA_dat_5 <- merge(WTA_dat_5a, WTA_dat_5b, 
-                   by.x = c("trail_wta","year_wta","month_wta"),
-                   by.y = c("trail", "year", "month"))
+#Add zeros to WTA data (NB - will need to add skyline trail)
+WTA_dat_5b <- NPS_dat
+WTA_dat_5b <- WTA_dat_5b[WTA_dat_5b$year>2014,]
+WTA_dat_5b$type <- "WTA"
+WTA_dat_5b$trail <- "GB"
+WTA_dat_5b$n <- 0
+WTA_dat_5c <- merge(WTA_dat_5b, WTA_dat_5a, all.x=TRUE,
+                    by=c("year","trail","month"))
+WTA_dat_5c$n.y[is.na(WTA_dat_5c$n.y)==TRUE] <- 0
+WTA_dat_5c$n.x <- NULL
+dimnames(WTA_dat_5c)[[2]][5] <- "n"
+colorder <- dimnames(NPS_dat)[[2]]
+WTA_dat <- WTA_dat_5c[,colorder]
 
+# MW data - number of species in peak flower per month
+dimnames(MW_plot_dat_0)[[2]][2] <- "trail"
+MW_plot_dat_0$trail[MW_plot_dat_0$trail=="Reflection Lakes"] <- "RL"
+MW_plot_dat_0$trail[MW_plot_dat_0$trail=="Glacier Basin"] <- "GB"
+keepcol <- c("year","trail","species","peak")
+MW_plot_dat_1 <- MW_plot_dat_0[,keepcol]
+MW_plot_dat_1$peak <- round(MW_plot_dat_1$peak)
+Jan1Jul <- as.Date(paste(MW_plot_dat_1$year,"-01-01", sep=""))
+MW_date <- as.Date(MW_plot_dat_1$peak, origin = Jan1Jul)
+MW_plot_dat_1$month <- format(MW_date, "%b")
+MW_plot_dat_1$type <- "MW"
+MW_dat_2a <- MW_plot_dat_1 %>% 
+  group_by(year, trail, month)%>% 
+  tally() %>% as.data.frame()
+
+# MW data - add zeros
+MW_dat_1a <- NPS_dat
+MW_dat_1a <- MW_dat_1a[MW_dat_1a$year>2012,]
+MW_dat_1a$type <- "MW"
+MW_dat_1a$trail <- "GB"
+MW_dat_1b <- MW_dat_1a
+MW_dat_1b$trail <- "RL"
+MW_dat_2b <- rbind(MW_dat_1a, MW_dat_1b)
+MW_dat_2b$n <- 0
+MW_dat_3  <- merge(MW_dat_2b, MW_dat_2a, all.x=TRUE,
+                    by=c("year","trail","month"))
+MW_dat_3$n.y[is.na(MW_dat_3$n.y)==TRUE] <- 0
+MW_dat_3$n.x <- NULL
+dimnames(MW_dat_3)[[2]][5] <- "n"
+colorder <- dimnames(NPS_dat)[[2]]
+MW_dat_3 <- MW_dat_3[,colorder]
+MW_dat <- MW_dat_3[!(MW_dat_3$trail=="GB" & MW_dat_3$year<2015),]
+
+# Make 3 panel figure showing all data over time
+par(mfrow=c(3,1), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.3),
+    mgp=c(1.2,0.4,0), tck=-0.02)
+
+# first visitation
+yrs <- unique(NPS_dat$year); yrs <- c(2013,2014,2016,2017,2018,2019,2015)
+mxvis <- max(NPS_dat$n) / 1000
+yrcols <- c("grey","grey","grey","grey","grey","grey","orange")
+month_num <- match(NPS_dat$month, month.abb)
+NPS_dat$month_num <- month_num
+
+plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,mxvis),
+     xlab="Month", ylab="Visits (1000's)")
+title("NPS visition")
+text(c(4,5,6,7,8,9), mxvis*-0.1, xpd=NA, 
+      labels=c("Apr","May","June","July","Aug","Sep"))
+
+for(i in 1:length(yrs)){
+  yrvisits <- NPS_dat[NPS_dat$year==yrs[i],]
+  lines(yrvisits$month_num, yrvisits$n/1000)
+}
+
+for(i in 1:length(yrs)){
+  yrvisits <- NPS_dat[NPS_dat$year==yrs[i],]
+  ifelse(i<7, ptsize<-1.25, ptsize<-2)
+  points(yrvisits$month_num, yrvisits$n/1000, cex=ptsize, pch=21, bg=yrcols[i])
+}
+
+# WTA_dat
+month_num <- match(WTA_dat$month, month.abb)
+WTA_dat$month_num <- month_num
+
+plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,0.5),
+     xlab="Month", ylab="Trip Reports")
+title("WTA Trip Reports")
+text(c(4,5,6,7,8,9), -0.05, xpd=NA, 
+      labels=c("Apr","May","June","July","Aug","Sep"))
+
+for(i in 1:length(yrs)){
+  yrvisits <- WTA_dat[WTA_dat$year==yrs[i],]
+  yrvisits <- yrvisits[order(yrvisits$month_num),]
+  lines(yrvisits$month_num, yrvisits$n/sum(yrvisits$n))
+}
+
+for(i in 1:length(yrs)){
+  yrvisits <- WTA_dat[WTA_dat$year==yrs[i],]
+  ifelse(i<7, ptsize<-1.25, ptsize<-2)
+  points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
+          cex=ptsize, pch=21, bg=yrcols[i])
+}
+
+# MW_dat
+month_num <- match(MW_dat$month, month.abb)
+MW_dat$month_num <- month_num
+
+plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,0.8),
+     xlab="Month", ylab="Peak Flowering")
+title("MeadoWatch Peak Flowering")
+text(c(4,5,6,7,8,9),-0.08, xpd=NA, 
+      labels=c("Apr","May","June","July","Aug","Sep"))
+
+for(i in 1:length(yrs)){
+  yrvisits <- MW_dat[MW_dat$year==yrs[i]&MW_dat$trail=="GB",]
+  yrvisits <- yrvisits[order(yrvisits$month_num),]
+  lines(yrvisits$month_num, yrvisits$n/sum(yrvisits$n))
+}
+
+for(i in 1:length(yrs)){
+  yrvisits <- MW_dat[MW_dat$year==yrs[i]&MW_dat$trail=="GB",]
+  ifelse(i<7, ptsize<-1.25, ptsize<-2)
+  points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
+          cex=ptsize, pch=21, bg=yrcols[i])
+}
+```
+
+
+#Objective 2
+This code chunk:
+1. Reads in WTA data
+2. Average across reviewers (after omitting NA)
+3. RandomForests to examine relationship among sentiments
+
+**IN PROGRESS**
+
+```{r}
+# Read in all necessary data
+WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
 
 # Reconfigure WTA sentiments
 WTA_dat_1 <- subset(WTA_dat_0, select=-c(pre.2013, dummy.random.order, link,
@@ -130,6 +250,11 @@ for(i in 1:length(reports)){
   WTA_dat_4 <-rbind(WTA_dat_4,newrow)
 }
 
+
+# Now random forests analysis
+
+
+
 # Now add DOY
 # Calculate Julian Days of observations
 DOY <- c()
@@ -165,10 +290,46 @@ head(WTA_MW_dat)
 
 ```
 
-#Obj. 1 Analyze visitation, social media posts, peak flowering
+
+#Objective 3
 ```{r}
+# Add DOY to WTA data
+# Calculate Julian Days of observations
+DOY <- c()
+
+# Convert the 'Date' - observed date to Julian (DOY)
+for(i in 1:dim(WTA_dat_4)[1]){
+  year <- WTA_dat_4$year[i]
+  month <- WTA_dat_4$month[i]
+  day <- WTA_dat_4$day[i]
+  tmpdate <- paste(month,day,year, sep=" ")
+  Jan1Jul <- as.Date(paste(year,"-01-01", sep=""))
+  ObsJulDayYr <- julian(as.Date(tmpdate,"%B %d %Y"),
+                        origin=Jan1Jul)
+  DOY <- c(DOY,ObsJulDayYr)
+}
+
+WTA_dat_4$DOY <- DOY
+
+# Change WTA_dat trail name to GB, RL (for merging)
+WTA_dat_4$trail[WTA_dat_4$trail=="glacier basin"] <- "GB"
+WTA_dat_4$trail[WTA_dat_4$trail=="skyline trail"] <- "RL"
+
+# merge WTA_dat with flowering richness
+WTA_MW_dat <- merge(WTA_dat_4, MW_rich_dat, by = c("trail","year","DOY"))
+
+# make data frame
+WTA_MW_dat <- data.frame(WTA_MW_dat)
+
+# change storage mode
+WTA_MW_dat$year <- as.factor(WTA_MW_dat$year)
+WTA_MW_dat$flowerbadge <- as.factor(WTA_MW_dat$flowerbadge)
+head(WTA_MW_dat)
+
+#Now analysis relating Sentiment to flowering
 
 ```
+
 
 
 #This and That
