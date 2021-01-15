@@ -116,8 +116,7 @@ output_p <- c()
 output_r <- c()
 f_thresh <- 0.5 #between 0 and 1, modifies at what proportion of max flowering,
                 # for example, at 0.5, implies than when 50% max close to peak
-                # at 1.0, only when at peak flowering do species contribute
-         
+                
 
 for(i in 1:nyrs){ #each year
     outputGB <- cbind(rep(yrs[i], times=length(DOY_pred)),
@@ -199,7 +198,9 @@ output_p_fin <- data.frame(cbind(output_p, anyfl,allfl))
 
 #Calculate richness 
 rich <- apply(output_r[,4:dim(output_r)[2]], 1, sum)
-output_r_fin <- data.frame(cbind(output_r, rich))
+flseason <- rep(0, times=length(rich))
+flseason[rich[]>=0.5*length(species)] <- 1
+output_r_fin <- data.frame(cbind(output_r, rich, flseason))
 
 #Examine output
 head(output_p_fin) 
