@@ -199,19 +199,21 @@ for(i in 1:length(yrs)){
 ```
 
 
-#Objective 2
+#Objective 2A (next few code chunks)
 This code chunk:
 1. Reads in WTA data
-2. Average across reviewers (after omitting NA)
-3. RandomForests to examine relationship among sentiments
+2. Averages across sentiments (after removing NA's)
+3. Explores sentiments
+  +How many NAs?
+  +Histogram of sentiments?
 
 **IN PROGRESS**
 
-```{r}
+```{r fig1, fig.height=7, fig.width=4.5, fig.align="center"}
 # Read in all necessary data
 WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
 
-# Reconfigure WTA sentiments
+# Remove some columns
 WTA_dat_1 <- subset(WTA_dat_0, select=-c(pre.2013, dummy.random.order, link,
                                          other.trails, other.trails.mw, author, 
                                          flowers.in.pics.spp, spp.mentioned,
@@ -222,10 +224,10 @@ WTA_dat_1 <- subset(WTA_dat_0, select=-c(pre.2013, dummy.random.order, link,
 # Remove rows with NAs in overall sentiment
 WTA_dat_2 <- WTA_dat_1[is.na(WTA_dat_1$overall.report.sentiment)==FALSE,]
 
-# Only include years in which MW data was collected
+# Only include years in which MW data was collected in GB
 WTA_dat_3 <- WTA_dat_2[WTA_dat_2$year>2014,]
 
-# new data set: average score (this may not be the best way to go) 
+# new data set: average score, after NAs (this may not be the best way to go) 
 reports <- unique(WTA_dat_3$orig.position)
 WTA_dat_4 <- c()
 
@@ -252,43 +254,87 @@ for(i in 1:length(reports)){
   WTA_dat_4 <-rbind(WTA_dat_4,newrow)
 }
 
-
-# Now random forests analysis
-
-
-
-# Now add DOY
-# Calculate Julian Days of observations
-DOY <- c()
-
-# Convert the 'Date' - observed date to Julian (DOY)
-for(i in 1:dim(WTA_dat_4)[1]){
-  year <- WTA_dat_4$year[i]
-  month <- WTA_dat_4$month[i]
-  day <- WTA_dat_4$day[i]
-  tmpdate <- paste(month,day,year, sep=" ")
-  Jan1Jul <- as.Date(paste(year,"-01-01", sep=""))
-  ObsJulDayYr <- julian(as.Date(tmpdate,"%B %d %Y"),
-                        origin=Jan1Jul)
-  DOY <- c(DOY,ObsJulDayYr)
+# Check how many NA's per sentiment score
+for(i in 12:19){
+  ns <- length(na.omit(WTA_dat_4[,i]))
+  print(paste(dimnames(WTA_dat_4)[[2]][i],"-", 
+              ns, " of ", dim(WTA_dat_4)[1]))
 }
 
-WTA_dat_4$DOY <- DOY
+# Turn it into WTA_dat
+WTA_dat <- WTA_dat_4
 
-# Change WTA_dat trail name to GB, RL (for merging)
-WTA_dat_4$trail[WTA_dat_4$trail=="glacier basin"] <- "GB"
-WTA_dat_4$trail[WTA_dat_4$trail=="skyline trail"] <- "RL"
+# Make histogram of sentiments
+par(mfrow=c(4,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.4), 
+    tck=-0.02, mgp=c(1.1,0.4,0))
 
-# merge WTA_dat with flowering richness
-WTA_MW_dat <- merge(WTA_dat_4, MW_rich_dat, by = c("trail","year","DOY"))
+for(i in 12:19){
+  hist(WTA_dat[,i], col="grey", xlab="sentiment",ylab="freq",
+       breaks=c(0,1,2,3,4,5), main=dimnames(WTA_dat)[[2]][i])
+  mean_s <- round(mean(na.omit(WTA_dat[,i])),2)
+  mtext(paste("mean=",mean_s, sep=""), side=3, adj=0.95, cex=0.65)
+}
 
-# make data frame
-WTA_MW_dat <- data.frame(WTA_MW_dat)
+```
 
-# change storage mode
-WTA_MW_dat$year <- as.factor(WTA_MW_dat$year)
-WTA_MW_dat$flowerbadge <- as.factor(WTA_MW_dat$flowerbadge)
-head(WTA_MW_dat)
+#Objective 2
+This code chunk examines correlations between sentiments
+```{r fig1, fig.height=7, fig.width=7, fig.align="center"}
+# correlations between sentiment scores
+sentiments <- subset(WTA_dat, select=c(bug_s, wild_s, crowd_s,
+                                       trail_s, weather_s,
+                                       view_s, wildflower_s, total_s))
+                     
+
+panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...){ 
+  #begin panel.cor function
+	usr <- par("usr"); on.exit(par(usr))
+	par(usr = c(0, 1, 0, 1))
+	r <- abs(cor(x, y, use="pairwise.complete.obs", method="kendall"))
+	txt <- format(c(r, 0.123456789), digits=digits)[1]
+	txt <- paste(prefix, txt, sep="")
+	if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+	text(0.5, 0.5, txt, cex = cex.cor * r)
+} #end function
+
+par(omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.3), 
+      tck=-0.01, mgp=c(1.0,0.35,0))
+
+pairs(sentiments, pch=21, bg="grey", lower.panel=panel.cor, 
+      upper.panel=panel.smooth) #plots correlations in sentiment
+
+
+
+```
+
+#Objective 2: Total sentiment tests
+This code chunk examines total sentiment as a function of:
+1. Flower badge (yes, no)
+2. Bugs (5 levels)
+3. Year of data collection
+```{r fig1, fig.width=4, fig.height=8}
+
+par(mfrow=c(3,1), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.3), 
+    mgp=c(1.0,0.4,0), tck=-0.01)
+
+#Total sentiment vs. flowerbadge
+test_flbadge <- lm(WTA_dat$total_s~as.factor(WTA_dat$flowerbadge))
+summary(test_flbadge)
+plot(WTA_dat$total_s~as.factor(WTA_dat$flowerbadge),
+     col=c("yellowgreen","purple"), xlab="Flowerbadge", ylab="Sentiment")
+
+#Total sentiment vs. bug
+bugdat <- WTA_dat[is.na(WTA_dat$bugs.summary)==FALSE,]
+test_bug <- lm(bugdat$total_s~bugdat$bugs.summary)
+summary(test_bug)
+plot(bugdat$total_s~as.factor(bugdat$bugs.summary), 
+     xlab="Bugs", ylab="Sentiment")
+
+#Total sentiment vs. year
+test_year <- lm(WTA_dat$total_s~as.factor(WTA_dat$year))
+summary(test_year)
+plot(WTA_dat$total_s~as.factor(WTA_dat$year),
+     xlab="year", ylab="Sentiment")
 
 ```
 
