@@ -18,6 +18,8 @@ library(randomForest)
 
 ## Visualize the sentiments
 ```{r }
+WTA_MW_dat <- read.csv("output/WTA_MW_dat.csv", header=TRUE)
+
 WTA_MW_dat %>% 
   filter (trail=='GB') %>%
   ggplot() + geom_point(aes(year,total_s,color=month)) + geom_jitter(aes(year,total_s,color=month)) + theme_minimal(base_size = 18) +
