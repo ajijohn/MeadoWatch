@@ -337,7 +337,10 @@ plot(WTA_dat$total_s~as.factor(WTA_dat$year),
 
 ```
 
-#Random forests
+#Objective 2: Random Forests with sentiments
+This code chunk runs random forests on sentiments - relating total sentiment to the individual sentiments (except for bugs - only 40 records in GB). Two approaches to deal with missing values.
+1. Impute missing values
+2. Assume NA's are 3 (neutral opinion)
 ```{r}
 sentiments <- WTA_dat[,c('wild_s', 'crowd_s','trail_s',
                          'weather_s','view_s','wildflower_s','total_s')]
@@ -382,8 +385,7 @@ barplot(importrf[,1], names.arg = dimnames(importrf)[[1]],
 title("NA = Neutral")
 ```
 
-
-#Objective 3
+#Merge WTA data with MeadoWatch predictions of the flowering season and flowering richness.
 ```{r}
 # Add DOY to WTA data
 # Calculate Julian Days of observations
@@ -426,87 +428,8 @@ write.csv(WTA_MW_dat, file = "output/WTA_MW_dat.csv", quote=FALSE,
 
 
 
-#This and That
-This chunk of code makes several figures to explore WTA data
-```{r}
 
-# Various graphs over time
-# Violin plot of trip reports in each year
-ggplot(WTA_MW_dat, aes(x=DOY, y=year)) + 
-  geom_violin(trim=FALSE, fill=year)  +
-  scale_x_continuous(breaks=seq(0,360,30)) +
-  labs(title="Visits to Glacier Basin", 
-       x="Day of Year", y = "Year")
-
-# Violin plot of trip reports over all years vs. flower badges
-ggplot(WTA_MW_dat, aes(x=DOY, y=flowerbadge, fill=flowerbadge)) + 
-  geom_violin(trim=FALSE)  +
-  scale_x_continuous(breaks=seq(0,360,30)) +
-  labs(title="Visits to Glacier Basin", 
-       x="Day of Year", y = "Flower Badge")
-  
-# Fit phenology curve to flower badges, plot all years
-source("./HRL_phenology_functions.R")
-
-#make a dummy plot to add lines to
-yrs <- unique(WTA_MW_dat$year); yrs <- yrs[order(yrs)]; nyrs <- length(yrs)
-yrcols <- c("purple","blue","orange","yellowgreen","pink")
-par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
-      tck=-0.02, mgp=c(1.1,0.5,0))
-plot(1,1, type="n", xlim=c(120,300),
-       ylim=c(0,1), xlab="", ylab="Flower Badges", pin=c(6,4),
-       xaxp=c(120, 300, 6))
-title("Flower Badge Phenology")
-legend(x="topright", legend=yrs, col=yrcols, lwd=2)
-  
-# Now estimate for each year, add line
-for(i in 1:nyrs){
-  XX_DOY <- seq(120,300)
-  WTA_dat_yr <- WTA_MW_dat[WTA_MW_dat$year==yrs[i],]
-  days <- WTA_dat_yr$DOY
-  phenophase <- rep(0, times=dim(WTA_dat_yr)[1])
-  phenophase[WTA_dat_yr$flowerbadge=="yes"] <- 1
-  param <- c(mean(days[phenophase[]==1]), -0.001, 0)
-  FBmod <- optim(param, curvefit_perplot, control = list(maxit = 50000))
-  predf <- predflower(XX_DOY, FBmod$par)
-  lines(XX_DOY, predf, col=yrcols[i], lwd=2)
-}
-
-# correlations between sentiment scores
-sentiments <- subset(WTA_MW_dat, select=c(bug_s, wild_s, crowd_s,
-                                       trail_s, weather_s,
-                                       view_s, wildflower_s, total_s))
-                     
-
-panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...){ 
-  #begin panel.cor function
-	usr <- par("usr"); on.exit(par(usr))
-	par(usr = c(0, 1, 0, 1))
-	r <- abs(cor(x, y, use="pairwise.complete.obs", method="kendall"))
-	txt <- format(c(r, 0.123456789), digits=digits)[1]
-	txt <- paste(prefix, txt, sep="")
-	if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-	text(0.5, 0.5, txt, cex = cex.cor * r)
-} #end function
-
-par(omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.3), 
-      tck=-0.01, mgp=c(1.0,0.35,0))
-
-pairs(sentiments, pch=21, bg="grey", lower.panel=panel.cor, 
-      upper.panel=panel.smooth) #plots correlations in sentiment
-
-# Focuses in on total, view, wildflower, wildlife sentiment
-sentiments2 <- sentiments #[,-c(bug_s,crowd_s,trail_s, weather_s)]
-sentiments2$bug_s <- NULL
-sentiments2$crowd_s <- NULL
-sentiments2$trail_s <- NULL
-sentiments2$weather_s <- NULL
-pairs(sentiments2, pch=21, bg="grey", lower.panel=panel.cor, 
-      upper.panel=panel.smooth) #plots correlations in sentiment  
-
-```
-
-# Preliminary analysis exploring sentiment scores
+# Preliminary analysis exploring sentiment scores (ordinal regression)
 ```{r}
 #histogram of all sentiments
 par(mfrow=c(2,4), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.4), 
