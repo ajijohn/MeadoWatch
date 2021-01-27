@@ -37,7 +37,7 @@ This code chunk:
 MW_rich_dat <- read.csv("output/FloweringRichness.csv", header=TRUE)
 MW_plot_dat_0 <- read.csv("output/Parameters_plotmodel.csv")
 WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
-NPS_dat_0 <- read.csv("data/Visitation by Month.csv")
+NPS_dat_0 <- read.csv("data/Visitation by Month.csv",stringsAsFactors = TRUE)
 
 ## FOR OBJECTIVE 1
 # Create timing data frame with 5 columns
