@@ -12,6 +12,7 @@ library(ggplot2)
 library(MASS)
 library(boot)
 library(dplyr)
+library(randomForest)
 ```
 
 #Objective 1
@@ -303,8 +304,6 @@ par(omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.3),
 pairs(sentiments, pch=21, bg="grey", lower.panel=panel.cor, 
       upper.panel=panel.smooth) #plots correlations in sentiment
 
-
-
 ```
 
 #Objective 2: Total sentiment tests
@@ -338,6 +337,51 @@ plot(WTA_dat$total_s~as.factor(WTA_dat$year),
 
 ```
 
+#Random forests
+```{r}
+sentiments <- WTA_dat[,c('wild_s', 'crowd_s','trail_s',
+                         'weather_s','view_s','wildflower_s','total_s')]
+
+# Imputing
+sentiments.imputed <- rfImpute(total_s ~ ., sentiments)
+bag.sentiments.i <-randomForest(total_s ~ . , data=sentiments.imputed,
+                             importance=TRUE, keep.inbag = TRUE, ntree=500)
+
+# View the forest results.
+print(bag.sentiments.i) 
+
+# Importance of each predictor.
+print(importance(bag.sentiments.i,type = 2)) 
+
+#extract importance values
+importrf <- as.data.frame(importance(bag.sentiments.i,type = 2))
+importrf[,1] <- importrf[order(importrf$IncNodePurity, 
+                               decreasing = TRUE),1]
+barplot(importrf[,1], names.arg = dimnames(importrf)[[1]],
+        xlab="Experiences", ylab="Importance", col="yellowgreen")
+title("Imputed")
+
+# Replace with 3
+sentiments.neutral <- sentiments
+sentiments.neutral[is.na(sentiments.neutral)] <- 3
+bag.sentiments.n <-randomForest(total_s ~ . , data=sentiments.neutral,
+                             importance=TRUE, keep.inbag = TRUE, ntree=500)
+
+# View the forest results.
+print(bag.sentiments.n) 
+
+# Importance of each predictor.
+print(importance(bag.sentiments.n,type = 2)) 
+
+#extract importance values
+importrf <- as.data.frame(importance(bag.sentiments.n,type = 2))
+importrf[,1] <- importrf[order(importrf$IncNodePurity, 
+                               decreasing = TRUE),1]
+barplot(importrf[,1], names.arg = dimnames(importrf)[[1]],
+        xlab="Experiences", ylab="Importance", col="yellowgreen")
+title("NA = Neutral")
+```
+
 
 #Objective 3
 ```{r}
@@ -346,10 +390,10 @@ plot(WTA_dat$total_s~as.factor(WTA_dat$year),
 DOY <- c()
 
 # Convert the 'Date' - observed date to Julian (DOY)
-for(i in 1:dim(WTA_dat_4)[1]){
-  year <- WTA_dat_4$year[i]
-  month <- WTA_dat_4$month[i]
-  day <- WTA_dat_4$day[i]
+for(i in 1:dim(WTA_dat)[1]){
+  year <- WTA_dat$year[i]
+  month <- WTA_dat$month[i]
+  day <- WTA_dat$day[i]
   tmpdate <- paste(month,day,year, sep=" ")
   Jan1Jul <- as.Date(paste(year,"-01-01", sep=""))
   ObsJulDayYr <- julian(as.Date(tmpdate,"%B %d %Y"),
@@ -357,14 +401,14 @@ for(i in 1:dim(WTA_dat_4)[1]){
   DOY <- c(DOY,ObsJulDayYr)
 }
 
-WTA_dat_4$DOY <- DOY
+WTA_dat$DOY <- DOY
 
 # Change WTA_dat trail name to GB, RL (for merging)
-WTA_dat_4$trail[WTA_dat_4$trail=="glacier basin"] <- "GB"
-WTA_dat_4$trail[WTA_dat_4$trail=="skyline trail"] <- "RL"
+WTA_dat$trail[WTA_dat$trail=="glacier basin"] <- "GB"
+WTA_dat$trail[WTA_dat$trail=="skyline trail"] <- "RL"
 
 # merge WTA_dat with flowering richness
-WTA_MW_dat <- merge(WTA_dat_4, MW_rich_dat, by = c("trail","year","DOY"))
+WTA_MW_dat <- merge(WTA_dat, MW_rich_dat, by = c("trail","year","DOY"))
 
 # make data frame
 WTA_MW_dat <- data.frame(WTA_MW_dat)
@@ -374,7 +418,9 @@ WTA_MW_dat$year <- as.factor(WTA_MW_dat$year)
 WTA_MW_dat$flowerbadge <- as.factor(WTA_MW_dat$flowerbadge)
 head(WTA_MW_dat)
 
-#Now analysis relating Sentiment to flowering
+# save to output
+write.csv(WTA_MW_dat, file = "output/WTA_MW_dat.csv", quote=FALSE,
+          row.names=FALSE)
 
 ```
 
