@@ -85,6 +85,9 @@ head(PlotPheno_pars)
 head(Species_pars)
 head(SDDdat)
 
+#Write
+write.csv(SDDdat, "output/MeadowSDD.csv", quote=FALSE,
+          row.names=FALSE)
 ```
 
 
@@ -235,7 +238,7 @@ for(i in 2013:max(yrs)){
    #graph richness: create if 2013, add lines if later years
    if(i==2013){
    plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
-       lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
+       lwd=2, xaxt="n",xlab="DOY", ylab="flowering richness", 
        main=paste("RL - Richness", sep=" "), ylim=c(0,maxspp));
    text(c(105,135,165,195,225,255,285),-1*maxspp/12,
        labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}
@@ -254,7 +257,7 @@ for(i in 2015:max(yrs)){
    #graph richness: create if 2013, add lines if later years
    if(i==2015){
    plot(yrdat_r$DOY,yrdat_r$rich, type="l", col=yrcols[i-2012],
-       lwd=2, xaxt="n",xlab="DOY", ylab="probability", 
+       lwd=2, xaxt="n",xlab="DOY", ylab="Flowering richness", 
        main=paste("GB - Richness", sep=" "), ylim=c(0,maxspp));
    text(c(105,135,165,195,225,255,285),-1,
        labels=c("Apr","May","Jun","Jul","Aug","Sep","Oct"))}

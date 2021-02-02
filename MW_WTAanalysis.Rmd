@@ -199,6 +199,15 @@ for(i in 1:length(yrs)){
 }
 ```
 
+#Another figure - by snow melt
+```{r}
+SDDdat <- read.csv("output/MeadowSDD.csv", header=TRUE)
+yearavgs <- tapply(SDDdat$SDD, list(SDDdat$Year, SDDdat$Transect), mean)
+
+#Now add mean month, mean visitation
+
+```
+
 
 #Objective 2A (next few code chunks)
 This code chunk:
@@ -304,6 +313,7 @@ par(omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.3),
 pairs(sentiments, pch=21, bg="grey", lower.panel=panel.cor, 
       upper.panel=panel.smooth) #plots correlations in sentiment
 
+
 ```
 
 #Objective 2: Total sentiment tests
@@ -383,6 +393,28 @@ importrf[,1] <- importrf[order(importrf$IncNodePurity,
 barplot(importrf[,1], names.arg = dimnames(importrf)[[1]],
         xlab="Experiences", ylab="Importance", col="yellowgreen")
 title("NA = Neutral")
+
+
+#plot importance
+par(mfrow=c(1,2))
+varImpPlot(bag.sentiments.i, pch=21, bg="yellowgreen")
+varImpPlot(bag.sentiments.n, pch=21, bg="yellowgreen")
+
+
+#Plot a few scatter plots
+par(mfrow=c(1,3), pty="s", omi=c(0,0,0,0), mai=c(0.5,0.5,0.3,0.3),
+    tck=-0.02, mgp=c(1.0,0.3,0))
+
+plot(jitter(sentiments$wildflower_s), jitter(sentiments$total_s),
+     xlim=c(0,5), ylim=c(0,5), cex=1.5, 
+     xlab="Wildflowers", ylab="Total Sentiment", pch=21, bg="magenta")
+plot(jitter(sentiments$view_s), jitter(sentiments$total_s),
+     xlim=c(0,5), ylim=c(0,5), cex=1.5,
+     xlab="Views", ylab="Total Sentiment", pch=21, bg="lightblue")
+plot(jitter(sentiments$wild_s), jitter(sentiments$total_s),
+     xlim=c(0,5), ylim=c(0,5), cex=1.5,
+     xlab="Wildlife", ylab="Total Sentiment", pch=21, bg="brown")
+
 ```
 
 #Merge WTA data with MeadoWatch predictions of the flowering season and flowering richness.
@@ -477,15 +509,17 @@ summary(test_ord_doy2)
 test_ord_null <- polr(total_s2 ~ 1, data=WTA_MW_dat)
 test_ord_flwr <- polr(total_s2 ~ flowerbadge, data=WTA_MW_dat)
 test_ord_rich <- polr(total_s2 ~ rich, data=WTA_MW_dat)
+test_ord_flseas <- polr(total_s2 ~ as.factor(flseason), data=WTA_MW_dat)
 test_ord_yr <- polr(total_s2 ~ year, data=WTA_MW_dat)
 test_ord_yrflwr <- polr(total_s2 ~ year*flowerbadge, data=WTA_MW_dat)
 test_ord_yrrich <- polr(total_s2 ~ year*rich, data=WTA_MW_dat)
 
-anova(test_ord_null,test_ord_flwr,test_ord_rich,
+anova(test_ord_null,test_ord_flwr,test_ord_rich,test_ord_flseas,
       test_ord_yr,test_ord_yrflwr,test_ord_yrrich)
-AIC(test_ord_null,test_ord_flwr,test_ord_rich,
+AIC(test_ord_null,test_ord_flwr,test_ord_rich,test_ord_flseas,
       test_ord_yr,test_ord_yrflwr,test_ord_yrrich)
-summary(test_ord_yrrich)
+summary(test_ord_rich)
+summary(test_ord_flseason)
 
 ```
 
