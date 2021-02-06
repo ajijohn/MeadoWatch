@@ -533,6 +533,7 @@ for(i in 1:(dim(sentiments_recode)[2]-1)){
   #simple anovas
   indtest <- lm(tot~ind)
   print(ttls[i])
+  print(summary(indtest))
   print(anova(indtest))
   print(TukeyHSD(aov(indtest)))
   paov <- round(anova(indtest)$`Pr(>F)`[1],3)
@@ -827,7 +828,7 @@ hist(total.s2, main="Recode (neg,neut,pos)", xlab="sentiments",
 ```
 
 # Objective 3: Ordinal regressions
-```{r fig1, fig.width=5.5, fig.height=2.5}
+```{r fig1, fig.width=6.5, fig.height=3.0}
 #Ordinal regression: year and richness (s1)
 ordr_s1_null <- polr(total.s1~1, data=WTA_MW_dat)
 ordr_s1_yr <- polr(total.s1~as.factor(year), data=WTA_MW_dat)
@@ -853,12 +854,18 @@ ordr_s2_yrrch <- polr(total.s2~rich+as.factor(year), data=WTA_MW_dat)
 ordr_s2_yrtrl <- polr(total.s2~as.factor(year)+as.factor(trail),
                       data=WTA_MW_dat)
 ordr_s2_trlrch <- polr(total.s2~rich+as.factor(trail), data=WTA_MW_dat)
+ordr_s2_yrxrch <- polr(total.s2~rich*as.factor(year), data=WTA_MW_dat)
+ordr_s2_yrxtrl <- polr(total.s2~as.factor(year)*as.factor(trail),
+                      data=WTA_MW_dat)
+ordr_s2_trlxrch <- polr(total.s2~rich*as.factor(trail), data=WTA_MW_dat)
+
 #various tests
 anova(ordr_s2_rch, ordr_s2_null)
 anova(ordr_s2_yrrch, ordr_s2_yr)
 anova(ordr_s2_trlrch, ordr_s2_trl)
 AIC(ordr_s2_null, ordr_s2_yr, ordr_s2_rch, ordr_s2_trl, 
-    ordr_s2_yrrch, ordr_s2_yrtrl, ordr_s2_trlrch)
+    ordr_s2_yrrch, ordr_s2_yrtrl, ordr_s2_trlrch, 
+    ordr_s2_yrxrch, ordr_s2_yrxtrl, ordr_s2_trlxrch)
 
 
 ################
@@ -892,12 +899,19 @@ ordf_s2_yrtrl <- polr(total.s2~as.factor(year)+as.factor(trail),
                       data=WTA_MW_dat)
 ordf_s2_trlfl <- polr(total.s2~as.factor(flseason)+as.factor(trail), 
                        data=WTA_MW_dat)
+ordf_s2_yrxfl <- polr(total.s2~as.factor(flseason)*as.factor(year),
+                      data=WTA_MW_dat)
+ordf_s2_yrxtrl <- polr(total.s2~as.factor(year)*as.factor(trail),
+                      data=WTA_MW_dat)
+ordf_s2_trlxfl <- polr(total.s2~as.factor(flseason)*as.factor(trail), 
+                       data=WTA_MW_dat)
 #various tests
 anova(ordf_s2_fl, ordf_s2_null)
 anova(ordf_s2_yrfl, ordf_s2_yr)
 anova(ordf_s2_trlfl, ordf_s2_trl)
 AIC(ordf_s2_null, ordf_s2_yr, ordf_s2_fl, ordf_s2_trl, 
-    ordf_s2_yrfl, ordf_s2_yrtrl, ordf_s2_trlfl)
+    ordf_s2_yrfl, ordf_s2_yrtrl, ordf_s2_trlfl, 
+    ordf_s2_yrxfl, ordf_s2_yrxtrl, ordf_s2_trlxfl)
 
 AIC(ordf_s2_null, ordf_s2_yr, ordf_s2_trl,
     ordf_s2_fl, ordr_s2_rch, 
@@ -922,9 +936,11 @@ boxplot(rch ~ snt + trl, xlab="", ylim=c(0,13), xaxt = "n",
         col=c("yellowgreen","yellowgreen","yellowgreen",
               "lightblue","lightblue","lightblue"))
 text(c(2, 6), c(-1.2, -1.2), labels=c("GB", "RL"), adj=0.5, xpd=NA)
-text(c(1,2,3,5,6,7), c(12.8, 12.9, 12.8, 12.8, 12.9, 12.8),
-     cex=0.6, labels=c("neg","neut","pos", "neg", "neut","pos"),
+text(c(1,2,3,5,6,7), c(12.8, 12.7, 12.8, 12.8, 12.7, 12.8),
+     cex=0.6, labels=c("<=neut","pos","+pos", "<=neut","pos","+pos"),
      adj=0.5, xpd=NA)
+mtext("a)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
+
 
 #
 fl <- WTA_MW_dat$flseason
@@ -938,6 +954,8 @@ boxplot(snt ~ fl + trl, ylab = "Sentiment", xlab="", ylim=c(1,5.5),
 text(c(1.5, 4), c(0.5, 0.5), labels=c("GB", "RL"), adj=0.5, xpd=NA)
 text(c(1,2,3.5,4.5), c(5.4,5.4,5.4,5.4), cex=0.6,  
      labels=c("no flwrs", "peak","no flwrs", "peak"), adj=0.5, xpd=NA)
+mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
+
 
 ```
 
