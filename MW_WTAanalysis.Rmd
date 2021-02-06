@@ -22,72 +22,80 @@ This code chunk:
      +read in peak flowering data (per plot, year, species)
      +read in WTA data
      +read flowering richness by day
-2. Creates a data frame of NPS visits, peak flowering, WTA posts
+2. Creates data frames of NPS visits, peak flowering, WTA posts
      +reconfigure NPS visitation data, subset to years / months
      +WTA data: count # reports per year month
      +turn peak flowering estimates (julian day) into monthly data
-3. Makes a figure of visits, WTA reports, peak flowering
-4. Analysis?
+3. Creates a data frame of SDD vS dates
 
-**IN PROGRESS: code will need to be modified to deal with Skyline trail data**
-
-```{r fig1, fig.height=6, fig.width=3, fig.align="center"}
+```{r}
 
 # Read in all necessary data
-MW_rich_dat <- read.csv("output/FloweringRichness.csv", header=TRUE)
 MW_plot_dat_0 <- read.csv("output/Parameters_plotmodel.csv")
-WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
+WTA_dat_0a <- read.csv("data/GB_WTA.csv", header=TRUE)
+WTA_dat_0b <- read.csv("data/ST_WTA.csv", header=TRUE)
+WTA_dat_0 <- rbind(WTA_dat_0a, WTA_dat_0b)
 NPS_dat_0 <- read.csv("data/Visitation by Month.csv",stringsAsFactors = TRUE)
+SDDdat <- read.csv("output/MeadowSDD.csv", header=TRUE) #TODO - SNOTEL?
 
 ## FOR OBJECTIVE 1
 # Create timing data frame with 5 columns
 # year, type (visitor, WTA, peak), trail, month, # items
-# Note - constrain to April, May, Jun, Jul, Aug, Sep
+# Note - constrain to April, May, Jun, Jul, Aug, Sep, Oct
 # TODO - this code seems really inefficient, not sure how to improve...
 
 #  NPS data - recreational visits
-yr_nps <- rep(NPS_dat_0$Year, times=6)
+yr_nps <- rep(NPS_dat_0$Year, times=7)
 typ_nps <- as.factor(rep("NPS", times=length(yr_nps)))
 trail_nps <- rep(NA, times=length(yr_nps))
-month_nps <- as.factor(rep(c("Apr","May","Jun","Jul","Aug","Sep"),
+month_nps <- as.factor(rep(c("Apr","May","Jun","Jul","Aug","Sep","Oct"),
                       each=dim(NPS_dat_0)[1]))
 nitems_nps <- c(NPS_dat_0$APR, NPS_dat_0$MAY, NPS_dat_0$JUN, 
-                NPS_dat_0$JUL, NPS_dat_0$AUG, NPS_dat_0$SEP)
-NPS_dat_1 <- data.frame(yr_nps, typ_nps, trail_nps, 
+                NPS_dat_0$JUL, NPS_dat_0$AUG, NPS_dat_0$SEP,
+                NPS_dat_0$OCT)
+NPS_visits_1 <- data.frame(yr_nps, typ_nps, trail_nps, 
                    month_nps, nitems_nps)
-NPS_dat <- NPS_dat_1[NPS_dat_1$yr_nps>2012,]
-dimnames(NPS_dat)[[2]] <- c("year","type","trail",
+NPS_visits <- NPS_visits_1[NPS_visits_1$yr_nps>2012,]
+dimnames(NPS_visits)[[2]] <- c("year","type","trail",
                             "month","n")
 
 # WTA data - # reports per month
-WTA_dat_1 <- subset(WTA_dat_0, select=c(orig.position, trail, year, month))
-WTA_dat_2 <- distinct(WTA_dat_1)
-WTA_dat_3 <- WTA_dat_2[WTA_dat_2$year>2014,]
-WTA_dat_3$month <- substring(WTA_dat_3$month,1,3)
-WTA_dat_3$trail[WTA_dat_3$trail=="glacier basin"] <- "GB"
-WTA_dat_3$trail[WTA_dat_3$trail=="Reflection lakes"] <- "RL"
-mnths <- c("Apr","May","Jun","Jul","Aug","Sep")
-mnthskeep <- WTA_dat_3$month %in% mnths
-WTA_dat_4 <- WTA_dat_3[mnthskeep,]
-WTA_dat_4$trail <- as.factor(WTA_dat_4$trail)
-WTA_dat_4$month <- as.factor(WTA_dat_4$month)
-WTA_dat_5a <- WTA_dat_4 %>% 
+WTA_reports_1 <- subset(WTA_dat_0, select=c(orig.position, trail, year, month))
+WTA_reports_2 <- distinct(WTA_reports_1)
+WTA_reports_3a <- WTA_reports_2[WTA_reports_2$year>2012 & WTA_reports_2$year<2020 &
+                          WTA_reports_2$trail=="skyline loop",]
+WTA_reports_3b <- WTA_reports_2[WTA_reports_2$year>2014 & 
+                                WTA_reports_2$year<2020 &
+                                WTA_reports_2$trail=="glacier basin",]
+WTA_reports_3 <- rbind(WTA_reports_3a, WTA_reports_3b)
+WTA_reports_3$month <- substring(WTA_reports_3$month,1,3)
+WTA_reports_3$trail[WTA_reports_3$trail=="glacier basin"] <- "GB"
+WTA_reports_3$trail[WTA_reports_3$trail=="skyline loop"] <- "RL"
+mnths <- c("Apr","May","Jun","Jul","Aug","Sep","Oct")
+mnthskeep <- WTA_reports_3$month %in% mnths
+WTA_reports_4 <- WTA_reports_3[mnthskeep,]
+WTA_reports_4$trail <- as.factor(WTA_reports_4$trail)
+WTA_reports_4$month <- as.factor(WTA_reports_4$month)
+WTA_reports_5a <- WTA_reports_4 %>% 
   group_by(year, trail, month)%>% 
   tally() %>% as.data.frame()
 
 #Add zeros to WTA data (NB - will need to add skyline trail)
-WTA_dat_5b <- NPS_dat
-WTA_dat_5b <- WTA_dat_5b[WTA_dat_5b$year>2014,]
-WTA_dat_5b$type <- "WTA"
-WTA_dat_5b$trail <- "GB"
-WTA_dat_5b$n <- 0
-WTA_dat_5c <- merge(WTA_dat_5b, WTA_dat_5a, all.x=TRUE,
+WTA_reports_5b <- rbind(NPS_visits, NPS_visits)
+WTA_reports_5b$type <- "WTA"
+WTA_reports_5b$trail <- c(rep("GB", times=dim(NPS_visits)[1]),
+                        rep("RL", times=dim(NPS_visits)[1]))
+WTA_reports_5b$n <- 0
+WTA_reports_5c <- merge(WTA_reports_5b, WTA_reports_5a, all.x=TRUE,
                     by=c("year","trail","month"))
-WTA_dat_5c$n.y[is.na(WTA_dat_5c$n.y)==TRUE] <- 0
-WTA_dat_5c$n.x <- NULL
-dimnames(WTA_dat_5c)[[2]][5] <- "n"
-colorder <- dimnames(NPS_dat)[[2]]
-WTA_dat <- WTA_dat_5c[,colorder]
+WTA_reports_5c$n.y[is.na(WTA_reports_5c$n.y)==TRUE] <- 0
+WTA_reports_5c$n.x <- NULL
+dimnames(WTA_reports_5c)[[2]][5] <- "n"
+WTA_reports_6a <- WTA_reports_5c[WTA_reports_5c$trail=="GB"&
+                                WTA_reports_5c$year>2014,]
+WTA_reports_6b <- WTA_reports_5c[WTA_reports_5c$trail=="RL"
+                                 &WTA_reports_5c$year>2012,]
+WTA_reports <- rbind(WTA_reports_6a, WTA_reports_6b)
 
 # MW data - number of species in peak flower per month
 dimnames(MW_plot_dat_0)[[2]][2] <- "trail"
@@ -100,185 +108,314 @@ Jan1Jul <- as.Date(paste(MW_plot_dat_1$year,"-01-01", sep=""))
 MW_date <- as.Date(MW_plot_dat_1$peak, origin = Jan1Jul)
 MW_plot_dat_1$month <- format(MW_date, "%b")
 MW_plot_dat_1$type <- "MW"
-MW_dat_2a <- MW_plot_dat_1 %>% 
+MW_flowers_2a <- MW_plot_dat_1 %>% 
   group_by(year, trail, month)%>% 
   tally() %>% as.data.frame()
 
 # MW data - add zeros
-MW_dat_1a <- NPS_dat
-MW_dat_1a <- MW_dat_1a[MW_dat_1a$year>2012,]
-MW_dat_1a$type <- "MW"
-MW_dat_1a$trail <- "GB"
-MW_dat_1b <- MW_dat_1a
-MW_dat_1b$trail <- "RL"
-MW_dat_2b <- rbind(MW_dat_1a, MW_dat_1b)
-MW_dat_2b$n <- 0
-MW_dat_3  <- merge(MW_dat_2b, MW_dat_2a, all.x=TRUE,
+MW_flowers_1a <- NPS_visits
+MW_flowers_1a <- MW_flowers_1a[MW_flowers_1a$year>2012,]
+MW_flowers_1a$type <- "MW"
+MW_flowers_1a$trail <- "GB"
+MW_flowers_1b <- MW_flowers_1a
+MW_flowers_1b$trail <- "RL"
+MW_flowers_2b <- rbind(MW_flowers_1a, MW_flowers_1b)
+MW_flowers_2b$n <- 0
+MW_flowers_3  <- merge(MW_flowers_2b, MW_flowers_2a, all.x=TRUE,
                     by=c("year","trail","month"))
-MW_dat_3$n.y[is.na(MW_dat_3$n.y)==TRUE] <- 0
-MW_dat_3$n.x <- NULL
-dimnames(MW_dat_3)[[2]][5] <- "n"
-colorder <- dimnames(NPS_dat)[[2]]
-MW_dat_3 <- MW_dat_3[,colorder]
-MW_dat <- MW_dat_3[!(MW_dat_3$trail=="GB" & MW_dat_3$year<2015),]
+MW_flowers_3$n.y[is.na(MW_flowers_3$n.y)==TRUE] <- 0
+MW_flowers_3$n.x <- NULL
+dimnames(MW_flowers_3)[[2]][5] <- "n"
+colorder <- dimnames(NPS_visits)[[2]]
+MW_flowers_3 <- MW_flowers_3[,colorder]
+MW_flowers <- MW_flowers_3[!(MW_flowers_3$trail=="GB" & 
+                            MW_flowers_3$year<2015),]
 
-# Make 3 panel figure showing all data over time
-par(mfrow=c(3,1), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.3),
+# Now make data frame of dates by SDD
+SDDyear_0 <- tapply(SDDdat$SDD, list(SDDdat$Year, SDDdat$Transect), mean)
+SDDyear_1a <- cbind(as.numeric(dimnames(SDDyear_0)[[1]]),
+                     rep(dimnames(SDDyear_0)[[2]][1],
+                         times=dim(SDDyear_0)[1]),
+                         SDDyear_0[,1])
+SDDyear_1b <- cbind(as.numeric(dimnames(SDDyear_0)[[1]]),
+                     rep(dimnames(SDDyear_0)[[2]][2],
+                         times=dim(SDDyear_0)[1]),
+                         SDDyear_0[,2])                    
+
+#Put together
+Yeardat <- rbind(SDDyear_1a, SDDyear_1b)
+dimnames(Yeardat) <- list(c(), c("Year","Trail","SDD"))
+Yeardat <- data.frame(Yeardat)
+Yeardat <- Yeardat[is.na(Yeardat$SDD)==FALSE,]
+Yeardat <- Yeardat[Yeardat$Year!=2020,]
+Yeardat$Trail[Yeardat$Trail=="Glacier Basin"] <- "GB"
+Yeardat$Trail[Yeardat$Trail=="Reflection Lakes"] <- "RL"
+Yeardat$SDD <- as.numeric(Yeardat$SDD)
+Yeardat$SDD <- round(Yeardat$SDD, 2)
+
+#Create MWatch means
+MWyear_0 <- tapply(MW_plot_dat_0$peak,
+                   list(MW_plot_dat_0$year, MW_plot_dat_0$trail), mean)
+MWyear_0 <- as.data.frame(MWyear_0)
+
+#Add to yeardat
+Yeardat$MW <- c(na.omit(MWyear_0$GB), MWyear_0$RL)
+
+#Create WTA means; first calculate Julian Day
+WTAyear_1 <- subset(WTA_dat_0, select=c(orig.position, trail, year, month, day))
+WTAyear_2 <- distinct(WTAyear_1)
+WTAyear_2$month2 <- substr(WTAyear_2$month,1,3)
+
+# Define the wildflower community: which species to include
+mnths <- c("Apr","May","Jun","Jul","Aug","Sep","Oct")
+
+# Restrict to certain months
+mnthskeep <- WTAyear_2$month2 %in% mnths
+WTAyear_3 <- WTAyear_2[mnthskeep,]
+WTAyear_4 <- WTAyear_3[WTAyear_3$year>2012,]
+
+#Now use to create DOY
+DOY <- c()
+
+# Convert the 'Date' - observed date to Julian (DOY)
+for(i in 1:dim(WTAyear_4)[1]){
+  year <- WTAyear_4$year[i]
+  month <- WTAyear_4$month[i]
+  day <- WTAyear_4$day[i]
+  tmpdate <- paste(month,day,year, sep=" ")
+  Jan1Jul <- as.Date(paste(year,"-01-01", sep=""))
+  ObsJulDayYr <- julian(as.Date(tmpdate,"%B %d %Y"),
+                        origin=Jan1Jul)
+  DOY <- c(DOY,ObsJulDayYr)
+}
+
+WTAyear_4$DOY <- DOY
+
+#Create WTA means
+WTAyear_5 <- tapply(WTAyear_4$DOY,
+                   list(WTAyear_4$year, WTAyear_4$trail), mean)
+WTAyear_5 <- WTAyear_5[dimnames(WTAyear_5)[[1]]!="2020",]
+
+#Add to Yeardat
+Yeardat$WTA <- c(WTAyear_5[-c(1:2),1], WTAyear_5[,2])
+
+#NPS means
+month_num <- match(NPS_visits$month, month.abb)
+NPS_visits$month_num <- month_num
+NPS_visits_n <- NPS_visits
+NPS_visits_n$mnprod <- NPS_visits_n$n*NPS_visits_n$month_num
+NPS_totalyear <- tapply(NPS_visits_n$n, NPS_visits_n$year, sum)
+NPS_mnprodsumyear <- tapply(NPS_visits_n$mnprod, NPS_visits_n$year, sum)
+NPS_monthvisit <- NPS_mnprodsumyear / NPS_totalyear
+
+#add to yeardat, ReflLakes
+Yeardat$NPS <- c(rep(NA, times=5),NPS_monthvisit*30)
+
+```
+
+# Objective 1: Figure
+This code chunk plots a 3 row 2 column figure, with the distributions of wildflowers in peak flower and WTA posts (one line per year) in the first two rows, one column per trail. The last row shows the number of visitors to NPS and a scatterplot of Snow duration vs. peak flowering, WTA posts, and visitors
+```{r fig1, fig.height=6, fig.width=5, fig.align="center"}
+# Make 3x2 panel figure showing all data over time
+par(mfrow=c(3,2), omi=c(0,0,0,0), mai=c(0.35,0.35,0.35,0.25),
     mgp=c(1.2,0.4,0), tck=-0.02)
-
-# first visitation
-yrs <- unique(NPS_dat$year); yrs <- c(2013,2014,2016,2017,2018,2019,2015)
-mxvis <- max(NPS_dat$n) / 1000
+yrs <- unique(NPS_visits$year); yrs <- c(2013,2014,2016,2017,2018,2019,2015)
 yrcols <- c("grey","grey","grey","grey","grey","grey","orange")
-month_num <- match(NPS_dat$month, month.abb)
-NPS_dat$month_num <- month_num
 
-plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,mxvis),
-     xlab="Month", ylab="Visits (1000's)")
+# MW_dat
+trls <- c("GB", "RL")
+month_num <- match(MW_flowers$month, month.abb)
+MW_flowers$month_num <- month_num
+
+for(i in 1:2){
+  plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,10.5), ylim=c(0,1.0),
+       xlab="Month", ylab="Proportion")
+  title(paste("Peak Flowering",trls[i],sep=": "))
+  text(c(4,5,6,7,8,9,10),-0.08, xpd=NA, 
+      labels=c("Apr","May","June","July","Aug","Sep","Oct"))
+
+  for(j in 1:length(yrs)){
+    yrvisits <- MW_flowers[MW_flowers$year==yrs[j]&MW_flowers$trail==trls[i],]
+    yrvisits <- yrvisits[order(yrvisits$month_num),]
+    lines(yrvisits$month_num, yrvisits$n/sum(yrvisits$n))
+  }
+
+  for(j in 1:length(yrs)){
+    yrvisits <- MW_flowers[MW_flowers$year==yrs[j]&MW_flowers$trail==trls[i],]
+    ifelse(j<7, ptsize<-1.25, ptsize<-2)
+    points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
+          cex=ptsize, pch=21, bg=yrcols[j])
+  }
+}
+
+# WTA_dat
+month_num <- match(WTA_reports$month, month.abb)
+WTA_reports$month_num <- month_num
+
+for(i in 1:2){
+  plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,10.5), ylim=c(0,0.6),
+       xlab="Month", ylab="Proportion")
+  title(paste("WTA Trip Reports",trls[i],sep=": "))
+  text(c(4,5,6,7,8,9,10), -0.05, xpd=NA, 
+        labels=c("Apr","May","June","July","Aug","Sep","Oct"))
+
+  for(j in 1:length(yrs)){
+    yrvisits <- WTA_reports[WTA_reports$year==yrs[j] 
+                            & WTA_reports$trail==trls[i],]
+    yrvisits <- yrvisits[order(yrvisits$month_num),]
+    lines(yrvisits$month_num, yrvisits$n/sum(yrvisits$n))
+  }
+
+  for(j in 1:length(yrs)){
+    yrvisits <- WTA_reports[WTA_reports$year==yrs[j]
+                            &WTA_reports$trail==trls[i],]
+    ifelse(j<7, ptsize<-1.25, ptsize<-2)
+    points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
+            cex=ptsize, pch=21, bg=yrcols[j])
+  }
+}
+
+# NPS visitation
+plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,10.5), ylim=c(0,0.5),
+     xlab="Month", ylab="Proportion")
 title("NPS visition")
-text(c(4,5,6,7,8,9), mxvis*-0.1, xpd=NA, 
-      labels=c("Apr","May","June","July","Aug","Sep"))
+text(c(4,5,6,7,8,9,10), -0.05, xpd=NA, 
+      labels=c("Apr","May","June","July","Aug","Sep","Oct"))
 legend(x="topleft", legend=c("Average climate year", "CC analog year"), 
        cex=0.75, pch=21, pt.bg=c("grey","orange"), pt.cex=c(1.25, 2))
 
 for(i in 1:length(yrs)){
-  yrvisits <- NPS_dat[NPS_dat$year==yrs[i],]
-  lines(yrvisits$month_num, yrvisits$n/1000)
-}
-
-for(i in 1:length(yrs)){
-  yrvisits <- NPS_dat[NPS_dat$year==yrs[i],]
-  ifelse(i<7, ptsize<-1.25, ptsize<-2)
-  points(yrvisits$month_num, yrvisits$n/1000, cex=ptsize, pch=21, bg=yrcols[i])
-}
-
-# WTA_dat
-month_num <- match(WTA_dat$month, month.abb)
-WTA_dat$month_num <- month_num
-
-plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,0.5),
-     xlab="Month", ylab="Proportion")
-title("WTA Trip Reports: GB")
-text(c(4,5,6,7,8,9), -0.05, xpd=NA, 
-      labels=c("Apr","May","June","July","Aug","Sep"))
-
-for(i in 1:length(yrs)){
-  yrvisits <- WTA_dat[WTA_dat$year==yrs[i],]
-  yrvisits <- yrvisits[order(yrvisits$month_num),]
+  yrvisits <- NPS_visits[NPS_visits$year==yrs[i],]
   lines(yrvisits$month_num, yrvisits$n/sum(yrvisits$n))
 }
 
 for(i in 1:length(yrs)){
-  yrvisits <- WTA_dat[WTA_dat$year==yrs[i],]
+  yrvisits <- NPS_visits[NPS_visits$year==yrs[i],]
   ifelse(i<7, ptsize<-1.25, ptsize<-2)
   points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
-          cex=ptsize, pch=21, bg=yrcols[i])
+         cex=ptsize, pch=21, bg=yrcols[i])
 }
 
-# MW_dat
-month_num <- match(MW_dat$month, month.abb)
-MW_dat$month_num <- month_num
+#Scatter plot of Year dat
+plot(c(180,180), type="n", xaxt="n", xlim=c(120,210), ylim=c(180,240),
+     xaxp=c(120,210,2), yaxp=c(180,240,1), xaxt="n", yaxt="n",
+     xlab="Snow disappearance", ylab="Timing (Avg)")
+title("Climate vs. Peak")
+text(c(135, 165, 195), 175, xpd=NA, 
+      labels=c("May","Jun","Jul"))
+text(110, c(195, 215), xpd=NA, srt=90, labels=c("Jul","Aug"))
+cls <- c("magenta","yellowgreen","chocolate4")
 
-plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,9.5), ylim=c(0,0.8),
-     xlab="Month", ylab="Proportion")
-title("Peak Flowering: GB")
-text(c(4,5,6,7,8,9),-0.08, xpd=NA, 
-      labels=c("Apr","May","June","July","Aug","Sep"))
+legend(x="bottomright", legend=c("Flowers","Trip reports","Visitors"),
+       lty=1, col=cls, pch=21, pt.bg=cls, pt.cex=1.5, cex=0.75)
 
-for(i in 1:length(yrs)){
-  yrvisits <- MW_dat[MW_dat$year==yrs[i]&MW_dat$trail=="GB",]
-  yrvisits <- yrvisits[order(yrvisits$month_num),]
-  lines(yrvisits$month_num, yrvisits$n/sum(yrvisits$n))
+#tests
+Flwrtest <- lm(Yeardat$MW~Yeardat$SDD); print(summary(Flwrtest))
+WTAtest <- lm(Yeardat$WTA~Yeardat$SDD); print(summary(WTAtest))
+NPStest <- lm(Yeardat$NPS~Yeardat$SDD); print(summary(NPStest))
+
+#add lines, but only for reach of data
+mnmxx_SDD <- c(min(Yeardat$SDD), max(Yeardat$SDD))
+mnmxy_flwr <- coef(Flwrtest)[1] + coef(Flwrtest)[2]*mnmxx_SDD
+lines(mnmxx_SDD, mnmxy_flwr, col=cls[1], lwd=1.5)
+mnmxy_wta <- coef(WTAtest)[1] + coef(WTAtest)[2]*mnmxx_SDD
+lines(mnmxx_SDD, mnmxy_wta, col=cls[2], lwd=1.5)
+mnmxx_nps <- c(min(Yeardat$SDD[is.na(Yeardat$NPS)==FALSE]), 
+               max(Yeardat$SDD[is.na(Yeardat$NPS)==FALSE]))
+mnmxy_nps <- coef(NPStest)[1] + coef(NPStest)[2]*mnmxx_nps
+lines(mnmxx_nps, mnmxy_nps, col=cls[3], lwd=1.5)
+
+#add points
+
+for(i in 4:6){
+  points(Yeardat$SDD, Yeardat[,i], cex=2, pch=21, bg=cls[i-3])
 }
 
-for(i in 1:length(yrs)){
-  yrvisits <- MW_dat[MW_dat$year==yrs[i]&MW_dat$trail=="GB",]
-  ifelse(i<7, ptsize<-1.25, ptsize<-2)
-  points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
-          cex=ptsize, pch=21, bg=yrcols[i])
-}
+
+
 ```
 
-#Another figure - by snow melt
-```{r}
-SDDdat <- read.csv("output/MeadowSDD.csv", header=TRUE)
-yearavgs <- tapply(SDDdat$SDD, list(SDDdat$Year, SDDdat$Transect), mean)
-
-#Now add mean month, mean visitation
-
-```
-
-
-#Objective 2A (next few code chunks)
+#Objective 2 Sentiment wrangling, data exploration
 This code chunk:
-1. Reads in WTA data
-2. Averages across sentiments (after removing NA's)
+1. Wrangles the WTA data, by taking average sentiments after removing the most extreme value. This is done on a sentiment by sentiment basis.
 3. Explores sentiments
   +How many NAs?
   +Histogram of sentiments?
 
-**IN PROGRESS**
-
 ```{r fig1, fig.height=7, fig.width=4.5, fig.align="center"}
-# Read in all necessary data
-WTA_dat_0 <- read.csv("data/GB_WTA.csv", header=TRUE)
-
 # Remove some columns
 WTA_dat_1 <- subset(WTA_dat_0, select=-c(pre.2013, dummy.random.order, link,
                                          other.trails, other.trails.mw, author, 
                                          flowers.in.pics.spp, spp.mentioned,
                                          wildflower.value.terms, value.terms, 
                                          flag, flag.comment, 
-                                         flag.resolved.comment))
+                                         flag.resolved.comment, conflictive))
   
 # Remove rows with NAs in overall sentiment
 WTA_dat_2 <- WTA_dat_1[is.na(WTA_dat_1$overall.report.sentiment)==FALSE,]
 
+#rm 2020 values
+WTA_dat_2 <- WTA_dat_2[WTA_dat_2$year!=2020,]
+
 # Only include years in which MW data was collected in GB
-WTA_dat_3 <- WTA_dat_2[WTA_dat_2$year>2014,]
+WTA_dat_3a <- WTA_dat_2[WTA_dat_2$year>2014&WTA_dat_2$trail=="glacier basin",]
+WTA_dat_3b <- WTA_dat_2[WTA_dat_2$year>2012&WTA_dat_2$trail=="skyline loop",]
+WTA_dat_3 <- rbind(WTA_dat_3a, WTA_dat_3b)
 
 # new data set: average score, after NAs (this may not be the best way to go) 
-reports <- unique(WTA_dat_3$orig.position)
-WTA_dat_4 <- c()
+WTA_dat_4a <- subset(WTA_dat_3, select=c(orig.position, trail, year, month,
+                                         day, flowerbadge, bugs.summary,
+                                         snow.summary))
+postrail <- paste(WTA_dat_4a$trail, WTA_dat_4a$orig.position)
+WTA_dat_4a <- WTA_dat_4a[order(postrail),]
+WTA_dat_4b <- distinct(WTA_dat_4a)
+sentiments <- c()
 
-for(i in 1:length(reports)){
-  report_dat <- WTA_dat_3[WTA_dat_3$orig.position==reports[i],]
-  info <- report_dat[1,c(1,3:12)]
-  bug_s <- mean(report_dat$bugs.sentiment,na.rm=TRUE)
-  if(is.nan(bug_s)==TRUE){bug_s <- NA}
-  wild_s <- mean(report_dat$wildlife.sentiment,na.rm=TRUE)
-  if(is.nan(wild_s)==TRUE){wild_s <- NA}
-  crowd_s <- mean(report_dat$crowding.sentiment,na.rm=TRUE)
-  if(is.nan(crowd_s)==TRUE){crowd_s <- NA}
-  trail_s <- mean(report_dat$trail.condition.sentiment,na.rm=TRUE)
-  if(is.nan(trail_s)==TRUE){trail_s <- NA}
-  weather_s <- mean(report_dat$weather.sentiment,na.rm=TRUE)
-  if(is.nan(weather_s)==TRUE){weather_s <- NA}
-  view_s <- mean(report_dat$view.sentiment,na.rm=TRUE)
-  if(is.nan(view_s)==TRUE){view_s <- NA}
-  wildflower_s <- mean(report_dat$wildflower.sentiment,na.rm=TRUE)
-  if(is.nan(wildflower_s)==TRUE){wildflower_s <- NA}
-  total_s <- mean(report_dat$overall.report.sentiment,na.rm=TRUE)
-  newrow <- cbind(info,bug_s, wild_s, crowd_s, trail_s, 
-              weather_s, view_s, wildflower_s, total_s)
-  WTA_dat_4 <-rbind(WTA_dat_4,newrow)
+for(i in 1:dim(WTA_dat_4b)[1]){
+  trl <- WTA_dat_4b$trail[i]; pos <- WTA_dat_4b$orig.position[i]
+  report_dat <- WTA_dat_3[WTA_dat_3$orig.position==pos 
+                          & WTA_dat_3$trail==trl,]
+  #place to put sentiments
+  report_sentiments <- c()
+  
+  for(j in 13:20){
+    #get raw sentiments
+    tmp_s1 <- na.omit(report_dat[,j])
+    if(length(tmp_s1)==0){tmp_s2 <- NA}
+    if(length(tmp_s1)<3 & length(tmp_s1)>0){tmp_s2 <- mean(tmp_s1)}
+    if(length(tmp_s1)==3){
+        prdf <- c(mean(abs(tmp_s1[1]-tmp_s1[2:3])),
+              mean(abs(tmp_s1[2]-tmp_s1[c(1,3)])),
+              mean(abs(tmp_s1[3]-tmp_s1[1:2])))
+        drops <- which(prdf[]==max(prdf))
+        if(length(drops)==1){tmp_s2 <- mean(tmp_s1[-drops])}
+        if(length(drops)>1){tmp_s2 <- mean(tmp_s1)}
+    }
+    report_sentiments <- c(report_sentiments, tmp_s2)
+  }
+  sentiments <- rbind(sentiments, report_sentiments)
 }
+
+dimnames(sentiments) <- list(c(), c("bug.s","wildlife.s","crowd.s",
+                                    "trail.s", "weather.s","view.s",
+                                    "wildflower.s","total.s"))
+sentiments <- as.data.frame(sentiments)
+
+#merge for finalized WTA data
+WTA_dat <- cbind(WTA_dat_4b, sentiments)
 
 # Check how many NA's per sentiment score
-for(i in 12:19){
-  ns <- length(na.omit(WTA_dat_4[,i]))
-  print(paste(dimnames(WTA_dat_4)[[2]][i],"-", 
-              ns, " of ", dim(WTA_dat_4)[1]))
+for(i in 9:16){
+  scores <- length(na.omit(WTA_dat[,i]))
+  print(paste(dimnames(WTA_dat)[[2]][i],"scored =", 
+              scores, " of ", dim(WTA_dat)[1]))
 }
-
-# Turn it into WTA_dat
-WTA_dat <- WTA_dat_4
 
 # Make histogram of sentiments
 par(mfrow=c(4,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.4), 
     tck=-0.02, mgp=c(1.1,0.4,0))
 
-for(i in 12:19){
+for(i in 9:16){
   hist(WTA_dat[,i], col="grey", xlab="sentiment",ylab="freq",
        breaks=c(0,1,2,3,4,5), main=dimnames(WTA_dat)[[2]][i])
   mean_s <- round(mean(na.omit(WTA_dat[,i])),2)
@@ -287,14 +424,9 @@ for(i in 12:19){
 
 ```
 
-#Objective 2
+#Objective 2 correlations
 This code chunk examines correlations between sentiments
 ```{r fig1, fig.height=7, fig.width=7, fig.align="center"}
-# correlations between sentiment scores
-sentiments <- subset(WTA_dat, select=c(bug_s, wild_s, crowd_s,
-                                       trail_s, weather_s,
-                                       view_s, wildflower_s, total_s))
-                     
 
 panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...){ 
   #begin panel.cor function
@@ -316,109 +448,296 @@ pairs(sentiments, pch=21, bg="grey", lower.panel=panel.cor,
 
 ```
 
-#Objective 2: Total sentiment tests
-This code chunk examines total sentiment as a function of:
-1. Flower badge (yes, no)
-2. Bugs (5 levels)
-3. Year of data collection
-```{r fig1, fig.width=4, fig.height=8}
+#Objective 2 Figure raw correlations
+```{r fig1, fig.height=3, fig.width=8, fig.align="center"}
+par(mfrow=c(1,5), pty="s", omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01)
+noplot <- c("wildlife.s","crowd.s")
+ttls <- c("Bugs","Wildlife","Crowds","Trails","Weather",
+          "Views","Wildflowers", "Total")
 
-par(mfrow=c(3,1), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.3), 
-    mgp=c(1.0,0.4,0), tck=-0.01)
+for(i in 1:(dim(sentiments)[2]-1)){
+  tot <- sentiments$total.s
+  ind <- sentiments[,i]
+  if(dimnames(sentiments)[[2]][i] %in% noplot == TRUE){next}
+  plot(ind, tot, xlim=c(0.5,5), ylim=c(0.5,5), xlab = "Individual Sentiment",
+       ylab = "Total Sentiment", pch=21, bg="lightblue")
+  title(ttls[i])
+  
+  #simple correlation
+  indtest <- cor.test(ind,tot)
+  cr <- round(indtest$estimate, 3)
+  pcr <- round(indtest$p.value, 3)
+  
+  #add to graph
+  mtext(paste("r=",cr,", p=", pcr, sep=""),line=-1, side=1, adj=0.95, cex=0.65)
+}
 
-#Total sentiment vs. flowerbadge
-test_flbadge <- lm(WTA_dat$total_s~as.factor(WTA_dat$flowerbadge))
-summary(test_flbadge)
-plot(WTA_dat$total_s~as.factor(WTA_dat$flowerbadge),
-     col=c("yellowgreen","purple"), xlab="Flowerbadge", ylab="Sentiment")
+```
 
-#Total sentiment vs. bug
-bugdat <- WTA_dat[is.na(WTA_dat$bugs.summary)==FALSE,]
-test_bug <- lm(bugdat$total_s~bugdat$bugs.summary)
-summary(test_bug)
-plot(bugdat$total_s~as.factor(bugdat$bugs.summary), 
-     xlab="Bugs", ylab="Sentiment")
+#Objective 2: recode sentiments, make figure, 1-way ANOVA
+```{r fig1, fig.height=3, fig.width=8, fig.align="center"}
 
-#Total sentiment vs. year
-test_year <- lm(WTA_dat$total_s~as.factor(WTA_dat$year))
-summary(test_year)
-plot(WTA_dat$total_s~as.factor(WTA_dat$year),
-     xlab="year", ylab="Sentiment")
+#First recode individual sentiments, not total
+sentiments_recode <- sentiments[,-dim(sentiments)[2]]
+
+#now replace certain elements
+sentiments_recode[sentiments_recode>3.5] <- "Pos"
+sentiments_recode[sentiments_recode<2.5] <- "Neg"
+sentiments_recode[sentiments_recode>=2.5 & sentiments_recode<=3.5] <- "Neut"
+sentiments_recode[is.na(sentiments_recode)==TRUE] <- "N.A."
+
+#now reconstitute
+for(i in 1:dim(sentiments_recode)[2]){
+  sentiments_recode[,i] <- as.factor(sentiments_recode[,i])
+}
+
+#Put together with total sentiments
+sentiments_recode <- cbind(sentiments_recode, sentiments$total.s)
+dimnames(sentiments_recode)[[2]] <- dimnames(sentiments)[[2]]
+
+#Make figure, analyze
+par(mfrow=c(1,5), pty="s", omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+noplot <- c("wildlife.s","crowd.s")
+ttls <- c("Bugs","Wildlife","Crowds","Trails","Weather",
+          "Views","Wildflowers", "Total")
+
+for(i in 1:(dim(sentiments_recode)[2]-1)){
+  tot <- sentiments_recode$total.s
+  ind <- sentiments_recode[,i]
+  if(dimnames(sentiments)[[2]][i] %in% noplot == TRUE){next}
+  plot(tot~ind, ylim=c(0.5,5.5), xlab = "Individual Sentiment",
+       ylab = "Total Sentiment", 
+       col=c("grey","yellow","chartreuse4","royalblue"))
+  title(ttls[i])
+  
+  #Add NAS
+  propnotext <- 100*round(length(ind[ind=="N.A."]) / length(ind),2)
+  
+  #add to graph
+  mtext(paste(propnotext, "%", sep=""),
+        line=-1, side=3, adj=0.06, cex=0.65)
+  
+  #simple anovas
+  indtest <- lm(tot~ind)
+  print(ttls[i])
+  print(anova(indtest))
+  print(TukeyHSD(aov(indtest)))
+  paov <- round(anova(indtest)$`Pr(>F)`[1],3)
+  
+  #add to graph
+  if(paov>0){
+    mtext(paste("p=", paov, sep=""),
+        line=-1, side=1, adj=0.95, cex=0.65)}
+    if(paov==0){
+    mtext("p<0.001", line=-1, side=1, adj=0.95, cex=0.65)}
+}
 
 ```
 
 #Objective 2: Random Forests with sentiments
-This code chunk runs random forests on sentiments - relating total sentiment to the individual sentiments (except for bugs - only 40 records in GB). Two approaches to deal with missing values.
-1. Impute missing values
-2. Assume NA's are 3 (neutral opinion)
-```{r}
-sentiments <- WTA_dat[,c('wild_s', 'crowd_s','trail_s',
-                         'weather_s','view_s','wildflower_s','total_s')]
+This code chunk uses random forests to explore how total sentiment is related to individual sentiments. We exclude crowding and wildlife (low irr). Three approaches are used
+1. Use the full dataset, with recoded individual sentiments (NA, Neg, Neutral, Pos)
+2. Use the full dataset, with quantitative sentiments, dealing with NAs as follows
+    +recode them as 3 (neutral) - see TukeyHSD for justification
+    +replace them with the mean sentiment of non NA values
+    +impute them
+3. Use a reduced dataset (reduced to those who experienced wildflowers). Deal with NAs here as follows
+    +recode them as 3 (neutral) - see TukeyHSD for justification
+    +replace them with the mean sentiment of non NA values
+    +impute them
+4. Create some plots to show these various results
 
-# Imputing
-sentiments.imputed <- rfImpute(total_s ~ ., sentiments)
-bag.sentiments.i <-randomForest(total_s ~ . , data=sentiments.imputed,
-                             importance=TRUE, keep.inbag = TRUE, ntree=500)
+```{r fig, fig.height=4, fig.width=5, fig.align="center"}
+#Random Forests with recoded sentiments
+rf.recode <-randomForest(total.s ~ bug.s + trail.s + weather.s + view.s +
+                        wildflower.s, data=sentiments_recode,
+                        importance=TRUE, keep.inbag = TRUE, ntree=500)
+#print, plot results
+print(rf.recode, type=2)
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+varImpPlot(rf.recode, pch=21, bg="yellowgreen", main="Recoded")
 
-# View the forest results.
-print(bag.sentiments.i) 
+#Create 3 datasets to deal with NAs (NA=3, NA=mean, imputed)
+sentiments_NA3 <- sentiments
+sentiments_NA3[is.na(sentiments_NA3)==TRUE] <- 3
+sentiments_NAmn <- sentiments
+for(i in 1:7){
+  sentiments_NAmn[is.na(sentiments_NAmn[,i])==TRUE,i]<-
+                  mean(na.omit(sentiments_NAmn[,i]))
+}
+sentiments_imputed <- rfImpute(total.s ~ ., sentiments)
 
-# Importance of each predictor.
-print(importance(bag.sentiments.i,type = 2)) 
+#quick reminder: what proportion NAs in each individual sentiments?
+for(i in 1:7){
+  typ <- dimnames(sentiments)[[2]][i]
+  propNA <- round(sum(is.na(sentiments[,i])) / dim(sentiments)[1], 3)
+  print(paste(typ,": NA sentiments = ",propNA, sep=""))
+}
 
-#extract importance values
-importrf <- as.data.frame(importance(bag.sentiments.i,type = 2))
-importrf[,1] <- importrf[order(importrf$IncNodePurity, 
-                               decreasing = TRUE),1]
-barplot(importrf[,1], names.arg = dimnames(importrf)[[1]],
-        xlab="Experiences", ylab="Importance", col="yellowgreen")
-title("Imputed")
+## FULL DATA SET, REPLACE NA's 3 options
+# Replace NAs with 3
+rf.NA3 <-randomForest(total.s ~ bug.s + trail.s + weather.s + view.s +
+                        wildflower.s, data=sentiments_NA3,
+                        importance=TRUE, keep.inbag = TRUE, ntree=500)
 
-# Replace with 3
-sentiments.neutral <- sentiments
-sentiments.neutral[is.na(sentiments.neutral)] <- 3
-bag.sentiments.n <-randomForest(total_s ~ . , data=sentiments.neutral,
-                             importance=TRUE, keep.inbag = TRUE, ntree=500)
+#print, plot results
+print(rf.NA3, type=2)
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+varImpPlot(rf.NA3, pch=21, bg="yellowgreen", main="NA=3")
 
-# View the forest results.
-print(bag.sentiments.n) 
+# Replace NAs with means
+rf.NAmn <-randomForest(total.s ~ bug.s + trail.s + weather.s + view.s +
+                        wildflower.s, data=sentiments_NAmn,
+                        importance=TRUE, keep.inbag = TRUE, ntree=500)
+#print, plot results
+print(rf.NAmn, type=2)
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+varImpPlot(rf.NAmn, pch=21, bg="yellowgreen", main="NA=mean")
 
-# Importance of each predictor.
-print(importance(bag.sentiments.n,type = 2)) 
+# Impute NAs
+rf.imputed <-randomForest(total.s ~ bug.s + trail.s + weather.s + view.s +
+                        wildflower.s, data=sentiments_imputed,
+                        importance=TRUE, keep.inbag = TRUE, ntree=500)
+#print, plot results
+print(rf.imputed, type=2)
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+varImpPlot(rf.imputed, pch=21, bg="yellowgreen", main="NA=imputed")
 
-#extract importance values
-importrf <- as.data.frame(importance(bag.sentiments.n,type = 2))
-importrf[,1] <- importrf[order(importrf$IncNodePurity, 
-                               decreasing = TRUE),1]
-barplot(importrf[,1], names.arg = dimnames(importrf)[[1]],
-        xlab="Experiences", ylab="Importance", col="yellowgreen")
-title("NA = Neutral")
+## Rerun analyses with reduced dataset
+# Now reduce data set to wildflower only
+sentiments_wf_NA3 <- sentiments_NA3[is.na(sentiments$wildflower.s)==FALSE,]
+sentiments_wf_NAmn <- sentiments_NAmn[is.na(sentiments$wildflower.s)==FALSE,]
 
+#need to reimpute NAS
+sentiments_wf <- sentiments[is.na(sentiments$wildflower.s)==FALSE,]
+sentiments_wf_imputed <- rfImpute(total.s ~ ., sentiments_wf)
 
-#plot importance
-par(mfrow=c(1,2))
-varImpPlot(bag.sentiments.i, pch=21, bg="yellowgreen")
-varImpPlot(bag.sentiments.n, pch=21, bg="yellowgreen")
+#Check: how many NAs in other sentiments?
+for(i in 1:7){
+  typ <- dimnames(sentiments_wf)[[2]][i]
+  propNA <- round(sum(is.na(sentiments_wf[,i])) / dim(sentiments_wf)[1], 3)
+  print(paste(typ,": NA sentiments = ",propNA, sep=""))
+}
 
+#Now random forests with reduced datasets
+# NA = 3
+rf.NA3.wf <-randomForest(total.s ~ bug.s + trail.s + weather.s + view.s +
+                        wildflower.s, data=sentiments_wf_NA3,
+                        importance=TRUE, keep.inbag = TRUE, ntree=500)
+# print, plot results
+print(rf.NA3.wf, type=2)
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+varImpPlot(rf.NA3.wf, pch=21, bg="yellowgreen", main="reduced: NA=3")
 
-#Plot a few scatter plots
-par(mfrow=c(1,3), pty="s", omi=c(0,0,0,0), mai=c(0.5,0.5,0.3,0.3),
-    tck=-0.02, mgp=c(1.0,0.3,0))
+# NA = mean
+rf.NAmn.wf <-randomForest(total.s ~ bug.s + trail.s + weather.s + view.s +
+                        wildflower.s, data=sentiments_wf_NAmn,
+                        importance=TRUE, keep.inbag = TRUE, ntree=500)
+# print, plot results
+print(rf.NAmn.wf, type=2)
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+varImpPlot(rf.NAmn.wf, pch=21, bg="yellowgreen", main="reduced: NA=mn")
 
-plot(jitter(sentiments$wildflower_s), jitter(sentiments$total_s),
-     xlim=c(0,5), ylim=c(0,5), cex=1.5, 
-     xlab="Wildflowers", ylab="Total Sentiment", pch=21, bg="magenta")
-plot(jitter(sentiments$view_s), jitter(sentiments$total_s),
-     xlim=c(0,5), ylim=c(0,5), cex=1.5,
-     xlab="Views", ylab="Total Sentiment", pch=21, bg="lightblue")
-plot(jitter(sentiments$wild_s), jitter(sentiments$total_s),
-     xlim=c(0,5), ylim=c(0,5), cex=1.5,
-     xlab="Wildlife", ylab="Total Sentiment", pch=21, bg="brown")
+# Impute NAs
+rf.imputed.wf <-randomForest(total.s ~ bug.s + trail.s + weather.s + view.s +
+                        wildflower.s, data=sentiments_wf_imputed,
+                        importance=TRUE, keep.inbag = TRUE, ntree=500)
+# print, plot results
+print(rf.imputed.wf, type=2)
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+varImpPlot(rf.imputed.wf, pch=21, bg="yellowgreen", main="reduced: NA impute")
 
 ```
 
-#Merge WTA data with MeadoWatch predictions of the flowering season and flowering richness.
+```{r fig, fig.height=4, fig.width=4, fig.align="center"}
+#Make plot for manuscript
+par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.5),
+    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+rf.imp <- importance(rf.recode)
+rf.imp <- rf.imp[order(rf.imp[,1]),]
+rf.names <- dimnames(rf.imp)[[1]]
+rf.names <- substr(rf.names, 1, (nchar(rf.names)-2))
+
+dotchart(rf.imp[,1], labels = rf.names, xlim = c(0,1.1*max(rf.imp[,1])),
+         pch=21, bg="grey", xlab = "Importance (MSE)", pt.cex = 2)
+title("Trail Experiences")
+```
+
+
+#Objective 2 Misc: Exploring total sentiments with badges
+This code chunk examines total sentiment as a function of:
+1. Flower badge (yes, no)
+2. Bugs (5 levels)
+3. Year of data collection
+```{r fig1, fig.width=6, fig.height=8}
+
+par(mfrow=c(3,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.3), 
+    mgp=c(1.0,0.4,0), tck=-0.01)
+
+#Total sentiment vs. flowerbadge
+test_flbadge <- lm(WTA_dat$total.s~as.factor(WTA_dat$flowerbadge))
+summary(test_flbadge)
+plot(WTA_dat$total.s~as.factor(WTA_dat$flowerbadge),
+     col=c("yellowgreen","purple"), xlab="Flowerbadge", ylab="Sentiment")
+
+#Total sentiment vs. bug
+#first recode to ordinal
+bugs.rc <- WTA_dat$bugs.summary
+bugs.rc[bugs.rc[]=="No bugs"] <- 1
+bugs.rc[bugs.rc[]=="Bugs were not too bad"] <- 2
+bugs.rc[bugs.rc[]=="Bugs were an annoyance"] <- 3
+bugs.rc[bugs.rc[]=="Bugs were terrible"] <- 4
+bugdat <- WTA_dat; bugdat$bugs.rc <- bugs.rc
+bugdat <- bugdat[is.na(bugdat$bugs.summary)==FALSE,]
+test_bug <- lm(bugdat$total.s~bugdat$bugs.rc)
+summary(test_bug)
+plot(bugdat$total.s~as.factor(bugdat$bugs.rc), 
+     xlab="Bugs", ylab="Sentiment", cex.axis=0.6)
+
+#Total sentiment vs. snow
+snow.rc <- WTA_dat$snow.summary
+snow.rc[snow.rc[]=="Snow free"] <- 1
+snow.rc[snow.rc[]=="Intermittent snow - not hard to cross"] <- 2
+snow.rc[snow.rc[]=="Snowfields to cross - could be difficult"] <- 3
+snow.rc[snow.rc[]=="Trail snow-covered at times - gear and expertise recommended"] <- 4
+snow.rc[snow.rc[]=="Avalanche danger"] <- 5
+snowdat <- WTA_dat; snowdat$snow.rc <- bugs.rc
+snowdat <- snowdat[is.na(snowdat$snow.summary)==FALSE,]
+test_snow <- lm(snowdat$total.s~snowdat$snow.rc)
+summary(test_snow)
+plot(snowdat$total.s~as.factor(snowdat$snow.rc), 
+     xlab="Snow", ylab="Sentiment", cex.axis=0.6)
+
+#Total sentiment vs. year
+test_year <- lm(WTA_dat$total.s~as.factor(WTA_dat$year))
+summary(test_year)
+plot(WTA_dat$total.s~as.factor(WTA_dat$year),
+     xlab="year", ylab="Sentiment")
+
+#Total sentiment vs. trail
+test_trail <- lm(WTA_dat$total.s~as.factor(WTA_dat$trail))
+summary(test_trail)
+plot(WTA_dat$total.s~as.factor(WTA_dat$trail),
+     xlab="year", ylab="Sentiment")
+
+```
+
+#Objective 3: Combine WTA and MW data
 ```{r}
+# read in MW data
+MW_flower_dat <- read.csv("output/FloweringRichness.csv", header=TRUE)
+
 # Add DOY to WTA data
 # Calculate Julian Days of observations
 DOY <- c()
@@ -439,10 +758,10 @@ WTA_dat$DOY <- DOY
 
 # Change WTA_dat trail name to GB, RL (for merging)
 WTA_dat$trail[WTA_dat$trail=="glacier basin"] <- "GB"
-WTA_dat$trail[WTA_dat$trail=="skyline trail"] <- "RL"
+WTA_dat$trail[WTA_dat$trail=="skyline loop"] <- "RL"
 
 # merge WTA_dat with flowering richness
-WTA_MW_dat <- merge(WTA_dat, MW_rich_dat, by = c("trail","year","DOY"))
+WTA_MW_dat <- merge(WTA_dat, MW_flower_dat, by = c("trail","year","DOY"))
 
 # make data frame
 WTA_MW_dat <- data.frame(WTA_MW_dat)
@@ -459,67 +778,149 @@ write.csv(WTA_MW_dat, file = "output/WTA_MW_dat.csv", quote=FALSE,
 ```
 
 
+# Objective 3: recode sentiments
+```{r fig1, fig.width=2.75, fig.height=5}
+
+# Recategorize to ordinal
+# First, original data
+total.s1 <- round(WTA_MW_dat$total.s)
+
+#Now, negative, neutral to slightly neutral, positive
+total.s2 <- WTA_MW_dat$total.s
+total.s2[WTA_MW_dat$total.s<=3] <- 1
+total.s2[WTA_MW_dat$total.s>3 & WTA_MW_dat$total.s<=4] <- 2
+total.s2[WTA_MW_dat$total.s>4] <- 3
+
+#Combine with MW_WTA_dat
+WTA_MW_dat$total.s1 <- as.ordered(total.s1)
+WTA_MW_dat$total.s2 <- as.ordered(total.s2)
+
+# Histogram of different schemes
+par(mfrow=c(2,1), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.3),
+    tck=-0.02, mgp=c(1.2,0.4,0))
+
+hist(WTA_MW_dat$total.s, main="Raw Sentiments", xlab="sentiments",
+     ylab="observations", breaks=c(0,1,2,3,4,5), 
+     freq=TRUE, col="navyblue")
+hist(total.s2, main="Recode (neg,neut,pos)", xlab="sentiments",
+     ylab="observations", breaks=c(0,1,2,3), 
+     freq=TRUE, col="lightblue")
 
 
-# Preliminary analysis exploring sentiment scores (ordinal regression)
-```{r}
-#histogram of all sentiments
-par(mfrow=c(2,4), omi=c(0,0,0,0), mai=c(0.4,0.4,0.4,0.4), 
-    mgp=c(1.2,0.4,0), tck=-0.02)
+```
 
-hist(WTA_MW_dat$bug_s, xlim=c(1,5), main="Bugs", xlab="")
-hist(WTA_MW_dat$wild_s, xlim=c(1,5), main="Wildlife", xlab="")
-hist(WTA_MW_dat$crowd_s, xlim=c(1,5), main="Crowding", xlab="")
-hist(WTA_MW_dat$trail_s, xlim=c(1,5), main="Trail condition", xlab="")
-hist(WTA_MW_dat$weather_s, xlim=c(1,5), main="Weather", xlab="")
-hist(WTA_MW_dat$view_s, xlim=c(1,5), main="Views", xlab="")
-hist(WTA_MW_dat$wildflower_s, xlim=c(1,5), main="Wildflowers", xlab="")
-hist(WTA_MW_dat$total_s, xlim=c(1,5), main="Total", xlab="")
+# Objective 3: Ordinal regressions
+```{r fig1, fig.width=5.5, fig.height=2.5}
+#Ordinal regression: year and richness (s1)
+ordr_s1_null <- polr(total.s1~1, data=WTA_MW_dat)
+ordr_s1_yr <- polr(total.s1~as.factor(year), data=WTA_MW_dat)
+ordr_s1_rch <- polr(total.s1~rich, data=WTA_MW_dat)
+ordr_s1_trl <- polr(total.s1~as.factor(trail), data=WTA_MW_dat)
+ordr_s1_yrrch <- polr(total.s1~rich+as.factor(year), data=WTA_MW_dat)
+ordr_s1_yrtrl <- polr(total.s1~as.factor(year)+as.factor(trail),
+                      data=WTA_MW_dat)
+ordr_s1_trlrch <- polr(total.s1~rich+as.factor(trail), data=WTA_MW_dat)
+#various tests
+anova(ordr_s1_rch, ordr_s1_null)
+anova(ordr_s1_yrrch, ordr_s1_yr)
+anova(ordr_s1_trlrch, ordr_s1_trl)
+AIC(ordr_s1_null, ordr_s1_yr, ordr_s1_rch, ordr_s1_trl, 
+    ordr_s1_yrrch, ordr_s1_yrtrl, ordr_s1_trlrch)
 
-# Recategorize sentiment (i.e. round so between 1 & 5) 
-# for ordinal regression
-WTA_MW_dat$total_s2 <- as.factor(round(WTA_MW_dat$total_s))
-
-# Test correlations between wildflower, view, bug sentiment
-WTA_MW_dat2 <- WTA_MW_dat[is.na(WTA_MW_dat$wildflower_s)==FALSE,]
-test_ord_sent <- polr(total_s2~wildflower_s, data=WTA_MW_dat2)
-test_ord_sent_0 <- polr(total_s2~1, data=WTA_MW_dat2)
-anova(test_ord_sent, test_ord_sent_0)
-summary(test_ord_sent)
-
-#Average sentiment in trip reports w and w/o flower badges
-test_lm_flwr <- lm(total_s ~ flowerbadge*year, data=WTA_MW_dat)
-summary(test_lm_flwr)
-summary(step(test_lm_flwr))
-test_lm_rich <- lm(total_s ~ rich*year, data=WTA_MW_dat)
-summary(test_lm_rich)
-summary(step(test_lm_rich))
-
-# sentiment as function of DOY and DOY^2
-test_ord_null <- polr(total_s2 ~ 1, data=WTA_MW_dat)
-test_ord_doy <- polr(total_s2 ~ DOY, data=WTA_MW_dat)
-test_ord_doy2 <- polr(total_s2 ~ DOY+DOY^2, data=WTA_MW_dat)
-anova(test_ord_null,test_ord_doy, test_ord_doy2)
-AIC(test_ord_null,test_ord_doy, test_ord_doy2)
-summary(test_ord_doy2)
+#Ordinal regression: year and richness (s2)
+ordr_s2_null <- polr(total.s2~1, data=WTA_MW_dat)
+ordr_s2_yr <- polr(total.s2~as.factor(year), data=WTA_MW_dat)
+ordr_s2_rch <- polr(total.s2~rich, data=WTA_MW_dat)
+ordr_s2_trl <- polr(total.s2~as.factor(trail), data=WTA_MW_dat)
+ordr_s2_yrrch <- polr(total.s2~rich+as.factor(year), data=WTA_MW_dat)
+ordr_s2_yrtrl <- polr(total.s2~as.factor(year)+as.factor(trail),
+                      data=WTA_MW_dat)
+ordr_s2_trlrch <- polr(total.s2~rich+as.factor(trail), data=WTA_MW_dat)
+#various tests
+anova(ordr_s2_rch, ordr_s2_null)
+anova(ordr_s2_yrrch, ordr_s2_yr)
+anova(ordr_s2_trlrch, ordr_s2_trl)
+AIC(ordr_s2_null, ordr_s2_yr, ordr_s2_rch, ordr_s2_trl, 
+    ordr_s2_yrrch, ordr_s2_yrtrl, ordr_s2_trlrch)
 
 
-# Year, flower badge and richness vs. total sentiment
-# To be honest, I don't really know how to interpret the output
-test_ord_null <- polr(total_s2 ~ 1, data=WTA_MW_dat)
-test_ord_flwr <- polr(total_s2 ~ flowerbadge, data=WTA_MW_dat)
-test_ord_rich <- polr(total_s2 ~ rich, data=WTA_MW_dat)
-test_ord_flseas <- polr(total_s2 ~ as.factor(flseason), data=WTA_MW_dat)
-test_ord_yr <- polr(total_s2 ~ year, data=WTA_MW_dat)
-test_ord_yrflwr <- polr(total_s2 ~ year*flowerbadge, data=WTA_MW_dat)
-test_ord_yrrich <- polr(total_s2 ~ year*rich, data=WTA_MW_dat)
+################
+#Ordinal regression: year and peak (s1)
+ordf_s1_null <- polr(total.s1~1, data=WTA_MW_dat)
+ordf_s1_yr <- polr(total.s1~as.factor(year), data=WTA_MW_dat)
+ordf_s1_fl <- polr(total.s1~as.factor(flseason), data=WTA_MW_dat)
+ordf_s1_trl <- polr(total.s1~as.factor(trail), data=WTA_MW_dat)
+ordf_s1_yrfl <- polr(total.s1~as.factor(flseason) + 
+                        as.factor(year), data=WTA_MW_dat)
+ordf_s1_yrtrl <- polr(total.s1~as.factor(year)+as.factor(trail),
+                      data=WTA_MW_dat)
+ordf_s1_trlfl <- polr(total.s1~as.factor(flseason)+as.factor(trail), 
+                       data=WTA_MW_dat)
+#various tests
+anova(ordf_s1_fl, ordf_s1_null)
+anova(ordf_s1_yrfl, ordf_s1_yr)
+anova(ordf_s1_trlfl, ordf_s1_trl)
+AIC(ordf_s1_null, ordf_s1_yr, ordf_s1_fl, ordf_s1_trl, 
+    ordf_s1_yrfl, ordf_s1_yrtrl, ordf_s1_trlfl)
+    
 
-anova(test_ord_null,test_ord_flwr,test_ord_rich,test_ord_flseas,
-      test_ord_yr,test_ord_yrflwr,test_ord_yrrich)
-AIC(test_ord_null,test_ord_flwr,test_ord_rich,test_ord_flseas,
-      test_ord_yr,test_ord_yrflwr,test_ord_yrrich)
-summary(test_ord_rich)
-summary(test_ord_flseason)
+#Ordinal regression: year and peak (s2)
+ordf_s2_null <- polr(total.s2~1, data=WTA_MW_dat)
+ordf_s2_yr <- polr(total.s2~as.factor(year), data=WTA_MW_dat)
+ordf_s2_fl <- polr(total.s2~as.factor(flseason), data=WTA_MW_dat)
+ordf_s2_trl <- polr(total.s2~as.factor(trail), data=WTA_MW_dat)
+ordf_s2_yrfl <- polr(total.s2~as.factor(flseason) + 
+                        as.factor(year), data=WTA_MW_dat)
+ordf_s2_yrtrl <- polr(total.s2~as.factor(year)+as.factor(trail),
+                      data=WTA_MW_dat)
+ordf_s2_trlfl <- polr(total.s2~as.factor(flseason)+as.factor(trail), 
+                       data=WTA_MW_dat)
+#various tests
+anova(ordf_s2_fl, ordf_s2_null)
+anova(ordf_s2_yrfl, ordf_s2_yr)
+anova(ordf_s2_trlfl, ordf_s2_trl)
+AIC(ordf_s2_null, ordf_s2_yr, ordf_s2_fl, ordf_s2_trl, 
+    ordf_s2_yrfl, ordf_s2_yrtrl, ordf_s2_trlfl)
+
+AIC(ordf_s2_null, ordf_s2_yr, ordf_s2_trl,
+    ordf_s2_fl, ordr_s2_rch, 
+    ordf_s2_yrfl, ordr_s2_yrrch, 
+    ordf_s2_trlfl, ordr_s2_trlrch, 
+    ordf_s2_yrtrl)
+
+#Make two graphs
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
+    mgp=c(1.1,0.4,0), tck=-0.02)
+
+rch <- WTA_MW_dat$rich
+trl <- as.factor(WTA_MW_dat$trail)
+snt <- rep(NA, times=dim(WTA_MW_dat)[1])
+snt[WTA_MW_dat$total.s2[]==1] <- "neg"
+snt[WTA_MW_dat$total.s2[]==2] <- "neut"
+snt[WTA_MW_dat$total.s2[]==3] <- "pos"
+snt <- as.factor(snt)
+
+boxplot(rch ~ snt + trl, xlab="", ylim=c(0,13), xaxt = "n",
+        ylab = "Richness", at=c(1,2,3,5,6,7), cex.axis=0.75,
+        col=c("yellowgreen","yellowgreen","yellowgreen",
+              "lightblue","lightblue","lightblue"))
+text(c(2, 6), c(-1.2, -1.2), labels=c("GB", "RL"), adj=0.5, xpd=NA)
+text(c(1,2,3,5,6,7), c(12.8, 12.9, 12.8, 12.8, 12.9, 12.8),
+     cex=0.6, labels=c("neg","neut","pos", "neg", "neut","pos"),
+     adj=0.5, xpd=NA)
+
+#
+fl <- WTA_MW_dat$flseason
+trl <- as.factor(WTA_MW_dat$trail)
+snt <- WTA_MW_dat$total.s
+
+boxplot(snt ~ fl + trl, ylab = "Sentiment", xlab="", ylim=c(1,5.5),
+        at=c(1,2,3.5,4.5), cex.axis=0.75, xaxt = "n",
+        col=c("yellowgreen","yellowgreen",
+              "lightblue","lightblue"))
+text(c(1.5, 4), c(0.5, 0.5), labels=c("GB", "RL"), adj=0.5, xpd=NA)
+text(c(1,2,3.5,4.5), c(5.4,5.4,5.4,5.4), cex=0.6,  
+     labels=c("no flwrs", "peak","no flwrs", "peak"), adj=0.5, xpd=NA)
 
 ```
 
