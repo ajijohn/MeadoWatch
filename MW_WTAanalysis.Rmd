@@ -233,6 +233,9 @@ for(i in 1:2){
   title(paste("Peak Flowering",trls[i],sep=": "))
   text(c(4,5,6,7,8,9,10),-0.08, xpd=NA, 
       labels=c("Apr","May","June","July","Aug","Sep","Oct"))
+  #add a, b
+  if(i==1){mtext("a)", side=3, line=-1, cex=0.65, adj=0.025)}
+  if(i==2){mtext("b)", side=3, line=-1, cex=0.65, adj=0.025)}
 
   for(j in 1:length(yrs)){
     yrvisits <- MW_flowers[MW_flowers$year==yrs[j]&MW_flowers$trail==trls[i],]
@@ -258,7 +261,10 @@ for(i in 1:2){
   title(paste("WTA Trip Reports",trls[i],sep=": "))
   text(c(4,5,6,7,8,9,10), -0.05, xpd=NA, 
         labels=c("Apr","May","June","July","Aug","Sep","Oct"))
-
+  #add a, b
+  if(i==1){mtext("c)", side=3, line=-1, cex=0.65, adj=0.025)}
+  if(i==2){mtext("d)", side=3, line=-1, cex=0.65, adj=0.025)}
+  
   for(j in 1:length(yrs)){
     yrvisits <- WTA_reports[WTA_reports$year==yrs[j] 
                             & WTA_reports$trail==trls[i],]
@@ -281,8 +287,9 @@ plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,10.5), ylim=c(0,0.5),
 title("NPS visition")
 text(c(4,5,6,7,8,9,10), -0.05, xpd=NA, 
       labels=c("Apr","May","June","July","Aug","Sep","Oct"))
-legend(x="topleft", legend=c("Average climate year", "CC analog year"), 
+legend(x="topright", legend=c("Average climate year", "CC analog year"), 
        cex=0.75, pch=21, pt.bg=c("grey","orange"), pt.cex=c(1.25, 2))
+mtext("e)", side=3, line=-1, cex=0.65, adj=0.025)
 
 for(i in 1:length(yrs)){
   yrvisits <- NPS_visits[NPS_visits$year==yrs[i],]
@@ -304,9 +311,10 @@ title("Climate vs. Peak")
 text(c(135, 165, 195), 175, xpd=NA, 
       labels=c("May","Jun","Jul"))
 text(110, c(195, 215), xpd=NA, srt=90, labels=c("Jul","Aug"))
-cls <- c("magenta","yellowgreen","chocolate4")
+mtext("f)", side=3, line=-1, cex=0.65, adj=0.025)
+cls <- c("magenta","yellowgreen","chocolate4","lightblue")
 
-legend(x="bottomright", legend=c("Flowers","Trip reports","Visitors"),
+legend(x="bottomright", legend=c("MW","WTA","NPS"),
        lty=1, col=cls, pch=21, pt.bg=cls, pt.cex=1.5, cex=0.75)
 
 #tests
@@ -324,6 +332,8 @@ mnmxx_nps <- c(min(Yeardat$SDD[is.na(Yeardat$NPS)==FALSE]),
                max(Yeardat$SDD[is.na(Yeardat$NPS)==FALSE]))
 mnmxy_nps <- coef(NPStest)[1] + coef(NPStest)[2]*mnmxx_nps
 lines(mnmxx_nps, mnmxy_nps, col=cls[3], lwd=1.5)
+abline(0,1, lwd=2, col="lightblue")
+text(202,208,labels="snow melt", adj=0.5, srt=45, cex=0.65)
 
 #add points
 
@@ -331,7 +341,8 @@ for(i in 4:6){
   points(Yeardat$SDD, Yeardat[,i], cex=2, pch=21, bg=cls[i-3])
 }
 
-
+legend(x="bottomright", legend=c("MW","WTA","NPS"),
+       lty=1, col=cls, pch=21, pt.bg=cls, pt.cex=1.5, cex=0.75)
 
 ```
 
@@ -534,6 +545,12 @@ for(i in 1:(dim(sentiments_recode)[2]-1)){
     mtext("p<0.001", line=-1, side=1, adj=0.95, cex=0.65)}
 }
 
+#Total analysis
+alltest <- lm(total.s~bug.s+trail.s+weather.s+view.s+wildflower.s,
+              data=sentiments_recode)
+print(anova(alltest))
+print(TukeyHSD(aov(alltest)))
+
 ```
 
 #Objective 2: Random Forests with sentiments
@@ -670,7 +687,7 @@ rf.names <- dimnames(rf.imp)[[1]]
 rf.names <- substr(rf.names, 1, (nchar(rf.names)-2))
 
 dotchart(rf.imp[,1], labels = rf.names, xlim = c(0,1.1*max(rf.imp[,1])),
-         pch=21, bg="grey", xlab = "Importance (MSE)", pt.cex = 2)
+         pch=21, bg="darkgreen", xlab = "Importance (MSE)", pt.cex = 2)
 title("Trail Experiences")
 ```
 
