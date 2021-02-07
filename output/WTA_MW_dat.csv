@@ -1,180 +1,507 @@
-trail,year,DOY,orig.position,month,day,anon.author,flowerbadge,bugs.summary,snow.summary,num.pics,flower.in.pics,bug_s,wild_s,crowd_s,trail_s,weather_s,view_s,wildflower_s,total_s,ANOC,ARLA,ASLE,CAMI,CAPA,ERMO,ERGR,ERPE,LIGR,LUAR,PEBR,POBI,VASI,rich,flseason
-GB,2015,122,252,May,3,17055,no,No bugs,Intermittent snow - not hard to cross,3,0,NA,NA,3,4,NA,5,NA,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2015,140,251,May,21,16695,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,0,NA,3,3,2.25,1.5,NA,3,2.75,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2015,155,250,June,5,22455,yes,Bugs were not too bad,Snow free,3,2,4,3,3,3,NA,4,4,4,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
-GB,2015,171,249,June,21,21780,yes,Bugs were an annoyance,Snow free,3,0,1.5,NA,3.5,4,3.25,NA,5,4.25,1,0,0,0,1,1,1,1,1,0,1,1,1,9,1
-GB,2015,172,248,June,22,15435,yes,No bugs,Intermittent snow - not hard to cross,4,1,NA,3,3,3.5,3,2.75,3,3,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
-GB,2015,176,247,June,26,22905,yes,Bugs were not too bad,Snow free,0,0,NA,NA,NA,5,3,5,4.5,5,0,0,0,1,1,1,1,1,1,1,1,1,1,10,1
-GB,2015,180,246,June,30,14400,yes,Bugs were not too bad,Snow free,4,1,NA,NA,4.25,5,NA,5,NA,5,0,0,0,1,1,1,1,1,1,1,1,1,1,10,1
-GB,2015,191,245,July,11,18990,yes,No bugs,Snow free,4,2,NA,NA,NA,NA,2.5,5,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2015,192,244,July,12,16380,yes,Bugs were not too bad,Snow free,2,5,NA,NA,NA,2,2,3.5,4.33333333333333,4.33333333333333,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2015,196,243,July,16,18630,yes,No bugs,Snow free,4,2,4.5,NA,NA,4,3,4,3.5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2015,198,242,July,18,22140,yes,Bugs were an annoyance,Snow free,1,2,NA,NA,NA,3,NA,4,3.66666666666667,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2015,198,241,July,18,17370,yes,Bugs were not too bad,Snow free,2,2,NA,2.5,3.16666666666667,3.66666666666667,3.5,4,NA,3.66666666666667,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2015,208,240,July,28,17460,yes,Bugs were not too bad,Snow free,1,0,NA,3.5,3,4.25,4,NA,3.25,4,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
-GB,2015,209,239,July,29,20070,yes,Bugs were not too bad,Snow free,4,0,NA,NA,NA,4.75,NA,3.75,NA,4,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
-GB,2015,211,237,July,31,15570,yes,No bugs,Snow free,1,1,NA,NA,NA,NA,3,4,NA,3.25,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
-GB,2015,212,236,August,1,16650,yes,Bugs were not too bad,Snow free,4,2,2.75,NA,NA,4.25,NA,NA,3,4,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
-GB,2015,217,235,August,6,14445,yes,No bugs,Snow free,4,1,NA,3,3,3.25,NA,4,3.25,3.75,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
-GB,2015,219,234,August,8,15885,yes,No bugs,Snow free,3,0,NA,2.66666666666667,NA,4.5,NA,NA,NA,3.33333333333333,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
-GB,2015,238,233,August,27,15075,no,No bugs,Snow free,0,0,NA,NA,2,4,4.5,5,NA,4,0,1,1,0,0,0,0,0,0,0,0,0,0,2,0
-GB,2015,244,232,September,2,16290,no,No bugs,Intermittent snow - not hard to cross,2,0,NA,3,NA,NA,3.75,NA,NA,3.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2015,246,231,September,4,14760,no,No bugs,Intermittent snow - not hard to cross,4,0,NA,NA,NA,2.75,2.5,3.66666666666667,NA,3.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2015,250,230,September,8,22455,no,NA,Intermittent snow - not hard to cross,3,0,NA,3,3,4,3,3,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2016,141,228,May,21,18405,no,No bugs,Intermittent snow - not hard to cross,2,0,NA,NA,NA,2.25,NA,5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2016,147,227,May,27,13680,no,No bugs,Snow free,4,0,NA,NA,3.5,4.25,5,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2016,152,226,June,1,20385,yes,Bugs were not too bad,Snowfields to cross- could be difficult,4,0,NA,3,NA,3,3,5,NA,3.75,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2016,152,225,June,1,20745,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,1,NA,4.5,NA,4,5,NA,NA,3.75,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2016,156,224,June,5,14220,yes,Bugs were not too bad,Snow free,3,0,NA,3,3,4,NA,NA,4,4,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
-GB,2016,157,223,June,6,16065,yes,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,1,1,NA,NA,3,3,4,NA,NA,4.5,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
-GB,2016,170,221,June,19,19485,yes,No bugs,Trail snow-covered at times - gear and expertise recommended,3,0,NA,NA,3,3,NA,4,NA,3.33333333333333,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
-GB,2016,170,219,June,19,16110,yes,No bugs,Intermittent snow - not hard to cross,2,0,NA,NA,NA,5,5,4.66666666666667,NA,4.66666666666667,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
-GB,2016,171,218,June,20,14715,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,0,3.25,3.25,3.5,4,NA,NA,NA,3.75,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
-GB,2016,172,217,June,21,19890,no,No bugs,Intermittent snow - not hard to cross,0,0,NA,NA,3,3,4.5,4,2.5,4,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
-GB,2016,178,215,June,27,17775,yes,No bugs,Intermittent snow - not hard to cross,2,1,NA,NA,NA,3,NA,NA,3,3.5,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
-GB,2016,179,214,June,28,21240,yes,No bugs,Intermittent snow - not hard to cross,0,0,NA,NA,NA,4.5,NA,NA,3,3,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
-GB,2016,181,213,June,30,16875,no,Bugs were not too bad,Intermittent snow - not hard to cross,4,0,NA,NA,3,4.25,4.5,5,3,4.75,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
-GB,2016,183,210,July,2,19845,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2,1,NA,NA,2.5,5,3,NA,NA,5,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
-GB,2016,183,211,July,2,21555,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2,0,NA,NA,3,3,5,4.5,NA,4,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
-GB,2016,183,209,July,2,14490,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,0,NA,4.75,3,4,4,4.5,3.5,5,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
-GB,2016,183,212,July,2,15840,no,No bugs,Intermittent snow - not hard to cross,0,0,NA,NA,3,2.5,3,5,NA,4.33333333333333,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
-GB,2016,185,208,July,4,16875,no,Bugs were not too bad,Intermittent snow - not hard to cross,4,1,NA,NA,3,4.5,5,4,3.5,5,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
-GB,2016,186,207,July,5,13770,no,No bugs,Trail snow-covered at times - gear and expertise recommended,4,0,NA,NA,3,NA,5,5,NA,5,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
-GB,2016,187,205,July,6,20430,yes,No bugs,Snow free,3,1,4,3.5,3,NA,4,3.5,NA,4.25,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
-GB,2016,187,206,July,6,22275,no,Bugs were not too bad,Snow free,3,2,NA,NA,NA,4,2,4.66666666666667,NA,4.5,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
-GB,2016,195,204,July,14,13950,yes,Bugs were not too bad,Snow free,3,0,2,NA,3.5,3,5,4.5,3,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
-GB,2016,196,202,July,15,22320,yes,No bugs,Intermittent snow - not hard to cross,3,0,NA,NA,2.75,3,NA,3.5,NA,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
-GB,2016,196,203,July,15,21195,yes,Bugs were not too bad,Snow free,3,0,3,NA,3,4,NA,4,4.5,4.25,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
-GB,2016,203,200,July,22,16335,yes,Bugs were not too bad,Intermittent snow - not hard to cross,1,0,NA,NA,3,NA,2,5,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2016,204,199,July,23,15210,yes,Bugs were not too bad,Intermittent snow - not hard to cross,0,0,NA,NA,3,3.75,3,4.5,3,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2016,206,198,July,25,18810,yes,Bugs were an annoyance,Snow free,4,0,NA,NA,3.5,4,NA,5,NA,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2016,208,196,July,27,20565,yes,Bugs were an annoyance,Snow free,0,0,1.33333333333333,NA,3.33333333333333,4.33333333333333,4.66666666666667,NA,4.5,4.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2016,233,193,August,21,21555,yes,Bugs were an annoyance,Snow free,1,0,NA,3.25,4,2.25,3,4,NA,4,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
-GB,2016,235,192,August,23,20115,yes,Bugs were not too bad,Snow free,4,2,NA,NA,NA,NA,NA,4.33333333333333,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2016,236,191,August,24,14355,yes,Bugs were not too bad,Snow free,4,2,4.25,NA,3,4.5,NA,5,4,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2016,242,190,August,30,15390,yes,No bugs,Snow free,4,1,NA,3.5,4,2.5,4,4,3.5,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2016,243,189,August,31,14535,yes,No bugs,Snow free,8,4,NA,NA,NA,5,2.5,4,4.5,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2016,246,186,September,3,22635,no,No bugs,Snow free,1,0,NA,NA,NA,4.66666666666667,NA,4,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2016,246,187,September,3,17730,no,Bugs were not too bad,Snow free,4,0,NA,2.75,3,4.75,2.5,4,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2016,246,188,September,3,17730,no,Bugs were not too bad,Snow free,4,0,NA,NA,3,4.5,2.75,4,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2016,256,182,September,13,19935,no,No bugs,Snow free,0,0,NA,NA,NA,3.5,2,5,NA,4.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2016,256,183,September,13,17595,yes,No bugs,Snow free,4,1,NA,NA,3,3.25,5,5,NA,4.75,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2016,267,181,September,24,18495,no,No bugs,Snow free,4,0,NA,NA,NA,4.66666666666667,4,3.83333333333333,NA,4.16666666666667,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2017,147,173,May,28,19350,no,Bugs were not too bad,Snowfields to cross- could be difficult,1,0,NA,NA,NA,3,NA,5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2017,153,172,June,3,21645,no,Bugs were not too bad,Snowfields to cross- could be difficult,4,0,NA,2.25,NA,3,NA,4.25,NA,3.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2017,157,169,June,7,18585,no,Bugs were not too bad,Snowfields to cross- could be difficult,0,0,NA,3,3,3,NA,NA,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2017,158,168,June,8,15480,no,Bugs were not too bad,Snowfields to cross- could be difficult,4,0,NA,NA,NA,3,3,NA,NA,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2017,167,165,June,17,14850,no,No bugs,Trail snow-covered at times - gear and expertise recommended,1,0,NA,NA,NA,3.5,3,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2017,168,164,June,18,21105,yes,Bugs were not too bad,Snowfields to cross- could be difficult,4,0,NA,NA,3,1,2,NA,3,4.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2017,170,163,June,20,17100,no,Bugs were an annoyance,Snowfields to cross- could be difficult,4,0,3,NA,NA,2.5,3,5,NA,3.25,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0
-GB,2017,174,161,June,24,21915,yes,Bugs were not too bad,Intermittent snow - not hard to cross,0,0,NA,NA,NA,2.75,3,3.83333333333333,NA,3.66666666666667,1,0,0,0,0,0,1,0,0,0,0,0,0,2,0
-GB,2017,174,160,June,24,14895,no,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,2,0,NA,NA,NA,3.5,NA,NA,NA,4.75,1,0,0,0,0,0,1,0,0,0,0,0,0,2,0
-GB,2017,177,159,June,27,17280,no,Bugs were not too bad,Intermittent snow - not hard to cross,4,2,NA,NA,NA,3,NA,NA,NA,3,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2017,180,155,June,30,17910,yes,No bugs,Trail snow-covered at times - gear and expertise recommended,0,0,NA,3,3,3,2,NA,NA,3.75,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2017,181,154,July,1,15750,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,1,NA,NA,2.25,4,3,5,NA,5,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2017,182,152,July,2,20700,yes,Bugs were not too bad,Intermittent snow - not hard to cross,1,0,NA,NA,NA,3.5,NA,4.75,NA,4.25,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2017,183,151,July,3,16965,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,1,NA,NA,NA,4,NA,4.33333333333333,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2017,184,150,July,4,19080,no,Bugs were an annoyance,Intermittent snow - not hard to cross,0,0,2,NA,NA,4,NA,4.83333333333333,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2017,187,149,July,7,15525,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2,0,NA,NA,NA,3,4.5,5,NA,4,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
-GB,2017,191,148,July,11,19890,yes,Bugs were not too bad,Intermittent snow - not hard to cross,0,0,4,NA,NA,3,4,5,4,4.5,1,0,0,0,1,1,1,0,0,0,0,0,1,5,0
-GB,2017,195,147,July,15,20835,yes,Bugs were not too bad,Intermittent snow - not hard to cross,5,2,3,4.5,3.5,4,2,5,NA,4.5,1,0,0,0,1,1,1,0,0,0,0,0,1,5,0
-GB,2017,196,146,July,16,19305,yes,No bugs,Intermittent snow - not hard to cross,4,1,NA,3.33333333333333,4.33333333333333,3.66666666666667,NA,NA,NA,5,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
-GB,2017,197,145,July,17,19170,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2,0,1.83333333333333,NA,NA,4,4.33333333333333,NA,NA,3.66666666666667,1,0,0,0,1,1,1,1,0,1,0,0,1,7,1
-GB,2017,200,144,July,20,17640,yes,Bugs were not too bad,Snow free,1,0,NA,NA,NA,3.33333333333333,3.33333333333333,4.66666666666667,4,5,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
-GB,2017,207,142,July,27,14535,yes,Bugs were not too bad,Snow free,4,3,NA,NA,3,4.5,NA,3.5,3,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
-GB,2017,207,141,July,27,14535,yes,No bugs,Snow free,4,2,NA,NA,NA,NA,NA,NA,4.5,4.5,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
-GB,2017,210,140,July,30,18225,no,Bugs were an annoyance,Trail snow-covered at times - gear and expertise recommended,3,0,NA,NA,3.33333333333333,2.66666666666667,3.66666666666667,4.66666666666667,NA,4.16666666666667,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
-GB,2017,211,138,July,31,18270,yes,Bugs were an annoyance,Snow free,3,1,NA,3.5,3,NA,NA,4,4,4,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
-GB,2017,216,136,August,5,18180,yes,No bugs,Snow free,2,5,NA,NA,3.33333333333333,4.5,2.33333333333333,3.5,NA,4.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2017,217,135,August,6,21600,yes,Bugs were an annoyance,Snow free,4,0,NA,3.5,NA,5,3.25,4,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2017,220,134,August,9,14535,yes,Bugs were an annoyance,Snow free,6,5,2,NA,3,NA,3,NA,5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2017,221,133,August,10,16200,yes,Bugs were an annoyance,Snow free,2,2,2.5,3,2.5,4.5,4,4,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2017,223,131,August,12,17820,no,Bugs were an annoyance,Snow free,2,1,2.33333333333333,NA,NA,4.33333333333333,4,4,NA,4.33333333333333,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2017,223,132,August,12,22095,yes,Bugs were an annoyance,Snow free,4,1,1,3,3,5,3,4.5,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2017,230,126,August,19,15030,yes,Bugs were not too bad,Snow free,2,0,3,NA,NA,4,4,5,NA,4.5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
-GB,2017,234,123,August,23,20160,yes,Bugs were an annoyance,Snow free,4,2,NA,3,NA,3,NA,4.16666666666667,4,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
-GB,2017,240,120,August,29,16020,yes,Bugs were not too bad,Snow free,4,2,3,3,3,3.25,3,2.25,3,3,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
-GB,2017,256,118,September,14,15795,no,No bugs,Snow free,0,0,NA,3,4,4.5,2,3.75,3.25,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2017,264,117,September,22,15705,no,No bugs,Intermittent snow - not hard to cross,3,0,NA,NA,4,4,2,2,NA,4.5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
-GB,2017,265,116,September,23,19755,no,No bugs,Snow free,4,0,NA,NA,3,3.16666666666667,2.75,2.5,NA,3.5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
-GB,2017,266,115,September,24,14805,no,No bugs,Intermittent snow - not hard to cross,4,0,NA,2.66666666666667,NA,3,4,4,NA,4.83333333333333,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,139,108,May,20,15660,yes,No bugs,Snowfields to cross- could be difficult,4,0,NA,NA,3,2,NA,3.75,NA,3.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,139,109,May,20,15660,yes,No bugs,Snowfields to cross- could be difficult,4,0,NA,NA,3,2.5,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,146,107,May,27,18045,no,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,2,0,NA,NA,NA,NA,4,5,4,3.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,147,105,May,28,21105,yes,No bugs,Snowfields to cross- could be difficult,4,0,NA,NA,3,2.5,NA,5,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,151,104,June,1,21285,no,No bugs,Snowfields to cross- could be difficult,3,0,NA,NA,NA,3.5,4,5,NA,4.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,152,103,June,2,15255,yes,Bugs were not too bad,Snowfields to cross- could be difficult,2,0,NA,NA,3,2.83333333333333,NA,NA,NA,3,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2018,168,101,June,18,16920,no,No bugs,Snowfields to cross- could be difficult,3,1,NA,NA,NA,3.33333333333333,3,4,NA,3.66666666666667,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
-GB,2018,174,99,June,24,20610,no,No bugs,Intermittent snow - not hard to cross,3,0,NA,NA,4,3,3,4,NA,4,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
-GB,2018,179,98,June ,29,17955,no,No bugs,Intermittent snow - not hard to cross,4,2,NA,3.5,NA,NA,4,4,4.5,4.5,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
-GB,2018,188,95,July,8,15120,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,3,1,NA,NA,3,3,3,4.5,NA,4,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
-GB,2018,188,94,July,8,21960,no,Bugs were an annoyance,Intermittent snow - not hard to cross,3,0,NA,NA,3,4,NA,4.66666666666667,NA,4.5,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
-GB,2018,191,93,July,11,19215,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,0,0,2,NA,NA,NA,NA,3.5,NA,3.25,1,1,0,1,1,1,1,1,1,1,1,1,1,12,1
-GB,2018,193,92,July,13,21465,yes,Bugs were terrible,Snow free,3,1,1,2.5,NA,3,3,5,NA,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
-GB,2018,207,89,July,27,17415,yes,Bugs were an annoyance,Snow free,3,1,1,NA,2.5,4.75,NA,4.5,4,4.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,208,88,July,28,15615,yes,Bugs were an annoyance,Snowfields to cross- could be difficult,4,0,1.75,NA,NA,NA,2.75,4.5,NA,3.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,209,86,July,29,21600,yes,Bugs were an annoyance,Snow free,4,4,NA,1.66666666666667,2.5,NA,2.66666666666667,3.5,4,3.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,212,85,August,1,22050,no,Bugs were an annoyance,Snow free,2,1,NA,NA,3,2.5,2,4,NA,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,213,84,August,2,14625,no,Bugs were an annoyance,Snow free,4,0,NA,NA,3,4.33333333333333,NA,4.16666666666667,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,214,83,August,3,15930,yes,Bugs were not too bad,Snow free,4,2,3.66666666666667,3.33333333333333,NA,4,5,5,NA,4.83333333333333,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,215,80,August,4,18945,yes,Bugs were an annoyance,Snow free,0,0,NA,NA,NA,4.16666666666667,NA,4.16666666666667,3.66666666666667,4.16666666666667,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,215,81,August,4,14940,yes,No bugs,Snow free,4,1,NA,4,2.5,3.5,NA,5,4.5,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,216,79,August,5,21825,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,1,4,3.75,NA,5,4,4.5,3,4.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,216,78,August,5,18225,yes,Bugs were an annoyance,Snow free,3,0,1.33333333333333,NA,2.66666666666667,NA,NA,3,NA,3.16666666666667,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2018,219,77,August,8,19260,yes,Bugs were not too bad,Snow free,0,0,2,3.25,NA,4,3.5,3.25,3,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
-GB,2018,228,75,August,17,16020,no,No bugs,Snow free,4,0,3.5,NA,3.5,3,3,3,NA,3.5,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
-GB,2018,229,74,August,18,20340,yes,Bugs were not too bad,Snow free,3,1,2,NA,4,5,2.5,4,NA,3.5,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
-GB,2018,240,71,August,29,22815,yes,Bugs were not too bad,Snow free,4,0,NA,NA,NA,4,5,4,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,242,70,August,31,15975,yes,No bugs,Snow free,4,0,NA,3,NA,4.75,3,3.75,3,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,243,69,September,1,16470,yes,No bugs,Snow free,4,0,NA,4,3.5,4,5,4,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,245,66,September,3,19530,no,No bugs,Snow free,4,0,NA,4.5,NA,4,NA,5,2,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,245,67,September,3,19125,yes,Bugs were not too bad,Snow free,4,2,NA,NA,NA,3,4,4,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,245,65,September,3,21150,no,No bugs,Snow free,4,0,NA,NA,2.5,3,4,5,NA,4.75,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,246,64,September,4,18090,no,Bugs were not too bad,Snow free,1,0,3,NA,3,3.83333333333333,3,4,2.33333333333333,3.33333333333333,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,246,63,September,4,20925,yes,Bugs were not too bad,Snow free,3,0,3.25,3,3,3,NA,5,3,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,248,62,September,6,17550,yes,No bugs,Snow free,0,0,NA,NA,NA,NA,2.5,5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,250,61,September,8,19575,yes,No bugs,Snow free,3,0,NA,3,3,3.66666666666667,2.33333333333333,2.83333333333333,NA,3.33333333333333,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,250,59,September,8,22230,no,No bugs,Snow free,0,0,NA,3.5,NA,5,2,4.5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,250,60,September,8,19575,yes,No bugs,Snow free,3,0,NA,3.25,1,3,2.5,2.25,NA,3,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2018,257,58,September,15,21330,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,0,NA,3,3.5,NA,2,5,NA,4.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2018,269,56,September,27,22680,no,No bugs,Snow free,3,0,NA,NA,NA,3.5,5,4.5,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,272,53,September,30,21060,no,NA,Snow free,4,0,NA,3,NA,3.66666666666667,3,3.83333333333333,NA,4.33333333333333,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,272,54,September,30,16785,no,No bugs,Snow free,1,1,NA,NA,3,NA,NA,4.33333333333333,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2018,275,52,October,3,18000,no,No bugs,Intermittent snow - not hard to cross,3,1,NA,3,4,4,5,NA,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2019,149,49,May,30,21825,no,No bugs,Trail snow-covered at times - gear and expertise recommended,4,0,NA,NA,NA,2.66666666666667,NA,4,NA,3.33333333333333,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2019,151,48,June,1,14310,no,No bugs,Snowfields to cross- could be difficult,3,0,NA,NA,NA,3,NA,NA,NA,3.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2019,154,46,June,4,21825,no,No bugs,Trail snow-covered at times - gear and expertise recommended,4,0,NA,NA,NA,3,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2019,162,42,June,12,21375,yes,No bugs,Intermittent snow - not hard to cross,3,0,NA,NA,3.33333333333333,3,NA,NA,NA,3.16666666666667,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2019,164,39,June,14,14715,no,No bugs,Intermittent snow - not hard to cross,2,0,NA,NA,3,3.33333333333333,3.33333333333333,3.5,NA,3.16666666666667,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2019,165,38,June,15,21600,yes,Bugs were not too bad,Snowfields to cross- could be difficult,4,1,NA,3,3,3,4,5,3,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2019,166,37,June,16,18135,no,Bugs were not too bad,Snowfields to cross- could be difficult,4,0,NA,NA,NA,4.5,3.5,5,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2019,166,36,June,16,16830,no,No bugs,Intermittent snow - not hard to cross,0,0,NA,NA,3,3.75,5,5,NA,4.25,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2019,166,35,June,16,20295,yes,No bugs,Intermittent snow - not hard to cross,2,1,NA,NA,3,2.5,3,4.5,4,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
-GB,2019,173,32,June,23,19440,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,0,NA,NA,3.5,4,3,5,NA,4.5,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
-GB,2019,173,33,June,23,18225,yes,Bugs were not too bad,Snowfields to cross- could be difficult,4,0,NA,3.33333333333333,4,1.5,3,NA,NA,3.66666666666667,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
-GB,2019,178,30,June,28,14040,yes,No bugs,Snowfields to cross- could be difficult,4,2,NA,NA,3,3,NA,NA,4,3.25,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
-GB,2019,180,29,June,30,21735,yes,No bugs,Intermittent snow - not hard to cross,3,0,4,NA,3,NA,NA,4.5,3.5,4,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
-GB,2019,188,28,July,8,16515,yes,Bugs were not too bad,Intermittent snow - not hard to cross,1,1,NA,NA,NA,4,3,NA,4,4,1,0,0,0,1,1,1,1,0,1,1,1,1,9,1
-GB,2019,194,27,July,14,18540,no,Bugs were not too bad,Intermittent snow - not hard to cross,4,1,NA,NA,3,2,NA,NA,NA,3,0,1,0,1,1,1,0,1,1,1,1,1,1,10,1
-GB,2019,201,26,July,21,14040,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,3,3,3,NA,3,NA,NA,3.5,4,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
-GB,2019,204,24,July,24,14175,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,4,0,NA,3,NA,2.75,3,4,2,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2019,204,25,July,24,18765,yes,No bugs,Intermittent snow - not hard to cross,4,1,NA,3,3,2,3.5,3,NA,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2019,206,22,July,26,14580,yes,Bugs were not too bad,Snow free,4,0,3,3,3,3.5,2.5,2.5,NA,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2019,206,23,July,26,20520,yes,Bugs were an annoyance,Snow free,2,0,NA,NA,NA,5,NA,5,NA,4.66666666666667,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2019,209,21,July,29,18720,yes,No bugs,Snow free,4,1,NA,3.66666666666667,NA,3,NA,4.33333333333333,3.66666666666667,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2019,212,20,August,1,13635,yes,Bugs were not too bad,Snow free,0,0,4.25,NA,4,NA,5,5,4.5,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2019,214,19,August,3,19395,yes,Bugs were not too bad,Snow free,4,3,2.83333333333333,NA,NA,5,NA,5,3.66666666666667,4.33333333333333,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
-GB,2019,216,18,August,5,21420,no,No bugs,Snow free,4,0,NA,NA,3.33333333333333,4.16666666666667,NA,4,NA,4.33333333333333,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
-GB,2019,223,17,August,12,20250,yes,No bugs,Snow free,4,2,NA,5,3,3,3,5,4,4,0,1,1,1,0,0,0,0,1,1,0,1,1,7,1
-GB,2019,225,16,August,14,22590,yes,Bugs were not too bad,Snow free,4,1,3.5,NA,NA,3,3,4.75,3,4,0,1,1,1,0,0,0,0,1,1,0,1,0,6,0
-GB,2019,226,15,August,15,21510,no,No bugs,Snow free,4,2,4,4,NA,4,NA,3,NA,4,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
-GB,2019,234,14,August,23,17685,yes,No bugs,Snow free,0,0,NA,NA,3,4.66666666666667,4,5,NA,4.33333333333333,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2019,235,13,August,24,14265,yes,No bugs,Snow free,4,0,NA,3.5,3.25,5,5,4,4,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2019,238,11,August,27,14580,no,No bugs,Trail snow-covered at times - gear and expertise recommended,4,0,NA,NA,3,2.5,3.5,5,NA,1.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2019,238,12,August,27,17325,yes,No bugs,Snow free,4,0,NA,NA,NA,5,NA,4.5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2019,240,10,August,29,21825,no,No bugs,Snow free,4,3,NA,NA,NA,5,NA,5,NA,4.33333333333333,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2019,244,9,September,2,16425,yes,Bugs were not too bad,Snow free,1,0,NA,NA,4,4.5,NA,5,NA,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2019,248,8,September,6,13725,yes,No bugs,Snow free,3,0,NA,3,4,4,3,5,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
-GB,2019,254,7,September,12,22500,no,No bugs,Snow free,4,1,NA,4,3,NA,2.5,4.5,3,4.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
-GB,2019,278,6,October,6,22005,no,No bugs,Intermittent snow - not hard to cross,4,0,NA,NA,NA,2.5,5,5,NA,4.33333333333333,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-GB,2019,284,5,October,12,14670,no,No bugs,Snowfields to cross- could be difficult,4,0,NA,3,NA,3,3.66666666666667,5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+trail,year,DOY,orig.position,month,day,flowerbadge,bugs.summary,snow.summary,bug.s,wildlife.s,crowd.s,trail.s,weather.s,view.s,wildflower.s,total.s,ANOC,ARLA,ASLE,CAMI,CAPA,ERMO,ERGR,ERPE,LIGR,LUAR,PEBR,POBI,VASI,rich,flseason
+GB,2015,122,252,May,3,no,No bugs,Intermittent snow - not hard to cross,NA,NA,3,4,NA,5,NA,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2015,140,251,May,21,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3,3,2.25,1.5,NA,3,2.75,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2015,155,250,June,5,yes,Bugs were not too bad,Snow free,4,3,3,3,NA,4,4,4,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
+GB,2015,171,249,June,21,yes,Bugs were an annoyance,Snow free,1.5,NA,3.5,4,3.25,NA,5,4.25,1,0,0,0,1,1,1,1,1,0,1,1,1,9,1
+GB,2015,172,248,June,22,yes,No bugs,Intermittent snow - not hard to cross,NA,3,3,3.5,3,2.75,3,3,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
+GB,2015,176,247,June,26,yes,Bugs were not too bad,Snow free,NA,NA,NA,5,3,5,4.5,5,0,0,0,1,1,1,1,1,1,1,1,1,1,10,1
+GB,2015,180,246,June,30,yes,Bugs were not too bad,Snow free,NA,NA,4.25,5,NA,5,NA,5,0,0,0,1,1,1,1,1,1,1,1,1,1,10,1
+GB,2015,191,245,July,11,yes,No bugs,Snow free,NA,NA,NA,NA,2.5,5,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2015,192,244,July,12,yes,Bugs were not too bad,Snow free,NA,NA,NA,2,2,3.5,5,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2015,196,243,July,16,yes,No bugs,Snow free,4.5,NA,NA,4,3,4,3.5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2015,198,242,July,18,yes,Bugs were an annoyance,Snow free,NA,NA,NA,3,NA,4,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2015,198,241,July,18,yes,Bugs were not too bad,Snow free,NA,2.5,3,4,3.5,4,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2015,208,240,July,28,yes,Bugs were not too bad,Snow free,NA,3.5,3,4.25,4,NA,3.25,4,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+GB,2015,209,239,July,29,yes,Bugs were not too bad,Snow free,NA,NA,NA,4.75,NA,3.75,NA,4,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
+GB,2015,211,237,July,31,yes,No bugs,Snow free,NA,NA,NA,NA,3,4,NA,3.25,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
+GB,2015,212,236,August,1,yes,Bugs were not too bad,Snow free,2.75,NA,NA,4.25,NA,NA,3,4,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
+GB,2015,217,235,August,6,yes,No bugs,Snow free,NA,3,3,3.25,NA,4,3.25,3.75,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
+GB,2015,219,234,August,8,yes,No bugs,Snow free,NA,3,NA,4.5,NA,NA,NA,3.5,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
+GB,2015,238,233,August,27,no,No bugs,Snow free,NA,NA,2,4,4.5,5,NA,4,0,1,1,0,0,0,0,0,0,0,0,0,0,2,0
+GB,2015,244,232,September,2,no,No bugs,Intermittent snow - not hard to cross,NA,3,NA,NA,3.75,NA,NA,3.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2015,246,231,September,4,no,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,2.75,2.5,4,NA,3.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2015,250,230,September,8,no,No bugs,Intermittent snow - not hard to cross,NA,3,3,4,3,3,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2016,141,228,May,21,no,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,2.25,NA,5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2016,147,227,May,27,no,No bugs,Snow free,NA,NA,3.5,4.25,5,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2016,152,226,June,1,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,3,NA,3,3,5,NA,3.75,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2016,152,225,June,1,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4.5,NA,4,5,NA,NA,3.75,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2016,156,224,June,5,yes,Bugs were not too bad,Snow free,NA,3,3,4,NA,NA,4,4,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+GB,2016,157,223,June,6,yes,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,3,4,NA,NA,4.5,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+GB,2016,170,221,June,19,yes,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,3,NA,4,NA,3,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
+GB,2016,170,219,June,19,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,5,5,5,NA,5,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
+GB,2016,171,218,June,20,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3.25,3.25,3.5,4,NA,NA,NA,3.75,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
+GB,2016,172,217,June,21,no,No bugs,Intermittent snow - not hard to cross,NA,NA,3,3,4.5,4,2.5,4,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
+GB,2016,178,215,June,27,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,3,NA,NA,3,3.5,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
+GB,2016,179,214,June,28,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,4.5,NA,NA,3,3,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
+GB,2016,181,213,June,30,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,4.25,4.5,5,3,4.75,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
+GB,2016,183,209,July,2,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4.75,3,4,4,4.5,3.5,5,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
+GB,2016,183,212,July,2,no,No bugs,Intermittent snow - not hard to cross,NA,NA,3,2.5,3,5,NA,4,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
+GB,2016,183,211,July,2,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,3,5,4.5,NA,4,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
+GB,2016,183,210,July,2,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.5,5,3,NA,NA,5,1,0,0,0,1,1,1,1,1,1,1,1,1,10,1
+GB,2016,185,208,July,4,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,4.5,5,4,3.5,5,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
+GB,2016,186,207,July,5,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,NA,5,5,NA,5,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
+GB,2016,187,206,July,6,no,Bugs were not too bad,Snow free,NA,NA,NA,4,2,5,NA,4.5,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
+GB,2016,187,205,July,6,yes,No bugs,Snow free,4,3.5,3,NA,4,3.5,NA,4.25,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
+GB,2016,195,204,July,14,yes,Bugs were not too bad,Snow free,2,NA,3.5,3,5,4.5,3,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+GB,2016,196,203,July,15,yes,Bugs were not too bad,Snow free,3,NA,3,4,NA,4,4.5,4.25,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+GB,2016,196,202,July,15,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,2.75,3,NA,3.5,NA,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+GB,2016,203,200,July,22,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,NA,2,5,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2016,204,199,July,23,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,3.75,3,4.5,3,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2016,206,198,July,25,yes,Bugs were an annoyance,Snow free,NA,NA,3.5,4,NA,5,NA,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2016,208,196,July,27,yes,Bugs were an annoyance,Snow free,1,NA,3.5,4,5,NA,4.5,4.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2016,233,193,August,21,yes,Bugs were an annoyance,Snow free,NA,3.25,4,2.25,3,4,NA,4,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
+GB,2016,235,192,August,23,yes,Bugs were not too bad,Snow free,NA,NA,NA,NA,NA,4,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2016,236,191,August,24,yes,Bugs were not too bad,Snow free,4.25,NA,3,4.5,NA,5,4,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2016,242,190,August,30,yes,No bugs,Snow free,NA,3.5,4,2.5,4,4,3.5,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2016,243,189,August,31,yes,No bugs,Snow free,NA,NA,NA,5,2.5,4,4.5,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2016,246,187,September,3,no,Bugs were not too bad,Snow free,NA,2.75,3,4.75,2.5,4,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2016,246,188,September,3,no,Bugs were not too bad,Snow free,NA,NA,3,4.5,2.75,4,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2016,246,186,September,3,no,No bugs,Snow free,NA,NA,NA,5,NA,4,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2016,256,183,September,13,yes,No bugs,Snow free,NA,NA,3,3.25,5,5,NA,4.75,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2016,256,182,September,13,no,No bugs,Snow free,NA,NA,NA,3.5,2,5,NA,4.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2016,267,181,September,24,no,No bugs,Snow free,NA,NA,NA,5,4,3.5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2017,147,173,May,28,no,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,NA,3,NA,5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2017,153,172,June,3,no,Bugs were not too bad,Snowfields to cross - could be difficult,NA,2.25,NA,3,NA,4.25,NA,3.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2017,157,169,June,7,no,Bugs were not too bad,Snowfields to cross - could be difficult,NA,3,3,3,NA,NA,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2017,158,168,June,8,no,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,NA,3,3,NA,NA,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2017,167,165,June,17,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,NA,3.5,3,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2017,168,164,June,18,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,3,1,2,NA,3,4.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2017,170,163,June,20,no,Bugs were not too bad,Snowfields to cross - could be difficult,3,NA,NA,2.5,3,5,NA,3.25,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0
+GB,2017,174,161,June,24,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,2.75,3,4,NA,3.5,1,0,0,0,0,0,1,0,0,0,0,0,0,2,0
+GB,2017,174,160,June,24,no,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,NA,NA,NA,3.5,NA,NA,NA,4.75,1,0,0,0,0,0,1,0,0,0,0,0,0,2,0
+GB,2017,177,159,June,27,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,3,NA,NA,NA,3,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2017,180,155,June,30,yes,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,3,3,3,2,NA,NA,3.75,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2017,181,154,July,1,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.25,4,3,5,NA,5,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2017,182,152,July,2,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,3.5,NA,4.75,NA,4.25,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2017,183,151,July,3,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,4,NA,4,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2017,184,150,July,4,no,Bugs were an annoyance,Intermittent snow - not hard to cross,2,NA,NA,4,NA,5,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2017,187,149,July,7,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,3,4.5,5,NA,4,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
+GB,2017,191,148,July,11,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,NA,NA,3,4,5,4,4.5,1,0,0,0,1,1,1,0,0,0,0,0,1,5,0
+GB,2017,195,147,July,15,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,4.5,3.5,4,2,5,NA,4.5,1,0,0,0,1,1,1,0,0,0,0,0,1,5,0
+GB,2017,196,146,July,16,yes,No bugs,Intermittent snow - not hard to cross,NA,3,4,4,NA,NA,NA,5,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
+GB,2017,197,145,July,17,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2,NA,NA,4,4,NA,NA,4,1,0,0,0,1,1,1,1,0,1,0,0,1,7,1
+GB,2017,200,144,July,20,yes,Bugs were not too bad,Snow free,NA,NA,NA,3,3,5,4,5,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+GB,2017,207,141,July,27,yes,No bugs,Snow free,NA,NA,NA,NA,NA,NA,4.5,4.5,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+GB,2017,207,142,July,27,yes,Bugs were not too bad,Snow free,NA,NA,3,4.5,NA,3.5,3,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+GB,2017,210,140,July,30,no,Bugs were an annoyance,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,2.25,4,5,NA,4,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+GB,2017,211,138,July,31,yes,Bugs were an annoyance,Snow free,NA,3.5,3,NA,NA,4,4,4,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+GB,2017,216,136,August,5,yes,No bugs,Snow free,NA,NA,3,4.5,2.5,3.5,NA,4.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2017,217,135,August,6,yes,Bugs were an annoyance,Snow free,NA,3.5,NA,5,3.25,4,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2017,220,134,August,9,yes,Bugs were an annoyance,Snow free,2,NA,3,NA,3,NA,5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2017,221,133,August,10,yes,Bugs were an annoyance,Snow free,2.5,3,2.5,4.5,4,4,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2017,223,131,August,12,no,Bugs were an annoyance,Snow free,2,NA,NA,4,4,4,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2017,223,132,August,12,yes,Bugs were an annoyance,Snow free,1,3,3,5,3,4.5,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2017,230,126,August,19,yes,Bugs were not too bad,Snow free,3,NA,NA,4,4,5,NA,4.5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+GB,2017,234,123,August,23,yes,Bugs were an annoyance,Snow free,NA,3,NA,3,NA,4,4,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+GB,2017,240,120,August,29,yes,Bugs were not too bad,Snow free,3,3,3,3.25,3,2.25,3,3,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+GB,2017,256,118,September,14,no,No bugs,Snow free,NA,3,4,4.5,2,3.75,3.25,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2017,264,117,September,22,no,No bugs,Intermittent snow - not hard to cross,NA,NA,4,4,2,2,NA,4.5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+GB,2017,265,116,September,23,no,No bugs,Snow free,NA,NA,3,2.75,2.75,2.5,NA,3.5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+GB,2017,266,115,September,24,no,No bugs,Intermittent snow - not hard to cross,NA,3,NA,3,4,4,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,139,109,May,20,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,3,2.5,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,139,108,May,20,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,3,2,NA,3.75,NA,3.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,146,107,May,27,no,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,NA,NA,NA,NA,4,5,4,3.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,147,105,May,28,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,3,2.5,NA,5,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,151,104,June,1,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,3.5,4,5,NA,4.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,152,103,June,2,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,3,3,NA,NA,NA,3,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2018,168,101,June,18,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,3,3,4,NA,3.5,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
+GB,2018,174,99,June,24,no,No bugs,Intermittent snow - not hard to cross,NA,NA,4,3,3,4,NA,4,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
+GB,2018,179,98,June,29,no,No bugs,Intermittent snow - not hard to cross,NA,3.5,NA,NA,4,4,4.5,4.5,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
+GB,2018,187,95,July,7,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,NA,NA,3,3,3,4.5,NA,4,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
+GB,2018,188,94,July,8,no,Bugs were an annoyance,Intermittent snow - not hard to cross,NA,NA,3,4,NA,5,NA,4.5,1,0,0,1,1,1,1,1,1,1,1,1,1,11,1
+GB,2018,191,93,July,11,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,2,NA,NA,NA,NA,3.5,NA,3.25,1,1,0,1,1,1,1,1,1,1,1,1,1,12,1
+GB,2018,193,92,July,13,yes,Bugs were terrible,Snow free,1,2.5,NA,3,3,5,NA,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+GB,2018,207,89,July,27,yes,Bugs were an annoyance,Snow free,1,NA,2.5,4.75,NA,4.5,4,4.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,208,88,July,28,yes,Bugs were an annoyance,Snowfields to cross - could be difficult,1.75,NA,NA,NA,2.75,4.5,NA,3.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,209,86,July,29,yes,Bugs were an annoyance,Snow free,NA,2,2.5,NA,3,3.5,4,3.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,212,85,August,1,no,Bugs were an annoyance,Snow free,NA,NA,3,2.5,2,4,NA,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,213,84,August,2,no,Bugs were an annoyance,Snow free,NA,NA,3,4,NA,4,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,214,83,August,3,yes,Bugs were not too bad,Snow free,4,3,NA,4,5,5,NA,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,215,81,August,4,yes,No bugs,Snow free,NA,4,2.5,3.5,NA,5,4.5,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,215,80,August,4,yes,Bugs were an annoyance,Snow free,NA,NA,NA,4,NA,4,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,216,78,August,5,yes,Bugs were an annoyance,Snow free,1,NA,3,NA,NA,3,NA,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,216,79,August,5,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,3.75,NA,5,4,4.5,3,4.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2018,219,77,August,8,yes,Bugs were not too bad,Snow free,2,3.25,NA,4,3.5,3.25,3,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+GB,2018,228,75,August,17,no,No bugs,Snow free,3.5,NA,3.5,3,3,3,NA,3.5,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+GB,2018,229,74,August,18,yes,Bugs were not too bad,Snow free,2,NA,4,5,2.5,4,NA,3.5,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+GB,2018,240,71,August,29,yes,Bugs were not too bad,Snow free,NA,NA,NA,4,5,4,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,242,70,August,31,yes,No bugs,Snow free,NA,3,NA,4.75,3,3.75,3,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,243,69,September,1,yes,No bugs,Snow free,NA,4,3.5,4,5,4,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,245,65,September,3,no,No bugs,Snow free,NA,NA,2.5,3,4,5,NA,4.75,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,245,67,September,3,yes,Bugs were not too bad,Snow free,NA,NA,NA,3,4,4,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,245,66,September,3,no,No bugs,Snow free,NA,4.5,NA,4,NA,5,2,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,246,64,September,4,no,Bugs were not too bad,Snow free,3,NA,3,4,3,4,2,3,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,246,63,September,4,yes,Bugs were not too bad,Snow free,3.25,3,3,3,NA,5,3,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,248,62,September,6,yes,No bugs,Snow free,NA,NA,NA,NA,2.5,5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,250,60,September,8,yes,No bugs,Snow free,NA,3.25,1,3,2.5,2.25,NA,3,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,250,61,September,8,yes,No bugs,Snow free,NA,3,3,3.25,2,3.25,NA,3,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,250,59,September,8,no,No bugs,Snow free,NA,3.5,NA,5,2,4.5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2018,257,58,September,15,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3,3.5,NA,2,5,NA,4.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2018,269,56,September,27,no,No bugs,Snow free,NA,NA,NA,3.5,5,4.5,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,272,53,September,30,no,No bugs,Snow free,NA,3,NA,4,3,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,272,54,September,30,no,No bugs,Snow free,NA,NA,3,NA,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2018,275,52,October,3,no,No bugs,Intermittent snow - not hard to cross,NA,3,4,4,5,NA,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2019,149,49,May,30,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,NA,3,NA,4,NA,3.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2019,151,48,June,1,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,3,NA,NA,NA,3.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2019,154,46,June,4,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,NA,3,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2019,159,44,June,9,no,No bugs,Snow free,NA,4.25,4,3.75,4.5,5,NA,4.25,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2019,162,42,June,12,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,4,3,NA,NA,NA,3,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2019,164,39,June,14,no,No bugs,Intermittent snow - not hard to cross,NA,NA,3,3,3,3.5,NA,3,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2019,165,38,June,15,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,3,3,3,4,5,3,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2019,166,36,June,16,no,No bugs,Intermittent snow - not hard to cross,NA,NA,3,3.75,5,5,NA,4.25,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2019,166,35,June,16,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,3,2.5,3,4.5,4,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2019,166,37,June,16,no,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,NA,4.5,3.5,5,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+GB,2019,173,32,June,23,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3.5,4,3,5,NA,4.5,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
+GB,2019,173,33,June,23,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,3,4,1.5,3,NA,NA,4,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
+GB,2019,178,30,June,28,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,3,3,NA,NA,4,3.25,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
+GB,2019,180,29,June,30,yes,No bugs,Intermittent snow - not hard to cross,4,NA,3,NA,NA,4.5,3.5,4,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
+GB,2019,188,28,July,8,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,4,3,NA,4,4,1,0,0,0,1,1,1,1,0,1,1,1,1,9,1
+GB,2019,194,27,July,14,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,2,NA,NA,NA,3,0,1,0,1,1,1,0,1,1,1,1,1,1,10,1
+GB,2019,201,26,July,21,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,3,NA,3,NA,NA,3.5,4,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+GB,2019,204,24,July,24,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,NA,3,NA,2.75,3,4,2,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2019,204,25,July,24,yes,No bugs,Intermittent snow - not hard to cross,NA,3,3,2,3.5,3,NA,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2019,206,22,July,26,yes,Bugs were not too bad,Snow free,3,3,3,3.5,2.5,2.5,NA,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2019,206,23,July,26,yes,Bugs were an annoyance,Snow free,NA,NA,NA,5,NA,5,NA,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2019,209,21,July,29,yes,No bugs,Snow free,NA,4,NA,3,NA,4,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2019,212,20,August,1,yes,Bugs were not too bad,Snow free,4.25,NA,4,NA,5,5,4.5,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2019,214,19,August,3,yes,Bugs were not too bad,Snow free,2.25,NA,NA,5,NA,5,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+GB,2019,216,18,August,5,no,No bugs,Snow free,NA,NA,3,4,NA,4,NA,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+GB,2019,223,17,August,12,yes,No bugs,Snow free,NA,5,3,3,3,5,4,4,0,1,1,1,0,0,0,0,1,1,0,1,1,7,1
+GB,2019,225,16,August,14,yes,Bugs were not too bad,Snow free,3.5,NA,NA,3,3,4.75,3,4,0,1,1,1,0,0,0,0,1,1,0,1,0,6,0
+GB,2019,226,15,August,15,no,No bugs,Snow free,4,4,NA,4,NA,3,NA,4,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+GB,2019,234,14,August,23,yes,No bugs,Snow free,NA,NA,3,5,4,5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2019,235,13,August,24,yes,No bugs,Snow free,NA,3.5,3.25,5,5,4,4,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2019,238,11,August,27,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,2.5,3.5,5,NA,1.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2019,238,12,August,27,yes,No bugs,Snow free,NA,NA,NA,5,NA,4.5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2019,240,10,August,29,no,No bugs,Snow free,NA,NA,NA,5,NA,5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2019,244,9,September,2,yes,Bugs were not too bad,Snow free,NA,NA,4,4.5,NA,5,NA,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2019,248,8,September,6,yes,No bugs,Snow free,NA,3,4,4,3,5,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+GB,2019,254,7,September,12,no,No bugs,Snow free,NA,4,3,NA,2.5,4.5,3,4.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
+GB,2019,278,6,October,6,no,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,2.5,5,5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GB,2019,284,5,October,12,no,No bugs,Snowfields to cross - could be difficult,NA,3,NA,3,4,5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2013,200,376,July,20,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,NA,NA,NA,NA,3,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2013,200,375,July,20,yes,NA,Snowfields to cross - could be difficult,NA,3,NA,2,4,NA,NA,3.5,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2013,202,374,July,22,yes,NA,Snowfields to cross - could be difficult,NA,NA,NA,2.75,5,NA,NA,3.5,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2013,204,373,July,24,yes,NA,Snowfields to cross - could be difficult,3,NA,NA,3.25,3,5,NA,3.75,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2013,217,372,August,6,yes,NA,NA,2.5,4.25,4,NA,NA,4,4,4,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2013,220,371,August,9,yes,NA,Snowfields to cross - could be difficult,3.75,4,3.5,NA,4,NA,4,4,0,1,0,0,1,0,0,1,0,1,1,1,1,7,1
+RL,2013,221,370,August,10,yes,NA,Snowfields to cross - could be difficult,NA,NA,2,3,3,5,3.5,4.25,0,1,0,0,1,0,0,1,0,1,1,1,1,7,1
+RL,2013,224,369,August,13,yes,NA,NA,NA,NA,NA,NA,NA,3,5,4.5,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2013,224,368,August,13,yes,NA,Snowfields to cross - could be difficult,4,NA,3,2,3,4.5,4.75,4,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2013,228,367,August,17,yes,NA,Snowfields to cross - could be difficult,NA,NA,2.75,4,3.5,5,4.5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2013,241,366,August,30,yes,NA,Snowfields to cross - could be difficult,NA,3.5,NA,3,4,4.75,3,5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2013,255,365,September,13,yes,NA,NA,NA,NA,NA,2.75,4,5,4,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2014,130,359,May,11,yes,No bugs,Snow free,NA,NA,2.75,NA,NA,4.5,4.5,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2014,186,357,July,6,yes,NA,Snowfields to cross - could be difficult,NA,4,NA,2.5,NA,NA,3.5,4,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0
+RL,2014,197,356,July,17,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,3.25,2.5,NA,4,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2014,200,355,July,20,yes,No bugs,Intermittent snow - not hard to cross,NA,4.5,3,NA,1.25,2,3.5,3,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2014,206,354,July,26,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,3.5,5,5,4.5,4.5,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2014,209,353,July,29,yes,Bugs were not too bad,Intermittent snow - not hard to cross,4,3.5,NA,3,4,5,3.5,4,1,0,0,0,0,1,0,0,0,0,0,0,1,3,0
+RL,2014,210,352,July,30,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4.5,NA,3,5,5,4.25,5,1,0,0,0,0,1,0,0,0,0,0,0,1,3,0
+RL,2014,211,351,July,31,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,1.5,3.5,3.5,3,3,5,5,4.25,1,1,0,0,0,1,0,0,0,0,0,0,1,4,0
+RL,2014,216,350,August,5,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,3,3,5,4.25,5,5,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2014,219,348,August,8,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,2.5,2.75,2.25,3,NA,4,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2014,219,349,August,8,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,3,3.25,5,NA,3.75,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2014,220,346,August,9,yes,Bugs were terrible,Snow free,NA,NA,NA,NA,NA,NA,NA,5,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2014,220,347,August,9,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,1.5,3.5,2,3,NA,3,NA,3.75,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2014,221,345,August,10,yes,Bugs were not too bad,Snow free,2.5,NA,NA,3,NA,NA,2,2.5,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2014,221,344,August,10,yes,Bugs were not too bad,Snow free,1.75,NA,NA,NA,4,5,5,4,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2014,222,343,August,11,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,4.5,2.25,4.5,NA,4.5,4.5,4.75,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2014,229,342,August,18,yes,No bugs,Snow free,NA,4,3,NA,NA,5,4,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2014,235,341,August,24,yes,No bugs,Snow free,NA,4.5,3,NA,2.5,5,5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2014,236,340,August,25,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,4,NA,NA,5,NA,4.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2014,236,339,August,25,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,4.25,3,2,NA,4.5,4.5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2014,248,338,September,6,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,2.5,NA,4.5,4.5,NA,4.75,0,1,1,1,1,0,0,1,1,1,0,1,0,8,1
+RL,2014,248,337,September,6,yes,No bugs,Intermittent snow - not hard to cross,NA,3,NA,2.5,NA,4,NA,3.75,0,1,1,1,1,0,0,1,1,1,0,1,0,8,1
+RL,2014,263,336,September,21,no,No bugs,Snow free,NA,3.25,4,4.75,3.75,2.25,4,4.75,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2014,270,335,September,28,yes,No bugs,Snow free,NA,NA,2.5,3,4.75,5,3,4.5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2014,275,334,October,3,no,No bugs,Snow free,NA,NA,NA,NA,NA,5,NA,5,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0
+RL,2014,279,333,October,7,no,No bugs,Snow free,4,4.75,5,2,NA,5,NA,4.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,144,328,May,25,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,2.5,2,1.5,1.25,NA,2.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,149,327,May,30,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,2.25,2,5,3.5,NA,2.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,154,326,June,4,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2.5,3.5,3,2.5,4,4.25,4,4.5,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+RL,2015,157,324,June,7,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3.25,3,2.25,NA,NA,3.5,4,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2015,157,325,June,7,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,2.5,4,NA,NA,4,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2015,163,323,June,13,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.5,3.5,3.5,4.5,3.25,4.5,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
+RL,2015,164,322,June,14,no,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,NA,NA,4,NA,5,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
+RL,2015,171,321,June,21,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,2.75,3,3.5,NA,4,3.75,1,0,0,0,1,1,1,1,0,0,0,0,0,5,0
+RL,2015,173,319,June,23,yes,No bugs,Snow free,3,NA,NA,NA,5,4,5,5,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
+RL,2015,175,318,June,25,yes,No bugs,Intermittent snow - not hard to cross,NA,4,3.5,4,NA,NA,4,3.75,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
+RL,2015,176,317,June,26,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,NA,4,NA,5,5,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
+RL,2015,177,316,June,27,yes,Bugs were an annoyance,Snowfields to cross - could be difficult,2,NA,3,2.5,3.75,5,3.75,4.75,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
+RL,2015,178,315,June,28,yes,Bugs were an annoyance,Snowfields to cross - could be difficult,2,4,NA,3.5,3,4,5,4.5,1,0,0,0,1,1,1,1,0,0,0,1,1,7,1
+RL,2015,181,314,July,1,yes,Bugs were not too bad,Snow free,NA,NA,NA,4,3.75,4,3,3.75,0,0,0,0,1,1,1,1,1,1,1,1,1,9,1
+RL,2015,184,313,July,4,yes,Bugs were an annoyance,Snowfields to cross - could be difficult,2,4,2.5,2.5,2,NA,4,3.5,0,0,0,0,1,1,0,1,1,1,1,1,1,8,1
+RL,2015,187,311,July,7,yes,No bugs,Snowfields to cross - could be difficult,NA,4.5,3,4,4.5,5,4.5,4.75,0,0,0,1,1,0,0,1,1,1,1,1,1,8,1
+RL,2015,187,312,July,7,yes,Bugs were an annoyance,Snowfields to cross - could be difficult,2,NA,NA,3,4.5,NA,5,5,0,0,0,1,1,0,0,1,1,1,1,1,1,8,1
+RL,2015,189,310,July,9,yes,No bugs,Snow free,NA,4,2.5,NA,4,NA,4,4.75,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2015,190,309,July,10,yes,Bugs were not too bad,Snow free,NA,4,2.5,3,3.5,4,4.5,4.5,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2015,194,308,July,14,yes,No bugs,Snow free,NA,5,2.25,2.75,2.5,3.5,5,4.75,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2015,204,307,July,24,yes,No bugs,Snow free,NA,3.5,4,3.5,5,5,3.25,4.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2015,209,306,July,29,yes,No bugs,Snow free,NA,NA,NA,3,4,4.75,NA,4.75,0,1,1,1,0,0,0,0,1,1,0,1,1,7,1
+RL,2015,212,305,August,1,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.25,NA,2.5,5,NA,4,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+RL,2015,212,304,August,1,yes,Bugs were not too bad,Snow free,NA,NA,3,NA,4.5,5,4,4.25,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+RL,2015,213,303,August,2,yes,No bugs,Snow free,NA,NA,2,NA,NA,4.5,NA,3.75,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+RL,2015,219,302,August,8,no,No bugs,Snow free,NA,4,NA,4,4.5,NA,NA,4.5,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
+RL,2015,231,301,August,20,no,No bugs,Snow free,NA,NA,2.25,NA,4,4.5,2.5,4.75,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2015,232,300,August,21,no,No bugs,Snow free,NA,NA,NA,NA,2.5,NA,NA,4.25,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2015,234,298,August,23,no,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,5,2,1.5,2,NA,4.25,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2015,237,297,August,26,no,No bugs,Snow free,NA,NA,NA,NA,1,1,NA,1,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2015,251,296,September,9,no,No bugs,Snowfields to cross - could be difficult,NA,3.75,NA,2.25,5,5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,253,294,September,11,no,No bugs,Snow free,NA,NA,3,3,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,254,293,September,12,no,No bugs,Snow free,NA,NA,NA,NA,5,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,254,292,September,12,no,No bugs,Snow free,NA,NA,3,NA,4,5,NA,4.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,260,291,September,18,no,No bugs,Snow free,NA,NA,NA,NA,3,4.75,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,264,290,September,22,no,No bugs,Snow free,NA,4.5,3.5,3,NA,5,NA,4.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,265,289,September,23,no,No bugs,Snow free,NA,NA,NA,3,3.5,4.75,NA,4.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,269,288,September,27,no,No bugs,Snow free,NA,NA,NA,3,3,4.5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,276,285,October,4,no,No bugs,Snow free,NA,NA,3,NA,5,NA,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,276,286,October,4,no,Bugs were not too bad,Snow free,2.75,3,2,2.75,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,276,284,October,4,no,No bugs,Snow free,NA,NA,NA,NA,NA,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2015,283,282,October,11,no,No bugs,Intermittent snow - not hard to cross,NA,NA,2.75,4,NA,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2016,172,277,June,21,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,2,3.25,NA,3.5,NA,3.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2016,176,276,June,25,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,3,2.5,NA,5,NA,4,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0
+RL,2016,183,274,July,2,yes,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,4,3,2.5,NA,NA,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2016,183,275,July,2,yes,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,1.5,2.25,2,4,NA,3.5,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2016,186,273,July,5,yes,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,NA,3.75,NA,2.25,1.5,1,4.5,3.75,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2016,187,272,July,6,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,2,NA,4.5,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2016,198,271,July,17,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4.25,2.5,2.5,NA,NA,3.25,3.75,1,0,0,0,1,1,1,0,0,0,0,0,1,5,0
+RL,2016,204,269,July,23,yes,No bugs,Intermittent snow - not hard to cross,NA,4.5,NA,3.5,3.25,3.75,4.5,4.25,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2016,204,270,July,23,yes,No bugs,Snowfields to cross - could be difficult,NA,3.5,2.5,2,2.25,3.25,3.5,3.5,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2016,205,268,July,24,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.5,NA,NA,NA,NA,4,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2016,210,266,July,29,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,NA,3.5,4,NA,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+RL,2016,210,267,July,29,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,NA,4.5,4.5,NA,4.5,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+RL,2016,211,264,July,30,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3,2,2.25,4,5,4.25,4,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+RL,2016,211,265,July,30,yes,Bugs were not too bad,Snow free,3.75,NA,1.5,3,5,5,4,4.5,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+RL,2016,211,263,July,30,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,3.5,2.5,NA,NA,4,4.25,4.25,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+RL,2016,213,262,August,1,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,2,2,NA,NA,NA,3,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+RL,2016,213,261,August,1,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,3,NA,NA,NA,NA,5,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+RL,2016,215,260,August,3,yes,No bugs,Snowfields to cross - could be difficult,4,3,2.5,3,NA,4.5,4.5,4.25,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2016,217,259,August,5,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,4.5,3,3.5,4.25,4.75,4.5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,217,258,August,5,yes,Bugs were not too bad,Snow free,3.25,NA,3.25,3,5,4.5,4,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,218,257,August,6,yes,No bugs,Intermittent snow - not hard to cross,NA,3.5,3,2.5,5,NA,4,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,218,256,August,6,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,3.5,3.5,5,5,4.5,4.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,219,255,August,7,yes,No bugs,Intermittent snow - not hard to cross,NA,4.5,2.5,NA,2,2.5,4.5,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,221,254,August,9,yes,Bugs were not too bad,Snow free,NA,4,4,NA,NA,4,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,223,253,August,11,yes,Bugs were not too bad,Snow free,NA,NA,2,2.5,NA,5,4,3.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,223,252,August,11,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,NA,3.75,4,4.5,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,225,250,August,13,yes,Bugs were terrible,Intermittent snow - not hard to cross,1,4.5,NA,NA,NA,5,4.5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,225,249,August,13,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3.5,4.75,3,3.75,5,5,5,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,225,251,August,13,yes,Bugs were an annoyance,Snow free,2,NA,2,NA,5,4,3.5,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,226,248,August,14,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,1.5,NA,1,2,NA,5,5,3.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,228,245,August,16,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3,3,4,4.5,4,3.5,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,228,247,August,16,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,4.25,3.5,NA,5,5,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,228,246,August,16,yes,No bugs,Snow free,NA,NA,2.25,3,3,4.5,4,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,230,244,August,18,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4.5,3,3,4,5,4,4.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2016,233,243,August,21,yes,Bugs were not too bad,Snow free,NA,NA,1.75,2.5,3.75,4,3,3.75,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2016,234,241,August,22,yes,No bugs,Snow free,NA,NA,3,3,3,4,5,5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2016,234,242,August,22,yes,Bugs were not too bad,Snow free,NA,NA,4,NA,5,5,3.25,4.25,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2016,239,240,August,27,no,No bugs,Snow free,NA,NA,3,NA,4.5,5,NA,5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2016,240,239,August,28,yes,No bugs,Snow free,NA,NA,3.25,3,5,4,4,4,0,1,1,1,1,0,0,1,1,1,0,1,0,8,1
+RL,2016,240,238,August,28,yes,No bugs,Snow free,NA,NA,NA,NA,4,5,NA,4.5,0,1,1,1,1,0,0,1,1,1,0,1,0,8,1
+RL,2016,242,237,August,30,no,Bugs were not too bad,Snow free,NA,NA,3.75,3.25,NA,NA,NA,5,0,1,1,1,1,0,0,1,1,1,0,1,0,8,1
+RL,2016,246,236,September,3,no,No bugs,Snow free,NA,4.25,3,4.5,3,2,2.25,4,0,1,1,1,0,0,0,0,0,0,0,1,0,4,0
+RL,2016,246,235,September,3,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3.25,4,3,4,NA,4.25,0,1,1,1,0,0,0,0,0,0,0,1,0,4,0
+RL,2016,246,234,September,3,yes,No bugs,Snow free,NA,4.5,3.25,NA,3.25,4.5,3.75,4.25,0,1,1,1,0,0,0,0,0,0,0,1,0,4,0
+RL,2016,247,233,September,4,yes,No bugs,Intermittent snow - not hard to cross,NA,4,1.5,3,2.25,1.5,NA,2.25,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2016,248,232,September,5,no,No bugs,Snow free,NA,4,2.75,NA,2.5,4.25,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2016,252,231,September,9,yes,Bugs were not too bad,Snow free,NA,4,1,1.5,NA,4.75,NA,4.25,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2016,254,230,September,11,no,No bugs,Snow free,NA,3,NA,NA,2.5,4.5,5,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2016,258,229,September,15,yes,No bugs,Snow free,NA,1.75,NA,NA,NA,4.5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2016,259,228,September,16,no,No bugs,Snowfields to cross - could be difficult,NA,NA,4,4,NA,4.5,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2016,269,227,September,26,no,Bugs were not too bad,Snow free,3,3.75,4,NA,5,4.25,NA,4,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0
+RL,2016,270,226,September,27,no,No bugs,Intermittent snow - not hard to cross,NA,3,3.5,4.5,4,4.5,NA,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2016,271,225,September,28,no,No bugs,Snow free,NA,3.5,NA,NA,4.5,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2016,271,224,September,28,no,No bugs,Snow free,NA,5,NA,NA,NA,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2016,273,223,September,30,no,Bugs were not too bad,Snow free,NA,NA,NA,NA,5,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2016,278,222,October,5,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,NA,2,3,4.5,NA,3.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2016,282,221,October,9,no,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,3,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2016,284,220,October,11,no,No bugs,Snow free,NA,NA,NA,3,5,4,NA,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2017,148,217,May,29,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,1,NA,NA,NA,2.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2017,154,216,June,4,no,No bugs,Snowfields to cross - could be difficult,NA,NA,2.25,2.5,3,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2017,181,215,July,1,no,No bugs,Snowfields to cross - could be difficult,NA,NA,3,1.75,4,NA,NA,3.5,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0
+RL,2017,183,214,July,3,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,NA,1.5,2,4,NA,4,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0
+RL,2017,187,213,July,7,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,1,NA,NA,NA,1.5,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0
+RL,2017,194,212,July,14,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,2.5,NA,4.5,4,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2017,195,211,July,15,yes,No bugs,Snowfields to cross - could be difficult,NA,NA,3,3,3,NA,5,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2017,196,209,July,16,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,NA,4,3,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2017,196,210,July,16,yes,No bugs,Snowfields to cross - could be difficult,NA,3.75,2.5,2.75,2.75,3.25,NA,3.5,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2017,202,208,July,22,yes,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,4,3,3,3.5,5,2.5,4.75,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2017,203,205,July,23,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,2,2,2.5,2.75,NA,4,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2017,203,207,July,23,yes,No bugs,Intermittent snow - not hard to cross,NA,4,3.25,4,5,5,4,4,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2017,203,206,July,23,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,5,3.25,2.75,NA,5,5,4.5,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2017,205,203,July,25,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2.5,3,3,3,NA,NA,3.25,4.75,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2017,205,204,July,25,yes,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,NA,NA,NA,1.75,NA,NA,NA,3,1,0,0,0,0,1,0,0,0,0,0,0,0,2,0
+RL,2017,206,202,July,26,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2.25,4.5,3,3.25,3,4,5,4.5,1,0,0,0,0,1,0,0,0,0,0,0,1,3,0
+RL,2017,206,201,July,26,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2.25,NA,3,3.5,5,4.5,5,4.25,1,0,0,0,0,1,0,0,0,0,0,0,1,3,0
+RL,2017,206,200,July,26,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,2,2.5,NA,5,4.5,4,1,0,0,0,0,1,0,0,0,0,0,0,1,3,0
+RL,2017,207,199,July,27,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,3.25,2,2.75,3.25,4.25,3.5,1,0,0,0,1,1,0,0,0,0,0,0,1,4,0
+RL,2017,209,197,July,29,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,NA,NA,3,NA,4,5,4.5,1,1,0,0,1,1,0,0,0,1,0,0,1,6,0
+RL,2017,209,198,July,29,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2,3,4.5,5,4.5,4,1,1,0,0,1,1,0,0,0,1,0,0,1,6,0
+RL,2017,209,196,July,29,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,3,3,3,4,3.5,4.25,NA,4,1,1,0,0,1,1,0,0,0,1,0,0,1,6,0
+RL,2017,210,195,July,30,yes,Bugs were an annoyance,Snowfields to cross - could be difficult,NA,NA,3,3,4,5,NA,4,1,1,0,0,1,1,0,0,0,1,0,0,1,6,0
+RL,2017,211,194,July,31,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,NA,NA,NA,3,3.5,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2017,213,193,August,2,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,NA,2.75,5,NA,3.75,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2017,215,192,August,4,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4.5,4,3.25,3,4,5,5,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2017,216,190,August,5,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,4,NA,NA,NA,4,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2017,216,187,August,5,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.5,4,NA,5,5,4.5,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2017,216,188,August,5,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3,2.5,2,2.75,4.5,NA,4,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2017,216,189,August,5,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,4,1,3,NA,3.75,4.75,3.5,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2017,216,191,August,5,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,4.5,NA,2.5,2,3.75,4.5,4.5,1,1,0,0,1,1,0,0,0,1,1,1,1,8,1
+RL,2017,217,186,August,6,yes,No bugs,Intermittent snow - not hard to cross,NA,4.5,5,NA,NA,4.5,4.5,4.5,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2017,217,184,August,6,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,NA,NA,4.5,4.5,4,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2017,217,185,August,6,yes,Bugs were not too bad,Snowfields to cross - could be difficult,1.5,NA,2.5,3,4.75,2.25,NA,3.75,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2017,218,183,August,7,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,3.5,3,NA,2.5,4,4.5,4.5,0,1,0,0,1,0,0,1,0,1,1,1,1,7,1
+RL,2017,221,182,August,10,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,4,NA,5,4.5,4.5,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2017,223,181,August,12,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,NA,NA,4.5,5,4.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2017,224,180,August,13,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,4,2.5,3,5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2017,228,179,August,17,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4,3,3,4,4.5,4,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2017,230,178,August,19,yes,No bugs,Snow free,NA,4,3.25,4,4,4.5,4.5,4.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2017,231,177,August,20,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,1.5,3,4,3,3.5,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2017,234,175,August,23,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.5,4,NA,5,4.5,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2017,236,174,August,25,yes,Bugs were not too bad,Snow free,NA,4.5,3,3,3,4,NA,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2017,237,173,August,26,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2.5,5,2.5,NA,NA,NA,4,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2017,241,172,August,30,yes,No bugs,Intermittent snow - not hard to cross,4.5,3,NA,4,5,4.5,NA,4.25,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2017,241,171,August,30,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4,4,3,5,5,4,4.5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2017,243,170,September,1,yes,No bugs,Snow free,NA,3,2.5,NA,NA,NA,NA,4,0,1,1,1,1,0,0,1,1,1,0,1,0,8,1
+RL,2017,246,168,September,4,no,No bugs,Snow free,NA,NA,3,4.5,2.5,NA,NA,4,0,1,1,1,1,0,0,1,1,1,0,1,0,8,1
+RL,2017,252,167,September,10,yes,No bugs,Snow free,NA,NA,2.5,4,3.5,4.5,3.5,4.25,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2017,253,166,September,11,no,No bugs,Snow free,NA,NA,NA,NA,4,5,NA,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2017,254,165,September,12,no,No bugs,Snow free,NA,4,NA,3,NA,5,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2017,258,164,September,16,no,No bugs,Snow free,NA,4.5,1.75,4.25,2.75,4.25,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2017,258,163,September,16,yes,No bugs,Snow free,NA,4,3,5,NA,5,3.75,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2017,258,161,September,16,no,No bugs,Snow free,NA,4.5,3,3.5,2.5,5,3,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2017,258,162,September,16,no,No bugs,Snow free,NA,3.25,4,NA,2.5,4.5,NA,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2017,264,160,September,22,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,4.5,NA,3,4,4.5,NA,4.5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2017,265,159,September,23,no,No bugs,Snowfields to cross - could be difficult,NA,4,NA,3.5,NA,5,NA,5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2017,269,157,September,27,no,No bugs,Intermittent snow - not hard to cross,NA,NA,2.25,5,NA,5,NA,5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2017,269,158,September,27,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,5,NA,4.25,NA,4.5,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2017,270,156,September,28,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4,NA,NA,NA,4,NA,4,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2017,272,154,September,30,no,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,2.5,3,NA,NA,3,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0
+RL,2017,272,155,September,30,no,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,NA,2,3.75,NA,3,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0
+RL,2017,274,153,October,2,no,No bugs,Intermittent snow - not hard to cross,NA,NA,3,2.5,NA,4,NA,3.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2017,278,152,October,6,no,No bugs,Intermittent snow - not hard to cross,NA,4.5,4,4,4.5,5,NA,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2017,279,151,October,7,no,No bugs,Snowfields to cross - could be difficult,NA,NA,3,3,3,3.75,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2017,280,150,October,8,no,No bugs,Intermittent snow - not hard to cross,NA,NA,2,2.75,4.25,4.25,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,186,141,July,6,yes,No bugs,Snowfields to cross - could be difficult,NA,3.25,4,3,NA,5,3.5,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,187,140,July,7,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,1.25,NA,NA,NA,2,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,189,139,July,9,no,Bugs were not too bad,Snowfields to cross - could be difficult,NA,3.75,3,2,4,NA,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,192,138,July,12,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,1,1,NA,NA,1.75,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,192,137,July,12,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,NA,3.25,5,NA,NA,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,193,136,July,13,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4,4,3.5,NA,5,4.5,4.25,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,194,135,July,14,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,NA,NA,3,NA,NA,NA,3,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,195,134,July,15,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3,3,2.5,NA,NA,4,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,196,133,July,16,yes,No bugs,Snowfields to cross - could be difficult,NA,5,3.25,4,NA,NA,3,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,198,132,July,18,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,NA,3,3,NA,NA,NA,3,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2018,200,131,July,20,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,5,3.5,NA,4,5,4,4.5,1,0,0,0,1,1,0,0,0,0,0,0,1,4,0
+RL,2018,201,130,July,21,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3.5,2,NA,4,4.5,3.5,3.5,1,0,0,0,1,1,0,0,0,0,0,0,1,4,0
+RL,2018,202,129,July,22,yes,Bugs were an annoyance,Snowfields to cross - could be difficult,NA,4.5,NA,3,NA,5,NA,4.25,1,0,0,0,1,1,0,0,0,0,0,0,1,4,0
+RL,2018,203,128,July,23,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,4.5,3.5,3,4.75,4.5,5,5,1,0,0,0,1,1,0,0,0,0,0,0,1,4,0
+RL,2018,207,127,July,27,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,NA,4,2.5,NA,4,4.25,3.75,4,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2018,207,126,July,27,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3.5,3.75,2.75,NA,5,5,NA,4.5,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2018,208,125,July,28,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,2.25,NA,3,NA,3.5,4,NA,4.25,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2018,208,124,July,28,yes,Bugs were terrible,Snowfields to cross - could be difficult,1,4.5,NA,1.5,2,5,NA,4,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2018,208,123,July,28,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,1,2.25,3,4.5,4,5,4.5,4.75,1,1,0,0,1,1,0,0,0,1,1,0,1,7,1
+RL,2018,209,119,July,29,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,3,NA,5,NA,4.5,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2018,209,122,July,29,yes,Bugs were not too bad,Snowfields to cross - could be difficult,2.5,4,2.75,2.75,3,5,3.5,4,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2018,209,120,July,29,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.5,4,2.75,5,NA,4,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2018,209,121,July,29,yes,Bugs were an annoyance,Snow free,NA,NA,2.5,4,3,5,NA,4,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2018,210,117,July,30,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3.5,4,2.5,NA,2.75,3,4,4.25,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2018,211,116,July,31,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,3.5,4,3.75,4,5,4,4.5,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2018,212,112,August,1,yes,No bugs,Snow free,4,NA,3.25,3,5,4,4.5,4.75,0,1,0,0,1,0,0,1,0,1,1,1,1,7,1
+RL,2018,212,115,August,1,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.75,2.5,NA,3.75,NA,3.75,0,1,0,0,1,0,0,1,0,1,1,1,1,7,1
+RL,2018,212,114,August,1,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,NA,3.5,3,3.25,3.5,3,3,0,1,0,0,1,0,0,1,0,1,1,1,1,7,1
+RL,2018,212,113,August,1,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,3,2.75,4,4,3.75,NA,3.75,0,1,0,0,1,0,0,1,0,1,1,1,1,7,1
+RL,2018,215,111,August,4,yes,Bugs were not too bad,Snow free,NA,4,3,NA,5,5,4,4.25,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2018,216,110,August,5,yes,Bugs were not too bad,Intermittent snow - not hard to cross,2,5,1,3.25,NA,5,4,3.5,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2018,216,109,August,5,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,NA,NA,2.5,2.25,3,NA,NA,3.5,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2018,217,108,August,6,yes,Bugs were not too bad,Intermittent snow - not hard to cross,3,3,2.75,NA,2.75,NA,NA,3.5,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2018,219,105,August,8,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,1.25,4.5,4,NA,3,4.5,2.75,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2018,219,106,August,8,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2,NA,2.5,4,3,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2018,219,107,August,8,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,NA,NA,2.75,3,3.5,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2018,221,104,August,10,yes,No bugs,Snow free,NA,3,1.25,2.5,NA,NA,2,2.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2018,222,103,August,11,yes,No bugs,Snow free,NA,NA,NA,NA,NA,NA,2.5,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2018,223,102,August,12,yes,Bugs were an annoyance,Intermittent snow - not hard to cross,NA,3,NA,NA,2.5,NA,1.75,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2018,228,101,August,17,yes,Bugs were not too bad,Snow free,NA,3.75,3.5,NA,4,4.75,4,4.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2018,229,100,August,18,yes,No bugs,Snow free,NA,4.5,3.25,3,NA,5,4,4.5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2018,230,99,August,19,yes,Bugs were not too bad,Snow free,NA,NA,2,2.25,NA,NA,NA,3,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2018,242,98,August,31,yes,No bugs,Snow free,NA,4,NA,2.5,2,3.5,NA,4.25,0,1,1,1,0,0,0,0,1,1,0,1,0,6,0
+RL,2018,244,97,September,2,yes,Bugs were not too bad,Snow free,NA,NA,NA,NA,5,NA,NA,4.25,0,1,1,1,0,0,0,0,0,0,0,1,0,4,0
+RL,2018,245,95,September,3,no,No bugs,Snow free,NA,NA,3.25,3,4.25,3.5,2.5,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2018,245,96,September,3,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,3.25,3,4,4.5,3.5,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2018,247,94,September,5,yes,Bugs were not too bad,Snow free,NA,4.25,1.5,3,2,3.25,4.5,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2018,252,93,September,10,no,No bugs,Snow free,NA,NA,NA,NA,2.5,3.5,NA,3.75,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2018,260,92,September,18,no,No bugs,Intermittent snow - not hard to cross,NA,4,NA,3,5,5,2.75,4.75,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2018,261,90,September,19,no,No bugs,Snow free,NA,3,NA,NA,NA,NA,3,3,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2018,261,91,September,19,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,2,NA,2,2,3,4,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2018,263,88,September,21,yes,No bugs,Snow free,NA,4,3,2.75,3.25,4.75,NA,4,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2018,263,89,September,21,no,No bugs,Snow free,NA,4.5,NA,NA,2,4.5,NA,4,0,0,1,1,0,0,0,0,0,0,0,0,0,2,0
+RL,2018,267,87,September,25,no,No bugs,Snow free,NA,3.5,3.5,3,5,5,NA,4.75,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0
+RL,2018,267,86,September,25,no,No bugs,Snow free,NA,NA,NA,3,5,5,NA,4.5,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0
+RL,2018,270,85,September,28,no,Bugs were not too bad,Snow free,3,4,3,4.25,NA,5,3,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,271,81,September,29,no,No bugs,Intermittent snow - not hard to cross,NA,3.5,NA,4.5,NA,5,NA,4.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,271,83,September,29,no,No bugs,Snow free,NA,3,2.5,3,5,4.75,NA,4.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,271,84,September,29,no,No bugs,Snow free,NA,NA,3,NA,NA,4,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,271,82,September,29,no,No bugs,Snow free,NA,NA,NA,NA,NA,5,NA,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,278,79,October,6,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,3,1.5,1.5,NA,2.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,278,78,October,6,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,1.75,2,2,NA,2.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,279,77,October,7,no,No bugs,Snowfields to cross - could be difficult,NA,NA,3,1.5,3,4.5,NA,3.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,284,76,October,12,no,No bugs,Snow free,NA,NA,3,3.5,NA,4,NA,3.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,285,74,October,13,no,No bugs,Snow free,NA,4,2.5,3.25,5,4.75,NA,4.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2018,285,75,October,13,no,No bugs,Snow free,NA,NA,2.5,2.5,5,5,NA,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,122,69,May,3,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,2,4,4.5,NA,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,151,68,June,1,no,No bugs,Snowfields to cross - could be difficult,NA,NA,3,2,NA,NA,NA,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,154,67,June,4,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,4,3.25,2.75,4.25,5,NA,4.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,165,66,June,15,yes,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,3.75,3.5,3,5,4.5,3.5,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,176,65,June,26,no,No bugs,Snowfields to cross - could be difficult,NA,3.25,3.5,3,2.25,3.5,NA,4.25,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2019,179,64,June,29,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,4.75,4.5,1.5,3,5,4,4,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2019,183,63,July,3,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,3,NA,NA,NA,3,1,0,0,0,0,1,1,0,0,0,0,0,0,3,0
+RL,2019,186,62,July,6,yes,Bugs were not too bad,Snowfields to cross - could be difficult,NA,4,2.75,3,2.75,3,3,3,1,0,0,0,1,1,1,0,0,0,0,0,0,4,0
+RL,2019,192,61,July,12,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,2.25,NA,3,4.5,3.75,3,4,1,0,0,0,1,1,1,0,0,0,0,0,1,5,0
+RL,2019,193,60,July,13,yes,No bugs,Snowfields to cross - could be difficult,NA,4,2,4,2.25,3.75,NA,4,1,0,0,0,1,1,1,0,0,0,0,0,1,5,0
+RL,2019,195,59,July,15,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,2.5,NA,NA,NA,3.5,1,0,0,0,1,1,1,1,0,0,0,0,1,6,0
+RL,2019,200,58,July,20,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.5,2.5,3.5,NA,2.75,4,1,1,0,0,1,1,0,1,0,1,1,1,1,9,1
+RL,2019,205,57,July,25,yes,No bugs,Intermittent snow - not hard to cross,NA,4.5,NA,NA,NA,5,5,4.5,1,1,0,1,1,1,0,1,1,1,1,1,1,11,1
+RL,2019,206,56,July,26,yes,Bugs were not too bad,Snow free,NA,NA,NA,NA,NA,5,5,4.75,0,1,0,1,1,1,0,1,1,1,1,1,1,10,1
+RL,2019,207,55,July,27,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,NA,3,1.5,2,3,2.75,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2019,208,52,July,28,yes,No bugs,Intermittent snow - not hard to cross,4.5,NA,NA,4.5,3,4.25,4.25,4.5,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2019,208,54,July,28,yes,No bugs,Intermittent snow - not hard to cross,NA,3.5,1.5,4.5,NA,5,3.75,2.75,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2019,208,53,July,28,yes,No bugs,Snow free,NA,4,2.5,3,NA,5,NA,4,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2019,208,51,July,28,yes,No bugs,Intermittent snow - not hard to cross,NA,NA,1,NA,5,NA,NA,3,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2019,209,50,July,29,yes,Bugs were not too bad,Snow free,NA,3,3,NA,NA,NA,4,4.75,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2019,209,49,July,29,yes,No bugs,Intermittent snow - not hard to cross,NA,3,1,NA,NA,NA,2,2,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2019,210,48,July,30,yes,No bugs,Snow free,NA,NA,3,5,NA,5,NA,4.25,0,1,0,1,1,0,0,1,1,1,1,1,1,9,1
+RL,2019,212,47,August,1,yes,Bugs were terrible,Snow free,NA,3,NA,NA,NA,5,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,213,46,August,2,yes,Bugs were not too bad,Snow free,NA,4,2.5,NA,5,5,4,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,214,43,August,3,yes,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,3,5,5,5,5,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,214,44,August,3,no,Bugs were not too bad,Snow free,NA,4,3,4,NA,5,NA,4.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,214,45,August,3,yes,Bugs were not too bad,Snow free,NA,3.5,2,4,NA,5,NA,4,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,214,42,August,3,yes,No bugs,Snow free,NA,5,3,NA,5,5,5,4.75,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,217,40,August,6,yes,Bugs were not too bad,Snow free,3.25,4.5,2.5,NA,3.5,4,5,5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,219,39,August,8,yes,Bugs were terrible,Snow free,NA,4.5,2,5,3,NA,4.25,3.5,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,220,38,August,9,yes,Bugs were not too bad,Snow free,3,NA,2,5,3.25,NA,NA,3.25,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,222,37,August,11,yes,No bugs,Snow free,NA,NA,3,2.5,1.5,NA,NA,3,0,1,1,1,1,0,0,1,1,1,1,1,1,10,1
+RL,2019,227,36,August,16,yes,No bugs,Snow free,NA,4,2,NA,2.5,3.25,4.5,4.25,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2019,228,35,August,17,yes,No bugs,Snow free,NA,3.5,2.5,5,NA,5,NA,5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2019,228,34,August,17,yes,No bugs,Snow free,NA,NA,2,NA,3.5,4.75,NA,4.5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2019,229,33,August,18,yes,No bugs,Intermittent snow - not hard to cross,NA,4.25,3,2.75,NA,5,4,4.5,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2019,230,32,August,19,yes,No bugs,Snow free,NA,4,2,NA,NA,5,4,4,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2019,232,31,August,21,yes,No bugs,Snow free,NA,NA,2.5,NA,2.5,3.25,2,3.25,0,1,1,1,1,0,0,1,1,1,0,1,1,9,1
+RL,2019,235,29,August,24,no,No bugs,Snow free,NA,NA,NA,NA,1.25,3,NA,4,0,1,1,1,0,0,0,1,1,1,0,1,0,7,1
+RL,2019,235,30,August,24,yes,No bugs,Snow free,NA,5,3,NA,2.5,2.5,3.25,4,0,1,1,1,0,0,0,1,1,1,0,1,0,7,1
+RL,2019,236,28,August,25,yes,No bugs,Intermittent snow - not hard to cross,NA,3.25,2,NA,2.25,3.5,NA,3.25,0,1,1,1,0,0,0,0,1,1,0,1,0,6,0
+RL,2019,238,27,August,27,yes,No bugs,Snow free,NA,4,3.25,NA,5,5,4.25,4.5,0,1,1,1,0,0,0,0,0,1,0,1,0,5,0
+RL,2019,239,26,August,28,yes,No bugs,Snow free,NA,3,2.75,NA,5,4.75,3.25,4.25,0,1,1,1,0,0,0,0,0,1,0,0,0,4,0
+RL,2019,241,25,August,30,no,No bugs,Snow free,NA,NA,3.5,4.5,NA,5,NA,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2019,241,24,August,30,no,No bugs,Snow free,NA,3.5,3,3,4.75,2.5,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2019,245,22,September,3,yes,Bugs were not too bad,Snow free,NA,4,NA,4,NA,4,NA,4,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2019,245,23,September,3,yes,No bugs,Snow free,NA,4.5,3,3,5,5,3.75,4.5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2019,247,21,September,5,yes,No bugs,Snow free,NA,4.5,NA,4.25,NA,3.5,NA,5,0,1,1,1,0,0,0,0,0,0,0,0,0,3,0
+RL,2019,263,19,September,21,no,No bugs,Snow free,NA,NA,NA,NA,2.5,3.5,NA,3.25,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
+RL,2019,263,18,September,21,no,No bugs,Snow free,NA,4.25,3.25,5,4,5,NA,5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
+RL,2019,263,20,September,21,yes,Bugs were not too bad,Trail snow-covered at times - gear and expertise recommended,NA,NA,3,3,NA,NA,3,3.5,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0
+RL,2019,272,17,September,30,no,No bugs,Trail snow-covered at times - gear and expertise recommended,NA,4,4,1.5,3.5,4.25,NA,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,277,16,October,5,no,Bugs were not too bad,Intermittent snow - not hard to cross,NA,NA,2.75,2.25,NA,4.5,NA,3.75,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,278,15,October,6,no,No bugs,Intermittent snow - not hard to cross,NA,3.25,NA,3,4.25,5,NA,4.25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,283,14,October,11,no,No bugs,Intermittent snow - not hard to cross,NA,NA,3,3.25,3.75,5,NA,4.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+RL,2019,285,12,October,13,no,No bugs,Snowfields to cross - could be difficult,NA,NA,NA,3,2,2.5,NA,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
