@@ -13,6 +13,7 @@ library(MASS)
 library(boot)
 library(dplyr)
 library(randomForest)
+library(brant)
 ```
 
 #Objective 1
@@ -220,7 +221,8 @@ This code chunk plots a 3 row 2 column figure, with the distributions of wildflo
 par(mfrow=c(3,2), omi=c(0,0,0,0), mai=c(0.35,0.35,0.35,0.25),
     mgp=c(1.2,0.4,0), tck=-0.02)
 yrs <- unique(NPS_visits$year); yrs <- c(2013,2014,2016,2017,2018,2019,2015)
-yrcols <- c("grey","grey","grey","grey","grey","grey","orange")
+yrcols <- c("navyblue","navyblue","lightblue","navyblue",
+            "lightblue","lightblue","orange")
 
 # MW_dat
 trls <- c("GB", "RL")
@@ -245,7 +247,7 @@ for(i in 1:2){
 
   for(j in 1:length(yrs)){
     yrvisits <- MW_flowers[MW_flowers$year==yrs[j]&MW_flowers$trail==trls[i],]
-    ifelse(j<7, ptsize<-1.25, ptsize<-2)
+    ifelse(j<7, ptsize<-1.75, ptsize<-1.75)
     points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
           cex=ptsize, pch=21, bg=yrcols[j])
   }
@@ -275,7 +277,7 @@ for(i in 1:2){
   for(j in 1:length(yrs)){
     yrvisits <- WTA_reports[WTA_reports$year==yrs[j]
                             &WTA_reports$trail==trls[i],]
-    ifelse(j<7, ptsize<-1.25, ptsize<-2)
+    ifelse(j<7, ptsize<-1.75, ptsize<-1.75)
     points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
             cex=ptsize, pch=21, bg=yrcols[j])
   }
@@ -287,8 +289,8 @@ plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,10.5), ylim=c(0,0.5),
 title("NPS visition")
 text(c(4,5,6,7,8,9,10), -0.05, xpd=NA, 
       labels=c("Apr","May","June","July","Aug","Sep","Oct"))
-legend(x="topright", legend=c("Average climate year", "CC analog year"), 
-       cex=0.75, pch=21, pt.bg=c("grey","orange"), pt.cex=c(1.25, 2))
+legend(x="topright", legend=c("Late snow", "Avg snow","Early snow"), 
+       cex=0.75, pch=21, pt.bg=c("navyblue","lightblue","orange"), pt.cex=1.75)
 mtext("e)", side=3, line=-1, cex=0.65, adj=0.025)
 
 for(i in 1:length(yrs)){
@@ -298,7 +300,7 @@ for(i in 1:length(yrs)){
 
 for(i in 1:length(yrs)){
   yrvisits <- NPS_visits[NPS_visits$year==yrs[i],]
-  ifelse(i<7, ptsize<-1.25, ptsize<-2)
+  ifelse(i<7, ptsize<-1.75, ptsize<-1.75)
   points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
          cex=ptsize, pch=21, bg=yrcols[i])
 }
@@ -349,7 +351,7 @@ legend(x="bottomright", legend=c("MW","WTA","NPS"),
 #Objective 2 Sentiment wrangling, data exploration
 This code chunk:
 1. Wrangles the WTA data, by taking average sentiments after removing the most extreme value. This is done on a sentiment by sentiment basis.
-3. Explores sentiments
+2. Explores sentiments
   +How many NAs?
   +Histogram of sentiments?
 
@@ -459,7 +461,7 @@ pairs(sentiments, pch=21, bg="grey", lower.panel=panel.cor,
 
 ```
 
-#Objective 2 Figure raw correlations
+#Objective 2 Correlations between individual and total sentiments
 ```{r fig1, fig.height=3, fig.width=8, fig.align="center"}
 par(mfrow=c(1,5), pty="s", omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
     mgp=c(1.0,0.25,0), tck=-0.01)
@@ -486,8 +488,10 @@ for(i in 1:(dim(sentiments)[2]-1)){
 
 ```
 
-#Objective 2: recode sentiments, make figure, 1-way ANOVA
-```{r fig1, fig.height=3, fig.width=8, fig.align="center"}
+#Objective 2: Figure 3
+This chunk of code recodes individual sentiments are recoded into categorical variables.
+
+```{r }
 
 #First recode individual sentiments, not total
 sentiments_recode <- sentiments[,-dim(sentiments)[2]]
@@ -496,7 +500,7 @@ sentiments_recode <- sentiments[,-dim(sentiments)[2]]
 sentiments_recode[sentiments_recode>3.5] <- "Pos"
 sentiments_recode[sentiments_recode<2.5] <- "Neg"
 sentiments_recode[sentiments_recode>=2.5 & sentiments_recode<=3.5] <- "Neut"
-sentiments_recode[is.na(sentiments_recode)==TRUE] <- "N.A."
+sentiments_recode[is.na(sentiments_recode)==TRUE] <- "None"
 
 #now reconstitute
 for(i in 1:dim(sentiments_recode)[2]){
@@ -507,29 +511,12 @@ for(i in 1:dim(sentiments_recode)[2]){
 sentiments_recode <- cbind(sentiments_recode, sentiments$total.s)
 dimnames(sentiments_recode)[[2]] <- dimnames(sentiments)[[2]]
 
-#Make figure, analyze
-par(mfrow=c(1,5), pty="s", omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
-    mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
-noplot <- c("wildlife.s","crowd.s")
-ttls <- c("Bugs","Wildlife","Crowds","Trails","Weather",
-          "Views","Wildflowers", "Total")
+#One way analysis of variance, print results
 
 for(i in 1:(dim(sentiments_recode)[2]-1)){
   tot <- sentiments_recode$total.s
   ind <- sentiments_recode[,i]
-  if(dimnames(sentiments)[[2]][i] %in% noplot == TRUE){next}
-  plot(tot~ind, ylim=c(0.5,5.5), xlab = "Individual Sentiment",
-       ylab = "Total Sentiment", 
-       col=c("grey","yellow","chartreuse4","royalblue"))
-  title(ttls[i])
-  
-  #Add NAS
-  propnotext <- 100*round(length(ind[ind=="N.A."]) / length(ind),2)
-  
-  #add to graph
-  mtext(paste(propnotext, "%", sep=""),
-        line=-1, side=3, adj=0.06, cex=0.65)
-  
+
   #simple anovas
   indtest <- lm(tot~ind)
   print(ttls[i])
@@ -538,25 +525,14 @@ for(i in 1:(dim(sentiments_recode)[2]-1)){
   print(TukeyHSD(aov(indtest)))
   paov <- round(anova(indtest)$`Pr(>F)`[1],3)
   
-  #add to graph
-  if(paov>0){
-    mtext(paste("p=", paov, sep=""),
-        line=-1, side=1, adj=0.95, cex=0.65)}
-    if(paov==0){
-    mtext("p<0.001", line=-1, side=1, adj=0.95, cex=0.65)}
 }
 
-#Total analysis
-alltest <- lm(total.s~bug.s+trail.s+weather.s+view.s+wildflower.s,
-              data=sentiments_recode)
-print(anova(alltest))
-print(TukeyHSD(aov(alltest)))
 
 ```
 
 #Objective 2: Random Forests with sentiments
 This code chunk uses random forests to explore how total sentiment is related to individual sentiments. We exclude crowding and wildlife (low irr). Three approaches are used
-1. Use the full dataset, with recoded individual sentiments (NA, Neg, Neutral, Pos)
+1. Use the full dataset, with recoded individual sentiments (NA, Neg, Neutral, Pos). Note, this is what we report in the manuscript; results are in rf.recode
 2. Use the full dataset, with quantitative sentiments, dealing with NAs as follows
     +recode them as 3 (neutral) - see TukeyHSD for justification
     +replace them with the mean sentiment of non NA values
@@ -567,7 +543,7 @@ This code chunk uses random forests to explore how total sentiment is related to
     +impute them
 4. Create some plots to show these various results
 
-```{r fig, fig.height=4, fig.width=5, fig.align="center"}
+```{r fig, fig.height=4, fig.width=8, fig.align="center"}
 #Random Forests with recoded sentiments
 rf.recode <-randomForest(total.s ~ bug.s + trail.s + weather.s + view.s +
                         wildflower.s, data=sentiments_recode,
@@ -677,19 +653,66 @@ par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
 varImpPlot(rf.imputed.wf, pch=21, bg="yellowgreen", main="reduced: NA impute")
 
 ```
+#Now plot figure 3 for manuscript; 2 rows x 3 columns
+1. Plot bar graphs of individual sentiments (a-e)
+2. Plot random forest (f)
 
-```{r fig, fig.height=4, fig.width=4, fig.align="center"}
-#Make plot for manuscript
-par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.5),
+
+```{r fig.height=5, fig.width=8, fig.align="center"}
+
+#Make figure a - e, analyze
+par(mfrow=c(2,3), pty="s", omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
     mgp=c(1.0,0.25,0), tck=-0.01, cex.axis=0.8)
+noplot <- c("wildlife.s","crowd.s")
+ttls <- c("Bugs","Wildlife","Crowds","Trails","Weather",
+          "Views","Wildflowers", "Total")
+lbl <- c("a)","n","n","b)","c)","d)","e)")
+
+for(i in 1:(dim(sentiments_recode)[2]-1)){
+  tot <- sentiments_recode$total.s
+  ind <- sentiments_recode[,i]
+  if(dimnames(sentiments)[[2]][i] %in% noplot == TRUE){next}
+  plot(tot~ind, ylim=c(0.5,5.5), xlab = "Individual Sentiment",
+       ylab = "Total Sentiment", 
+       col=c("grey","yellow","chartreuse4","royalblue"))
+  title(ttls[i])
+  mtext(lbl[i], side=3, line=-1.1, cex=0.8, adj=0.025)
+  
+  #Add NAS
+  #propnotext <- 100*round(length(ind[ind=="None"]) / length(ind),2)
+  
+  #add to graph
+  #mtext(paste(propnotext, "%", sep=""),
+  #      line=-2, side=3, adj=0.1, cex=0.65)
+  
+  #simple anovas
+  indtest <- lm(tot~ind)
+  print(ttls[i])
+  print(summary(indtest))
+  print(anova(indtest))
+  print(TukeyHSD(aov(indtest)))
+  paov <- round(anova(indtest)$`Pr(>F)`[1],3)
+  
+  #add to graph
+  if(paov>0){
+    mtext(paste("p=", paov, sep=""),
+        line=-1, side=1, adj=0.95, cex=0.65)}
+    if(paov==0){
+    mtext("p<0.001", line=-1, side=1, adj=0.95, cex=0.65)}
+}
+
+#Random Forests of all
 rf.imp <- importance(rf.recode)
 rf.imp <- rf.imp[order(rf.imp[,1]),]
-rf.names <- dimnames(rf.imp)[[1]]
-rf.names <- substr(rf.names, 1, (nchar(rf.names)-2))
+#rf.names <- dimnames(rf.imp)[[1]]
+rf.names <- c("bugs","weather","trails","wildflowers","views")
+#rf.names <- substr(rf.names, 1, (nchar(rf.names)-2))
 
 dotchart(rf.imp[,1], labels = rf.names, xlim = c(0,1.1*max(rf.imp[,1])),
          pch=21, bg="darkgreen", xlab = "Importance (MSE)", pt.cex = 2)
-title("Trail Experiences")
+mtext("f)", side=3, line=-1.1, cex=0.8, adj=0.025)
+title("Random Forest Regression")
+
 ```
 
 
@@ -787,6 +810,8 @@ WTA_MW_dat <- data.frame(WTA_MW_dat)
 # change storage mode
 WTA_MW_dat$year <- as.factor(WTA_MW_dat$year)
 WTA_MW_dat$flowerbadge <- as.factor(WTA_MW_dat$flowerbadge)
+WTA_MW_dat$flseason <- as.factor(WTA_MW_dat$flseason)
+WTA_MW_dat$trail <- as.factor(WTA_MW_dat$trail)
 head(WTA_MW_dat)
 
 # save to output
@@ -796,7 +821,7 @@ write.csv(WTA_MW_dat, file = "output/WTA_MW_dat.csv", quote=FALSE,
 ```
 
 
-# Objective 3: recode sentiments
+# Objective 3: recode overall trail sentiments
 ```{r fig1, fig.width=2.75, fig.height=5}
 
 # Recategorize to ordinal
@@ -827,97 +852,112 @@ hist(total.s2, main="Recode (neg,neut,pos)", xlab="sentiments",
 
 ```
 
-# Objective 3: Ordinal regressions
-```{r fig1, fig.width=6.5, fig.height=3.0}
+# Objective 3: Ordinal regressions and model selection
+```{r }
 #Ordinal regression: year and richness (s1)
-ordr_s1_null <- polr(total.s1~1, data=WTA_MW_dat)
-ordr_s1_yr <- polr(total.s1~as.factor(year), data=WTA_MW_dat)
-ordr_s1_rch <- polr(total.s1~rich, data=WTA_MW_dat)
-ordr_s1_trl <- polr(total.s1~as.factor(trail), data=WTA_MW_dat)
-ordr_s1_yrrch <- polr(total.s1~rich+as.factor(year), data=WTA_MW_dat)
-ordr_s1_yrtrl <- polr(total.s1~as.factor(year)+as.factor(trail),
-                      data=WTA_MW_dat)
-ordr_s1_trlrch <- polr(total.s1~rich+as.factor(trail), data=WTA_MW_dat)
+#ordr_s1_null <- polr(total.s1~1, data=WTA_MW_dat)
+#ordr_s1_yr <- polr(total.s1~as.factor(year), data=WTA_MW_dat)
+#ordr_s1_rch <- polr(total.s1~rich, data=WTA_MW_dat)
+#ordr_s1_trl <- polr(total.s1~as.factor(trail), data=WTA_MW_dat)
+#ordr_s1_yrrch <- polr(total.s1~rich+as.factor(year), data=WTA_MW_dat)
+#ordr_s1_yrtrl <- polr(total.s1~as.factor(year)+as.factor(trail),
+#                      data=WTA_MW_dat)
+#ordr_s1_trlrch <- polr(total.s1~rich+as.factor(trail), data=WTA_MW_dat)
 #various tests
-anova(ordr_s1_rch, ordr_s1_null)
-anova(ordr_s1_yrrch, ordr_s1_yr)
-anova(ordr_s1_trlrch, ordr_s1_trl)
-AIC(ordr_s1_null, ordr_s1_yr, ordr_s1_rch, ordr_s1_trl, 
-    ordr_s1_yrrch, ordr_s1_yrtrl, ordr_s1_trlrch)
+#anova(ordr_s1_rch, ordr_s1_null)
+#anova(ordr_s1_yrrch, ordr_s1_yr)
+#anova(ordr_s1_trlrch, ordr_s1_trl)
+#AIC(ordr_s1_null, ordr_s1_yr, ordr_s1_rch, ordr_s1_trl, 
+#    ordr_s1_yrrch, ordr_s1_yrtrl, ordr_s1_trlrch)
 
 #Ordinal regression: year and richness (s2)
-ordr_s2_null <- polr(total.s2~1, data=WTA_MW_dat)
-ordr_s2_yr <- polr(total.s2~as.factor(year), data=WTA_MW_dat)
-ordr_s2_rch <- polr(total.s2~rich, data=WTA_MW_dat)
-ordr_s2_trl <- polr(total.s2~as.factor(trail), data=WTA_MW_dat)
-ordr_s2_yrrch <- polr(total.s2~rich+as.factor(year), data=WTA_MW_dat)
-ordr_s2_yrtrl <- polr(total.s2~as.factor(year)+as.factor(trail),
-                      data=WTA_MW_dat)
-ordr_s2_trlrch <- polr(total.s2~rich+as.factor(trail), data=WTA_MW_dat)
-ordr_s2_yrxrch <- polr(total.s2~rich*as.factor(year), data=WTA_MW_dat)
-ordr_s2_yrxtrl <- polr(total.s2~as.factor(year)*as.factor(trail),
-                      data=WTA_MW_dat)
-ordr_s2_trlxrch <- polr(total.s2~rich*as.factor(trail), data=WTA_MW_dat)
+ordr_s2_null <- polr(total.s2~1, data=WTA_MW_dat, Hess=T)
+ordr_s2_yr <- polr(total.s2~year, data=WTA_MW_dat, Hess=T)
+ordr_s2_rch <- polr(total.s2~rich, data=WTA_MW_dat, Hess=T)
+ordr_s2_trl <- polr(total.s2~trail, data=WTA_MW_dat, Hess=T)
+ordr_s2_yrrch <- polr(total.s2~rich+year, data=WTA_MW_dat, Hess=T)
+ordr_s2_yrtrl <- polr(total.s2~year+trail, data=WTA_MW_dat, Hess=T)
+ordr_s2_trlrch <- polr(total.s2~rich+trail, data=WTA_MW_dat, Hess=T)
+ordr_s2_yrxrch <- polr(total.s2~rich*year, data=WTA_MW_dat, Hess=T)
+ordr_s2_yrxtrl <- polr(total.s2~year*trail, data=WTA_MW_dat, Hess=T)
+ordr_s2_trlxrch <- polr(total.s2~rich*trail, data=WTA_MW_dat, Hess=T)
+allmodsr <- list(ordr_s2_null, ordr_s2_yr, ordr_s2_rch, ordr_s2_trl, 
+            ordr_s2_yrrch, ordr_s2_yrtrl, ordr_s2_trlrch, 
+            ordr_s2_yrxrch, ordr_s2_yrxtrl, ordr_s2_trlxrch)
 
 #various tests
-anova(ordr_s2_rch, ordr_s2_null)
-anova(ordr_s2_yrrch, ordr_s2_yr)
-anova(ordr_s2_trlrch, ordr_s2_trl)
-AIC(ordr_s2_null, ordr_s2_yr, ordr_s2_rch, ordr_s2_trl, 
-    ordr_s2_yrrch, ordr_s2_yrtrl, ordr_s2_trlrch, 
-    ordr_s2_yrxrch, ordr_s2_yrxtrl, ordr_s2_trlxrch)
+#anova(ordr_s2_rch, ordr_s2_null)
+#anova(ordr_s2_yrrch, ordr_s2_yr)
+#anova(ordr_s2_trlrch, ordr_s2_trl)
+
+#Model selection
+AICr <- AIC(ordr_s2_null, ordr_s2_yr, ordr_s2_rch, ordr_s2_trl, 
+            ordr_s2_yrrch, ordr_s2_yrtrl, ordr_s2_trlrch, 
+            ordr_s2_yrxrch, ordr_s2_yrxtrl, ordr_s2_trlxrch)
+print(AICr)
+AICr[,2] <- AICr[,2] - min(AICr[,2])
+
+#print coefficients from best fitting
+bestmod <- which(AICr[,2]==0)
+print(summary(allmodsr[[bestmod]]))
+print(brant(allmodsr[[bestmod]]))
+
 
 
 ################
 #Ordinal regression: year and peak (s1)
-ordf_s1_null <- polr(total.s1~1, data=WTA_MW_dat)
-ordf_s1_yr <- polr(total.s1~as.factor(year), data=WTA_MW_dat)
-ordf_s1_fl <- polr(total.s1~as.factor(flseason), data=WTA_MW_dat)
-ordf_s1_trl <- polr(total.s1~as.factor(trail), data=WTA_MW_dat)
-ordf_s1_yrfl <- polr(total.s1~as.factor(flseason) + 
-                        as.factor(year), data=WTA_MW_dat)
-ordf_s1_yrtrl <- polr(total.s1~as.factor(year)+as.factor(trail),
-                      data=WTA_MW_dat)
-ordf_s1_trlfl <- polr(total.s1~as.factor(flseason)+as.factor(trail), 
-                       data=WTA_MW_dat)
+#ordf_s1_null <- polr(total.s1~1, data=WTA_MW_dat)
+#ordf_s1_yr <- polr(total.s1~as.factor(year), data=WTA_MW_dat)
+#ordf_s1_fl <- polr(total.s1~as.factor(flseason), data=WTA_MW_dat)
+#ordf_s1_trl <- polr(total.s1~as.factor(trail), data=WTA_MW_dat)
+#ordf_s1_yrfl <- polr(total.s1~as.factor(flseason) + 
+#                        as.factor(year), data=WTA_MW_dat)
+#ordf_s1_yrtrl <- polr(total.s1~as.factor(year)+as.factor(trail),
+#                      data=WTA_MW_dat)
+#ordf_s1_trlfl <- polr(total.s1~as.factor(flseason)+as.factor(trail), 
+#                       data=WTA_MW_dat)
 #various tests
-anova(ordf_s1_fl, ordf_s1_null)
-anova(ordf_s1_yrfl, ordf_s1_yr)
-anova(ordf_s1_trlfl, ordf_s1_trl)
-AIC(ordf_s1_null, ordf_s1_yr, ordf_s1_fl, ordf_s1_trl, 
-    ordf_s1_yrfl, ordf_s1_yrtrl, ordf_s1_trlfl)
+#anova(ordf_s1_fl, ordf_s1_null)
+#anova(ordf_s1_yrfl, ordf_s1_yr)
+#anova(ordf_s1_trlfl, ordf_s1_trl)
+#AIC(ordf_s1_null, ordf_s1_yr, ordf_s1_fl, ordf_s1_trl, 
+#    ordf_s1_yrfl, ordf_s1_yrtrl, ordf_s1_trlfl)
     
 
 #Ordinal regression: year and peak (s2)
-ordf_s2_null <- polr(total.s2~1, data=WTA_MW_dat)
-ordf_s2_yr <- polr(total.s2~as.factor(year), data=WTA_MW_dat)
-ordf_s2_fl <- polr(total.s2~as.factor(flseason), data=WTA_MW_dat)
-ordf_s2_trl <- polr(total.s2~as.factor(trail), data=WTA_MW_dat)
-ordf_s2_yrfl <- polr(total.s2~as.factor(flseason) + 
-                        as.factor(year), data=WTA_MW_dat)
-ordf_s2_yrtrl <- polr(total.s2~as.factor(year)+as.factor(trail),
-                      data=WTA_MW_dat)
-ordf_s2_trlfl <- polr(total.s2~as.factor(flseason)+as.factor(trail), 
-                       data=WTA_MW_dat)
-ordf_s2_yrxfl <- polr(total.s2~as.factor(flseason)*as.factor(year),
-                      data=WTA_MW_dat)
-ordf_s2_yrxtrl <- polr(total.s2~as.factor(year)*as.factor(trail),
-                      data=WTA_MW_dat)
-ordf_s2_trlxfl <- polr(total.s2~as.factor(flseason)*as.factor(trail), 
-                       data=WTA_MW_dat)
-#various tests
-anova(ordf_s2_fl, ordf_s2_null)
-anova(ordf_s2_yrfl, ordf_s2_yr)
-anova(ordf_s2_trlfl, ordf_s2_trl)
-AIC(ordf_s2_null, ordf_s2_yr, ordf_s2_fl, ordf_s2_trl, 
-    ordf_s2_yrfl, ordf_s2_yrtrl, ordf_s2_trlfl, 
-    ordf_s2_yrxfl, ordf_s2_yrxtrl, ordf_s2_trlxfl)
+ordf_s2_null <- polr(total.s2~1, data=WTA_MW_dat, Hess=T)
+ordf_s2_yr <- polr(total.s2~year, data=WTA_MW_dat, Hess=T)
+ordf_s2_fl <- polr(total.s2~flseason, data=WTA_MW_dat, Hess=T)
+ordf_s2_trl <- polr(total.s2~trail, data=WTA_MW_dat, Hess=T)
+ordf_s2_yrfl <- polr(total.s2~flseason + year, data=WTA_MW_dat, Hess=T)
+ordf_s2_yrtrl <- polr(total.s2~year+trail, data=WTA_MW_dat, Hess=T)
+ordf_s2_trlfl <- polr(total.s2~flseason+trail, data=WTA_MW_dat, Hess=T)
+ordf_s2_yrxfl <- polr(total.s2~flseason*year, data=WTA_MW_dat, Hess=T)
+ordf_s2_yrxtrl <- polr(total.s2~year*trail, data=WTA_MW_dat, Hess=T)
+ordf_s2_trlxfl <- polr(total.s2~flseason*trail, data=WTA_MW_dat, Hess=T)
+allmodsf <- list(ordf_s2_null, ordf_s2_yr, ordf_s2_fl, ordf_s2_trl, 
+                 ordf_s2_yrfl, ordf_s2_yrtrl, ordf_s2_trlfl, 
+                 ordf_s2_yrxfl, ordf_s2_yrxtrl, ordf_s2_trlxfl)
 
-AIC(ordf_s2_null, ordf_s2_yr, ordf_s2_trl,
-    ordf_s2_fl, ordr_s2_rch, 
-    ordf_s2_yrfl, ordr_s2_yrrch, 
-    ordf_s2_trlfl, ordr_s2_trlrch, 
-    ordf_s2_yrtrl)
+#various tests
+#anova(ordf_s2_fl, ordf_s2_null)
+#anova(ordf_s2_yrfl, ordf_s2_yr)
+#anova(ordf_s2_trlfl, ordf_s2_trl)
+
+AICf <- AIC(ordf_s2_null, ordf_s2_yr, ordf_s2_fl, ordf_s2_trl, 
+            ordf_s2_yrfl, ordf_s2_yrtrl, ordf_s2_trlfl, 
+            ordf_s2_yrxfl, ordf_s2_yrxtrl, ordf_s2_trlxfl)
+print(AICf)
+AICf[,2] <- AICf[,2] - min(AICf[,2])
+
+#print coefficients from best fitting
+bestmod <- which(AICf[,2]==0)
+print(summary(allmodsf[[bestmod]]))
+print(brant(allmodsf[[bestmod]]))
+```
+
+# Figure 4 for manuscript
+```{r fig1, fig.width=6.5, fig.height=3.0}
 
 #Make two graphs
 par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
@@ -958,4 +998,3 @@ mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
 
 
 ```
-
