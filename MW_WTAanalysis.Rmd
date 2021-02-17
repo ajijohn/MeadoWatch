@@ -894,12 +894,25 @@ allmodsr <- list(ordr_s2_null, ordr_s2_yr, ordr_s2_rch, ordr_s2_trl,
 AICr <- AIC(ordr_s2_null, ordr_s2_yr, ordr_s2_rch, ordr_s2_trl, 
             ordr_s2_yrrch, ordr_s2_yrtrl, ordr_s2_trlrch, 
             ordr_s2_yrxrch, ordr_s2_yrxtrl, ordr_s2_trlxrch)
-print(AICr)
 AICr[,2] <- AICr[,2] - min(AICr[,2])
+print(AICr)
 
 #print coefficients from best fitting
 bestmod <- which(AICr[,2]==0)
 print(summary(allmodsr[[bestmod]]))
+
+#coefficients and p-values
+rcoefs <- coef(summary(allmodsr[[bestmod]]))
+p <- round(pnorm(abs(rcoefs[, "t value"]), lower.tail = FALSE) * 2,3)
+rcoefs <- cbind(rcoefs, "p value" = p)
+print(rcoefs)
+
+#confidence intervals, rescale
+cir <- confint(allmodsr[[bestmod]])
+recoefs <- exp(cbind(OR = coef(allmodsr[[bestmod]]), cir))
+print(recoefs)
+
+#test proportional odds assumption
 print(brant(allmodsr[[bestmod]]))
 
 
@@ -947,16 +960,29 @@ allmodsf <- list(ordf_s2_null, ordf_s2_yr, ordf_s2_fl, ordf_s2_trl,
 AICf <- AIC(ordf_s2_null, ordf_s2_yr, ordf_s2_fl, ordf_s2_trl, 
             ordf_s2_yrfl, ordf_s2_yrtrl, ordf_s2_trlfl, 
             ordf_s2_yrxfl, ordf_s2_yrxtrl, ordf_s2_trlxfl)
-print(AICf)
 AICf[,2] <- AICf[,2] - min(AICf[,2])
+print(AICf)
 
 #print coefficients from best fitting
 bestmod <- which(AICf[,2]==0)
 print(summary(allmodsf[[bestmod]]))
+
+#coefficients and p-values
+fcoefs <- coef(summary(allmodsf[[bestmod]]))
+p <- round(pnorm(abs(fcoefs[, "t value"]), lower.tail = FALSE) * 2,3)
+fcoefs <- cbind(fcoefs, "p value" = p)
+print(fcoefs)
+
+#confidence intervals, rescale
+cif <- confint(allmodsf[[bestmod]])
+fecoefs <- exp(cbind(OR = coef(allmodsf[[bestmod]]), cif))
+print(fecoefs)
+
+#assumption of proportional odds
 print(brant(allmodsf[[bestmod]]))
 ```
 
-# Figure 4 for manuscript
+# Figure 3 for manuscript
 ```{r fig1, fig.width=6.5, fig.height=3.0}
 
 #Make two graphs
@@ -964,14 +990,16 @@ par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3),
     mgp=c(1.1,0.4,0), tck=-0.02)
 
 rch <- WTA_MW_dat$rich
-trl <- as.factor(WTA_MW_dat$trail)
-snt <- rep(NA, times=dim(WTA_MW_dat)[1])
-snt[WTA_MW_dat$total.s2[]==1] <- "neg"
-snt[WTA_MW_dat$total.s2[]==2] <- "neut"
-snt[WTA_MW_dat$total.s2[]==3] <- "pos"
-snt <- as.factor(snt)
+trl <- WTA_MW_dat$trail
+snt <- WTA_MW_dat$total.s
+snt2 <- snt
+snt2[snt[]<=3] <- "neg-neut"
+snt2[snt[]>3 & snt[] <=4] <- "pos"
+snt2[snt[]>4] <- "pos+"
+snt2 <- as.factor(snt2)
 
-boxplot(rch ~ snt + trl, xlab="", ylim=c(0,13), xaxt = "n",
+
+boxplot(rch ~ snt2 + trl, xlab="", ylim=c(0,13), xaxt = "n",
         ylab = "Richness", at=c(1,2,3,5,6,7), cex.axis=0.75,
         col=c("yellowgreen","yellowgreen","yellowgreen",
               "lightblue","lightblue","lightblue"))
@@ -982,7 +1010,7 @@ text(c(1,2,3,5,6,7), c(12.8, 12.7, 12.8, 12.8, 12.7, 12.8),
 mtext("a)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
 
 
-#
+#second graph
 fl <- WTA_MW_dat$flseason
 trl <- as.factor(WTA_MW_dat$trail)
 snt <- WTA_MW_dat$total.s
@@ -998,3 +1026,51 @@ mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
 
 
 ```
+
+
+#Alternative Fig 3: USED FOR NOW
+```{r fig1, fig.width=6.5, fig.height=3.0}
+
+#Make two graphs
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
+    mgp=c(1.1,0.4,0), tck=-0.02)
+
+rch <- WTA_MW_dat$rich
+rch2 <- rch
+rch2[rch[]==0] <- "0"
+rch2[rch[]>0 & rch[]<=4] <- "1-4"
+rch2[rch[]>4 & rch[]<=8] <- "5-8"
+rch2[rch[]>8] <- "9+"
+rch2 <- as.factor(rch2)
+trl <- WTA_MW_dat$trail
+snt <- WTA_MW_dat$total.s
+
+boxplot(snt ~ trl + rch2, xlim=c(0,10), ylim=c(1,5.5),
+        xaxt = "n", cex.axis=0.75, at=c(1,2,3,4,6,7,8,9),
+        xlab="", ylab = "Sentiment", 
+        col = c("yellowgreen","yellowgreen","yellowgreen","yellowgreen",
+                "lightblue","lightblue","lightblue","lightblue"))
+text(c(1,2,3,4,6,7,8,9), c(rep(0.7, times=8)), adj=0.5, xpd=NA, cex=0.6,
+     labels=c("none","1-4","5-8","9+","none","1-4","5-8","9+"))
+text(5, 0.4, labels=c("Flowering Richness"), adj=0.5, xpd=NA)
+mtext("a)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
+legend(x="bottomright", legend=c("GB","RL"),
+       fill=c("yellowgreen","lightblue"), cex=0.75)
+
+#second graph
+fl <- WTA_MW_dat$flseason
+trl <- as.factor(WTA_MW_dat$trail)
+snt <- WTA_MW_dat$total.s
+
+boxplot(snt ~ fl + trl, ylab = "Sentiment", xlab="", ylim=c(1,5.5),
+        at=c(1,2,3.5,4.5), cex.axis=0.75, xaxt = "n",
+        col=c("yellowgreen","yellowgreen",
+              "lightblue","lightblue"))
+text(c(1.5, 4), c(0.4, 0.4), labels=c("GB", "RL"), adj=0.5, xpd=NA)
+text(c(1,2,3.5,4.5), c(5.4,5.4,5.4,5.4), cex=0.6,  
+     labels=c("no flwrs", "peak","no flwrs", "peak"), adj=0.5, xpd=NA)
+mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
+
+
+```
+
