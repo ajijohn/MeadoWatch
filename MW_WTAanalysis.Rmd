@@ -216,7 +216,12 @@ Yeardat$NPS <- c(rep(NA, times=5),NPS_monthvisit*30)
 
 # Objective 1: Figure
 This code chunk plots a 3 row 2 column figure, with the distributions of wildflowers in peak flower and WTA posts (one line per year) in the first two rows, one column per trail. The last row shows the number of visitors to NPS and a scatterplot of Snow duration vs. peak flowering, WTA posts, and visitors
-```{r fig1, fig.height=6, fig.width=5, fig.align="center"}
+```{r}
+#fig1, fig.height=6, fig.width=5, fig.align="center"}
+# set option for making figure
+pdf(file="output/figures/Fig2.pdf", width=5, height=6,
+     title="")
+
 # Make 3x2 panel figure showing all data over time
 par(mfrow=c(3,2), omi=c(0,0,0,0), mai=c(0.35,0.35,0.35,0.25),
     mgp=c(1.2,0.4,0), tck=-0.02)
@@ -324,6 +329,7 @@ Flwrtest <- lm(Yeardat$MW~Yeardat$SDD); print(summary(Flwrtest))
 WTAtest <- lm(Yeardat$WTA~Yeardat$SDD); print(summary(WTAtest))
 NPStest <- lm(Yeardat$NPS~Yeardat$SDD); print(summary(NPStest))
 
+
 #add lines, but only for reach of data
 mnmxx_SDD <- c(min(Yeardat$SDD), max(Yeardat$SDD))
 mnmxy_flwr <- coef(Flwrtest)[1] + coef(Flwrtest)[2]*mnmxx_SDD
@@ -345,6 +351,8 @@ for(i in 4:6){
 
 legend(x="bottomright", legend=c("MW","WTA","NPS"),
        lty=1, col=cls, pch=21, pt.bg=cls, pt.cex=1.5, cex=0.75)
+
+dev.off()
 
 ```
 
@@ -657,8 +665,11 @@ varImpPlot(rf.imputed.wf, pch=21, bg="yellowgreen", main="reduced: NA impute")
 1. Plot bar graphs of individual sentiments (a-e)
 2. Plot random forest (f)
 
+```{r}
+#fig.height=5, fig.width=8, fig.align="center"}
 
-```{r fig.height=5, fig.width=8, fig.align="center"}
+pdf(file="output/figures/Fig3.pdf", width=8, height=5,
+     title="")
 
 #Make figure a - e, analyze
 par(mfrow=c(2,3), pty="s", omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
@@ -712,6 +723,8 @@ dotchart(rf.imp[,1], labels = rf.names, xlim = c(0,1.1*max(rf.imp[,1])),
          pch=21, bg="darkgreen", xlab = "Importance (MSE)", pt.cex = 2)
 mtext("f)", side=3, line=-1.1, cex=0.8, adj=0.025)
 title("Random Forest Regression")
+
+dev.off()
 
 ```
 
@@ -982,8 +995,12 @@ print(fecoefs)
 print(brant(allmodsf[[bestmod]]))
 ```
 
-# Figure 3 for manuscript
-```{r fig1, fig.width=6.5, fig.height=3.0}
+# Figure 4 for manuscript
+```{r}
+#fig1, fig.width=6.5, fig.height=3.0}
+#Specify figure
+pdf(file="output/figures/Fig4.pdf", width=7, height=3,
+     title="")
 
 #Make two graphs
 par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
@@ -1024,7 +1041,7 @@ text(c(1,2,3.5,4.5), c(5.4,5.4,5.4,5.4), cex=0.6,
      labels=c("no flwrs", "peak","no flwrs", "peak"), adj=0.5, xpd=NA)
 mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
 
-
+dev.off
 ```
 
 
@@ -1045,11 +1062,11 @@ rch2 <- as.factor(rch2)
 trl <- WTA_MW_dat$trail
 snt <- WTA_MW_dat$total.s
 
-boxplot(snt ~ trl + rch2, xlim=c(0,10), ylim=c(1,5.5),
+boxplot(snt ~ rch2 + trl, xlim=c(0,10), ylim=c(1,5.5),
         xaxt = "n", cex.axis=0.75, at=c(1,2,3,4,6,7,8,9),
         xlab="", ylab = "Sentiment", 
         col = c("yellowgreen","yellowgreen","yellowgreen","yellowgreen",
-                "lightblue","lightblue","lightblue","lightblue"))
+               "lightblue","lightblue","lightblue","lightblue"))
 text(c(1,2,3,4,6,7,8,9), c(rep(0.7, times=8)), adj=0.5, xpd=NA, cex=0.6,
      labels=c("none","1-4","5-8","9+","none","1-4","5-8","9+"))
 text(5, 0.4, labels=c("Flowering Richness"), adj=0.5, xpd=NA)
@@ -1074,3 +1091,49 @@ mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
 
 ```
 
+#Check Fig 3 - right order?
+```{r fig1, fig.width=9, fig.height=3.0}
+
+#Make two graphs
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
+    mgp=c(1.1,0.4,0), tck=-0.02)
+
+rch <- WTA_MW_dat$rich
+rch2 <- rch
+rch2[rch[]==0] <- "0"
+rch2[rch[]>0 & rch[]<=4] <- "1-4"
+rch2[rch[]>4 & rch[]<=8] <- "5-8"
+rch2[rch[]>8] <- "9+"
+rch2 <- as.factor(rch2)
+trl <- WTA_MW_dat$trail
+snt <- WTA_MW_dat$total.s
+
+catrichstat <- boxplot(snt ~ rch2 + trl, ylim=c(1,5.5), cex.axis=0.5)
+
+#second graph
+fl <- WTA_MW_dat$flseason
+trl <- as.factor(WTA_MW_dat$trail)
+snt <- WTA_MW_dat$total.s
+
+peakstat <- boxplot(snt ~ fl + trl, ylim=c(1,5.5), cex.axis=0.5)
+
+
+
+```
+
+
+#Alternative Fig 3: continuous flowering richness (for reviewer response)
+```{r fig1, fig.width=9, fig.height=3.0}
+
+
+
+par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
+    mgp=c(1.1,0.4,0), tck=-0.02)
+boxplot(snt ~ rch + trl, ylim=c(1,5.5), cex.axis=0.5, 
+        xlab="Flowering Richness", ylab = "Sentiment", 
+        col = c(rep("yellowgreen",times=13), rep("lightblue",times=13)))
+mtext("a)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
+
+
+
+```
