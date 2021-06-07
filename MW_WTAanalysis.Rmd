@@ -132,7 +132,7 @@ MW_flowers_3 <- MW_flowers_3[,colorder]
 MW_flowers <- MW_flowers_3[!(MW_flowers_3$trail=="GB" & 
                             MW_flowers_3$year<2015),]
 
-# Now make data frame of dates by SDD
+# Now make data frame of dates by SDD (*check this)
 SDDyear_0 <- tapply(SDDdat$SDD, list(SDDdat$Year, SDDdat$Transect), mean)
 SDDyear_1a <- cbind(as.numeric(dimnames(SDDyear_0)[[1]]),
                      rep(dimnames(SDDyear_0)[[2]][1],
@@ -212,22 +212,45 @@ NPS_monthvisit <- NPS_mnprodsumyear / NPS_totalyear
 #add to yeardat, ReflLakes
 Yeardat$NPS <- c(rep(NA, times=5),NPS_monthvisit*30)
 
+#Create year dat two, for analysis
+TimingType <- as.factor(c(rep("NPS", times=dim(Yeardat)[1]),
+                   rep("WTA", times=dim(Yeardat)[1]),
+                   rep("MW", times=dim(Yeardat)[1])))
+Yeardat2 <- data.frame(TimingType)
+Yeardat2$Year <- c(Yeardat$Year, Yeardat$Year, Yeardat$Year)
+Yeardat2$SDD <- c(Yeardat$SDD, Yeardat$SDD, Yeardat$SDD)
+Yeardat2$Timing <- c(Yeardat$NPS, Yeardat$WTA, Yeardat$MW)
+Yeardat2 <- Yeardat2[is.na(Yeardat2$Timing)==FALSE,]
+
 ```
 
-# Objective 1: Figure
+# Objective 1: Figure 2
 This code chunk plots a 3 row 2 column figure, with the distributions of wildflowers in peak flower and WTA posts (one line per year) in the first two rows, one column per trail. The last row shows the number of visitors to NPS and a scatterplot of Snow duration vs. peak flowering, WTA posts, and visitors
 ```{r}
-#fig1, fig.height=6, fig.width=5, fig.align="center"}
+##```{r, fig1, fig.height=6, fig.width=5, fig.align="center"}
+
 # set option for making figure
-pdf(file="output/figures/Fig2.pdf", width=5, height=6,
-     title="")
+pdf(file="output/figures/Fig2.pdf", width=5, height=6, title="")
 
 # Make 3x2 panel figure showing all data over time
 par(mfrow=c(3,2), omi=c(0,0,0,0), mai=c(0.35,0.35,0.35,0.25),
     mgp=c(1.2,0.4,0), tck=-0.02)
-yrs <- unique(NPS_visits$year); yrs <- c(2013,2014,2016,2017,2018,2019,2015)
-yrcols <- c("navyblue","navyblue","lightblue","navyblue",
-            "lightblue","lightblue","orange")
+#yrs <- unique(NPS_visits$year); yrs <- c(2013,2014,2016,2017,2018,2019,2015)
+yrs <- unique(NPS_visits$year); yrs <- yrs[order(yrs, decreasing=TRUE)]
+
+#create vector of colors depending on year
+YeardatRL <- Yeardat[Yeardat$Trail=="RL",]
+YeardatRL <- YeardatRL[order(YeardatRL$Year, decreasing=TRUE),]
+
+#create color ramp
+#minSDD <- min(YeardatRL$SDD); maxSDD <- max(YeardatRL$SDD)
+#difSDD <- maxSDD-minSDD
+#SDDramp <- (YeardatRL$SDD - minSDD) / difSDD
+rankSDD <- rank(YeardatRL$SDD)-1
+SDDramp <- rankSDD/6
+SDDcolramp <- colorRamp(c("aliceblue","navyblue"),
+                        space="rgb", interpolate="spline")
+SDDcols <- rgb(SDDcolramp(SDDramp), maxColorValue=255)
 
 # MW_dat
 trls <- c("GB", "RL")
@@ -236,13 +259,18 @@ MW_flowers$month_num <- month_num
 
 for(i in 1:2){
   plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,10.5), ylim=c(0,1.0),
-       xlab="Month", ylab="Proportion")
-  title(paste("Peak Flowering",trls[i],sep=": "))
-  text(c(4,5,6,7,8,9,10),-0.08, xpd=NA, 
+       xlab="Month", ylab="Peak Flowering (proportion)")
+  title(paste("MW Flowering (",trls[i],")",sep=""))
+  text(c(4,5,6,7,8,9,10),-0.1, xpd=NA, 
       labels=c("Apr","May","June","July","Aug","Sep","Oct"))
   #add a, b
   if(i==1){mtext("a)", side=3, line=-1, cex=0.65, adj=0.025)}
   if(i==2){mtext("b)", side=3, line=-1, cex=0.65, adj=0.025)}
+  
+  if(i==1){
+    legend(x="topright", legend=c("Latest snow", "Earliest snow"), 
+       cex=0.75, pch=21, pt.bg=c("navyblue","aliceblue"),
+       pt.cex=1.75)}
 
   for(j in 1:length(yrs)){
     yrvisits <- MW_flowers[MW_flowers$year==yrs[j]&MW_flowers$trail==trls[i],]
@@ -254,7 +282,8 @@ for(i in 1:2){
     yrvisits <- MW_flowers[MW_flowers$year==yrs[j]&MW_flowers$trail==trls[i],]
     ifelse(j<7, ptsize<-1.75, ptsize<-1.75)
     points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
-          cex=ptsize, pch=21, bg=yrcols[j])
+          #cex=ptsize, pch=21, bg=yrcols[j])
+          cex=ptsize, pch=21, bg=SDDcols[j])
   }
 }
 
@@ -264,9 +293,9 @@ WTA_reports$month_num <- month_num
 
 for(i in 1:2){
   plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,10.5), ylim=c(0,0.6),
-       xlab="Month", ylab="Proportion")
-  title(paste("WTA Trip Reports",trls[i],sep=": "))
-  text(c(4,5,6,7,8,9,10), -0.05, xpd=NA, 
+       xlab="Month", ylab="Trip Reports (proportion)")
+  title(paste("WTA Trips (",trls[i],")",sep=""))
+  text(c(4,5,6,7,8,9,10), -0.06, xpd=NA, 
         labels=c("Apr","May","June","July","Aug","Sep","Oct"))
   #add a, b
   if(i==1){mtext("c)", side=3, line=-1, cex=0.65, adj=0.025)}
@@ -284,18 +313,17 @@ for(i in 1:2){
                             &WTA_reports$trail==trls[i],]
     ifelse(j<7, ptsize<-1.75, ptsize<-1.75)
     points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
-            cex=ptsize, pch=21, bg=yrcols[j])
+            #cex=ptsize, pch=21, bg=yrcols[j])
+            cex=ptsize, pch=21, bg=SDDcols[j])
   }
 }
 
 # NPS visitation
 plot(c(6,1), type="n", xaxt="n", xlim=c(3.5,10.5), ylim=c(0,0.5),
-     xlab="Month", ylab="Proportion")
-title("NPS visition")
+     xlab="Month", ylab="Visitors (Proportion)")
+title("NPS Visits")
 text(c(4,5,6,7,8,9,10), -0.05, xpd=NA, 
       labels=c("Apr","May","June","July","Aug","Sep","Oct"))
-legend(x="topright", legend=c("Late snow", "Avg snow","Early snow"), 
-       cex=0.75, pch=21, pt.bg=c("navyblue","lightblue","orange"), pt.cex=1.75)
 mtext("e)", side=3, line=-1, cex=0.65, adj=0.025)
 
 for(i in 1:length(yrs)){
@@ -307,7 +335,8 @@ for(i in 1:length(yrs)){
   yrvisits <- NPS_visits[NPS_visits$year==yrs[i],]
   ifelse(i<7, ptsize<-1.75, ptsize<-1.75)
   points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
-         cex=ptsize, pch=21, bg=yrcols[i])
+         cex=ptsize, pch=21, bg=SDDcols[j])
+         #cex=ptsize, pch=21, bg=yrcols[i])
 }
 
 #Scatter plot of Year dat
@@ -315,9 +344,9 @@ plot(c(180,180), type="n", xaxt="n", xlim=c(120,210), ylim=c(180,240),
      xaxp=c(120,210,2), yaxp=c(180,240,1), xaxt="n", yaxt="n",
      xlab="Snow disappearance", ylab="Timing (Avg)")
 title("Climate vs. Peak")
-text(c(135, 165, 195), 175, xpd=NA, 
+text(c(135, 165, 195), 174, xpd=NA, 
       labels=c("May","Jun","Jul"))
-text(110, c(195, 215), xpd=NA, srt=90, labels=c("Jul","Aug"))
+text(112, c(195, 225), xpd=NA, srt=90, labels=c("Jul","Aug"))
 mtext("f)", side=3, line=-1, cex=0.65, adj=0.025)
 cls <- c("magenta","yellowgreen","chocolate4","lightblue")
 
@@ -328,6 +357,13 @@ legend(x="bottomright", legend=c("MW","WTA","NPS"),
 Flwrtest <- lm(Yeardat$MW~Yeardat$SDD); print(summary(Flwrtest))
 WTAtest <- lm(Yeardat$WTA~Yeardat$SDD); print(summary(WTAtest))
 NPStest <- lm(Yeardat$NPS~Yeardat$SDD); print(summary(NPStest))
+
+#Overall test
+testall <- lm(Timing~SDD*TimingType, data=Yeardat2)
+
+#report out
+summary(Flwrtest); summary(WTAtest); summary(NPStest)
+summary(testall); anova(testall)
 
 
 #add lines, but only for reach of data
@@ -340,8 +376,8 @@ mnmxx_nps <- c(min(Yeardat$SDD[is.na(Yeardat$NPS)==FALSE]),
                max(Yeardat$SDD[is.na(Yeardat$NPS)==FALSE]))
 mnmxy_nps <- coef(NPStest)[1] + coef(NPStest)[2]*mnmxx_nps
 lines(mnmxx_nps, mnmxy_nps, col=cls[3], lwd=1.5)
-abline(0,1, lwd=2, col="lightblue")
-text(202,208,labels="snow melt", adj=0.5, srt=45, cex=0.65)
+#abline(0,1, lwd=2, col="lightblue")
+#text(202,208,labels="snow melt", adj=0.5, srt=45, cex=0.65)
 
 #add points
 
@@ -496,7 +532,7 @@ for(i in 1:(dim(sentiments)[2]-1)){
 
 ```
 
-#Objective 2: Figure 3
+#Objective 2
 This chunk of code recodes individual sentiments are recoded into categorical variables.
 
 ```{r }
@@ -508,7 +544,7 @@ sentiments_recode <- sentiments[,-dim(sentiments)[2]]
 sentiments_recode[sentiments_recode>3.5] <- "Pos"
 sentiments_recode[sentiments_recode<2.5] <- "Neg"
 sentiments_recode[sentiments_recode>=2.5 & sentiments_recode<=3.5] <- "Neut"
-sentiments_recode[is.na(sentiments_recode)==TRUE] <- "None"
+sentiments_recode[is.na(sentiments_recode)==TRUE] <- "NA"
 
 #now reconstitute
 for(i in 1:dim(sentiments_recode)[2]){
@@ -666,10 +702,10 @@ varImpPlot(rf.imputed.wf, pch=21, bg="yellowgreen", main="reduced: NA impute")
 2. Plot random forest (f)
 
 ```{r}
-#fig.height=5, fig.width=8, fig.align="center"}
+#```{r, fig.height=5, fig.width=8, fig.align="center"}
 
 pdf(file="output/figures/Fig3.pdf", width=8, height=5,
-     title="")
+    title="")
 
 #Make figure a - e, analyze
 par(mfrow=c(2,3), pty="s", omi=c(0,0,0,0), mai=c(0.3,0.3,0.3,0.25),
@@ -685,7 +721,7 @@ for(i in 1:(dim(sentiments_recode)[2]-1)){
   if(dimnames(sentiments)[[2]][i] %in% noplot == TRUE){next}
   plot(tot~ind, ylim=c(0.5,5.5), xlab = "Individual Sentiment",
        ylab = "Total Sentiment", 
-       col=c("grey","yellow","chartreuse4","royalblue"))
+       col=c("grey","yellow","orange","orangered"))
   title(ttls[i])
   mtext(lbl[i], side=3, line=-1.1, cex=0.8, adj=0.025)
   
@@ -715,15 +751,34 @@ for(i in 1:(dim(sentiments_recode)[2]-1)){
 #Random Forests of all
 rf.imp <- importance(rf.recode)
 rf.imp <- rf.imp[order(rf.imp[,1]),]
-#rf.names <- dimnames(rf.imp)[[1]]
 rf.names <- c("bugs","weather","trails","wildflowers","views")
-#rf.names <- substr(rf.names, 1, (nchar(rf.names)-2))
 
-dotchart(rf.imp[,1], labels = rf.names, xlim = c(0,1.1*max(rf.imp[,1])),
-         pch=21, bg="darkgreen", xlab = "Importance (MSE)", pt.cex = 2)
-mtext("f)", side=3, line=-1.1, cex=0.8, adj=0.025)
+ypos <- c(1,2,3,4,5)
+xmx <- 1.2*max(rf.imp[,1])
+plot(rf.imp[,1], ypos, xlim =c(0,xmx), ylim=c(0.5,5.5), 
+     type="n", xlab = "Importance (MSE)", ylab="Individual Sentiments",
+     yaxt="n")
+
+#title
 title("Random Forest Regression")
 
+#horizontal lines
+for(i in 1:length(ypos)){
+  lines(c(-1,rf.imp[i,1]), c(ypos[i],ypos[i]), lty=3)
+}
+
+#add points
+points(rf.imp[,1], ypos, pch=21, bg="black", cex = 2)
+
+#add labels
+for(i in 1:dim(rf.imp)[1]){
+  text((rf.imp[i,1]-2), (ypos[i]+0.2), labels=rf.names[i], adj=0.95)
+}
+
+#add f to label
+mtext("f)", side=3, line=-1.1, cex=0.8, adj=0.025)
+
+#finish pdf
 dev.off()
 
 ```
@@ -995,60 +1050,14 @@ print(fecoefs)
 print(brant(allmodsf[[bestmod]]))
 ```
 
-# Figure 4 for manuscript
-```{r}
+
+#Figure 4: plot richness (category) vs. total sentiment, peak flowering (yes, no) vs total sentiment
+```{r }
 #fig1, fig.width=6.5, fig.height=3.0}
-#Specify figure
 pdf(file="output/figures/Fig4.pdf", width=7, height=3,
-     title="")
+    title="")
 
-#Make two graphs
-par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
-    mgp=c(1.1,0.4,0), tck=-0.02)
-
-rch <- WTA_MW_dat$rich
-trl <- WTA_MW_dat$trail
-snt <- WTA_MW_dat$total.s
-snt2 <- snt
-snt2[snt[]<=3] <- "neg-neut"
-snt2[snt[]>3 & snt[] <=4] <- "pos"
-snt2[snt[]>4] <- "pos+"
-snt2 <- as.factor(snt2)
-
-
-boxplot(rch ~ snt2 + trl, xlab="", ylim=c(0,13), xaxt = "n",
-        ylab = "Richness", at=c(1,2,3,5,6,7), cex.axis=0.75,
-        col=c("yellowgreen","yellowgreen","yellowgreen",
-              "lightblue","lightblue","lightblue"))
-text(c(2, 6), c(-1.2, -1.2), labels=c("GB", "RL"), adj=0.5, xpd=NA)
-text(c(1,2,3,5,6,7), c(12.8, 12.7, 12.8, 12.8, 12.7, 12.8),
-     cex=0.6, labels=c("<=neut","pos","+pos", "<=neut","pos","+pos"),
-     adj=0.5, xpd=NA)
-mtext("a)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
-
-
-#second graph
-fl <- WTA_MW_dat$flseason
-trl <- as.factor(WTA_MW_dat$trail)
-snt <- WTA_MW_dat$total.s
-
-boxplot(snt ~ fl + trl, ylab = "Sentiment", xlab="", ylim=c(1,5.5),
-        at=c(1,2,3.5,4.5), cex.axis=0.75, xaxt = "n",
-        col=c("yellowgreen","yellowgreen",
-              "lightblue","lightblue"))
-text(c(1.5, 4), c(0.5, 0.5), labels=c("GB", "RL"), adj=0.5, xpd=NA)
-text(c(1,2,3.5,4.5), c(5.4,5.4,5.4,5.4), cex=0.6,  
-     labels=c("no flwrs", "peak","no flwrs", "peak"), adj=0.5, xpd=NA)
-mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
-
-dev.off
-```
-
-
-#Alternative Fig 3: USED FOR NOW
-```{r fig1, fig.width=6.5, fig.height=3.0}
-
-#Make two graphs
+# Figure 4 for manuscript
 par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
     mgp=c(1.1,0.4,0), tck=-0.02)
 
@@ -1088,10 +1097,11 @@ text(c(1,2,3.5,4.5), c(5.4,5.4,5.4,5.4), cex=0.6,
      labels=c("no flwrs", "peak","no flwrs", "peak"), adj=0.5, xpd=NA)
 mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
 
+dev.off()
 
 ```
 
-#Check Fig 3 - right order?
+#Check Fig 4 - right order?
 ```{r fig1, fig.width=9, fig.height=3.0}
 
 #Make two graphs
@@ -1120,20 +1130,97 @@ peakstat <- boxplot(snt ~ fl + trl, ylim=c(1,5.5), cex.axis=0.5)
 
 
 ```
+#In progress - playing around for some alternative Figure 4
+```{r, fig1, fig.width=6.5, fig.height=3.0}
 
-
-#Alternative Fig 3: continuous flowering richness (for reviewer response)
-```{r fig1, fig.width=9, fig.height=3.0}
-
-
-
-par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
+# Figure 4 for manuscript
+par(mfrow=c(1,2), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
     mgp=c(1.1,0.4,0), tck=-0.02)
-boxplot(snt ~ rch + trl, ylim=c(1,5.5), cex.axis=0.5, 
-        xlab="Flowering Richness", ylab = "Sentiment", 
-        col = c(rep("yellowgreen",times=13), rep("lightblue",times=13)))
-mtext("a)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
 
+rch <- WTA_MW_dat$rich
+rch2 <- rch
+rch2[rch[]<=2] <- "0-2"
+rch2[rch[]>2 & rch[]<=6] <- "3-6"
+rch2[rch[]>7] <- "7+"
+rch2 <- as.factor(rch2)
+snt <- as.numeric(WTA_MW_dat$total.s)
+snt2 <- as.numeric(WTA_MW_dat$total.s2)
+
+#by trail 
+
+vioplot(snt ~ rch2 + trl, xlim=c(0,8), ylim=c(1,5),
+        horizontal=FALSE, xaxt = "n", cex.axis=0.75, at=c(1,2,3,5,6,7),
+        xlab="", ylab = "Sentiment", 
+        col = c("magenta","magenta","magenta",
+               "magenta4","magenta4","magenta4"))
+text(c(1,2,3,5,6,7), c(rep(0.7, times=8)), adj=0.5, xpd=NA, cex=0.6,
+     labels=c("<3","3-6","7+","<3","3-6","7+"))
+text(5, 0.4, labels=c("Flowering Richness"), adj=0.5, xpd=NA)
+mtext("a)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
+legend(x="bottomright", legend=c("GB","RL"),
+       fill=c("magenta","magenta4"), cex=0.75)
+
+#stripchart(snt ~ rch2 + trl, vertical = TRUE, at=c(1,2,3,4,6,7,8,9),
+#           method = "jitter", pch = 19, add = TRUE)
+
+#second graph
+fl <- WTA_MW_dat$flseason
+trl <- as.factor(WTA_MW_dat$trail)
+snt <- WTA_MW_dat$total.s
+
+boxplot(snt ~ fl + trl, ylab = "Sentiment", xlab="", ylim=c(1,5.5),
+        at=c(1,2,3.5,4.5), cex.axis=0.75, xaxt = "n",
+        col=c("yellowgreen","yellowgreen",
+              "lightblue","lightblue"))
+text(c(1.5, 4), c(0.4, 0.4), labels=c("GB", "RL"), adj=0.5, xpd=NA)
+text(c(1,2,3.5,4.5), c(5.4,5.4,5.4,5.4), cex=0.6,  
+     labels=c("no flwrs", "peak","no flwrs", "peak"), adj=0.5, xpd=NA)
+mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
+
+
+```
+
+
+
+#Ditto - Alternative Fig 4: continuous flowering richness (for reviewer response)
+```{r fig1, fig.width=4, fig.height=8}
+
+#set figure parameters
+par(mfrow=c(3,1), omi=c(0,0,0,0), mai=c(0.4,0.4,0.35,0.3), 
+    mgp=c(1.1,0.4,0), tck=-0.02)
+
+rchRL <- WTA_MW_dat$rich[WTA_MW_dat$trail=="RL"]
+sntRL <- as.numeric(WTA_MW_dat$total.s2[WTA_MW_dat$trail=="RL"])
+
+rchGB <- WTA_MW_dat$rich[WTA_MW_dat$trail=="GB"]
+sntGB <- as.numeric(WTA_MW_dat$total.s2[WTA_MW_dat$trail=="GB"])
+
+#first Glacier Basin
+
+plot(jitter(rchGB), jitter(sntGB), 
+     xlim=c(0,12), ylim=c(0,3.5), pch=21, bg="magenta",
+     xlab="Richness", ylab="Trail Satisfaction")
+title("Glacier Basin")
+
+plot(jitter(rchRL), jitter(sntRL), 
+     xlim=c(0,12), ylim=c(0,3.5), pch=21, bg="magenta4",
+     xlab="Richness", ylab="Trail Satisfaction")
+title("Reflection Lakes")
+
+
+#third graph
+fl <- WTA_MW_dat$flseason
+trl <- as.factor(WTA_MW_dat$trail)
+snt <- WTA_MW_dat$total.s
+
+boxplot(snt ~ fl + trl, ylab = "Sentiment", xlab="", ylim=c(1,5.5),
+        at=c(1,2,3.5,4.5), cex.axis=0.75, xaxt = "n",
+        col=c("magenta","magenta",
+              "magenta4","magenta4"))
+text(c(1.5, 4), c(0.4, 0.4), labels=c("GB", "RL"), adj=0.5, xpd=NA)
+text(c(1,2,3.5,4.5), c(5.4,5.4,5.4,5.4), cex=0.6,  
+     labels=c("no flwrs", "peak","no flwrs", "peak"), adj=0.5, xpd=NA)
+mtext("b)", side=3, line=0, cex=0.65, adj=0.025, xpd=NA)
 
 
 ```
