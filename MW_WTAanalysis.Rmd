@@ -166,7 +166,7 @@ WTAyear_1 <- subset(WTA_dat_0, select=c(orig.position, trail, year, month, day))
 WTAyear_2 <- distinct(WTAyear_1)
 WTAyear_2$month2 <- substr(WTAyear_2$month,1,3)
 
-# Define the wildflower community: which species to include
+# Define the months to include
 mnths <- c("Apr","May","Jun","Jul","Aug","Sep","Oct")
 
 # Restrict to certain months
@@ -201,7 +201,8 @@ Yeardat$WTA <- c(WTAyear_5[-c(1:2),1], WTAyear_5[,2])
 
 #NPS means
 month_num <- match(NPS_visits$month, month.abb)
-NPS_visits$month_num <- month_num
+NPS_visits$month_num <- month_num 
+#NPS_visits$month_num <- (month_num*30) - 15 
 NPS_visits_n <- NPS_visits
 NPS_visits_n$mnprod <- NPS_visits_n$n*NPS_visits_n$month_num
 NPS_totalyear <- tapply(NPS_visits_n$n, NPS_visits_n$year, sum)
@@ -209,7 +210,8 @@ NPS_mnprodsumyear <- tapply(NPS_visits_n$mnprod, NPS_visits_n$year, sum)
 NPS_monthvisit <- NPS_mnprodsumyear / NPS_totalyear
 
 #add to yeardat, ReflLakes
-Yeardat$NPS <- c(rep(NA, times=5),NPS_monthvisit*30)
+Yeardat$NPS <- c(rep(NA, times=5),((NPS_monthvisit)*30))
+#Yeardat$NPS <- c(rep(NA, times=5),NPS_monthvisit)
 
 #Create a second data frame (Yeardat2), for analysis
 TimingType <- as.factor(c(rep("NPS", times=dim(Yeardat)[1]),
@@ -231,8 +233,8 @@ This code chunk also contains the analyses of peak flowering, WTA trip reports, 
 ##```{r, fig1, fig.height=6, fig.width=5, fig.align="center"}
 
 # set option for making figure: pdf or tiff
-#pdf(file="output/figures/Fig2.pdf", width=5, height=6, title="")
-tiff(file="output/figures/Fig2.tif", width=5, height=6, units="in", res=1000)
+pdf(file="output/figures/Fig2.pdf", width=5, height=6, title="")
+#tiff(file="output/figures/Fig2.tif", width=5, height=6, units="in", res=1000)
 
 # Make 3x2 panel figure showing all data over time
 par(mfrow=c(3,2), omi=c(0,0,0,0), mai=c(0.35,0.35,0.35,0.25),
@@ -334,7 +336,7 @@ for(i in 1:length(yrs)){
   yrvisits <- NPS_visits[NPS_visits$year==yrs[i],]
   ifelse(i<7, ptsize<-1.75, ptsize<-1.75)
   points(yrvisits$month_num, yrvisits$n/sum(yrvisits$n), 
-         cex=ptsize, pch=21, bg=SDDcols[j])
+         cex=ptsize, pch=21, bg=SDDcols[i])
          #cex=ptsize, pch=21, bg=yrcols[i])
 }
 
@@ -607,9 +609,9 @@ for(i in 1:7){
 ```{r}
 #```{r, fig.height=5, fig.width=8, fig.align="center"}
 
-#pdf(file="output/figures/Fig3.pdf", width=8, height=5,
-#    title="")
-tiff(file="output/figures/Fig3.tif", width=8, height=5, units="in", res=1000)
+pdf(file="output/figures/Fig3.pdf", width=8, height=5,
+    title="")
+#tiff(file="output/figures/Fig3.tif", width=8, height=5, units="in", res=1000)
 
 
 #Make figure a - e, analyze
@@ -963,7 +965,7 @@ print(brant(allmodsf[[bestmod]]))
 #pdf(file="output/figures/Fig4.pdf", width=7, height=3,
 #    title="")
 
-tiff(file="output/figures/Fig4.tif", width=7, height=3, units="in", res=1000)
+#tiff(file="output/figures/Fig4.tif", width=7, height=3, units="in", res=1000)
 
 
 # Figure 4 for manuscript

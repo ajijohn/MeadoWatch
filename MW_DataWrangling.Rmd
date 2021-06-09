@@ -153,12 +153,17 @@ write.csv(PhenoSite_5, "data/PhenoSite_Dirty.csv", quote=TRUE,
 #Examine observation effort over time
 Create graphs showing observation effort across the growing season. These are graphs in Appendix D.
 ```{r}
+
 # Read in data
 PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
 trails <- unique(PhenoSite_6$Transect)
 
+#file name for figure
+filenames <- c("FigD1.tif", "FigD2.tif")
+
 # For loop to create graph
 for(i in 1:2){
+
   # Extract trail specific data
   PhenoSite_trail <- PhenoSite_6[PhenoSite_6$Transect==trails[i],]
 
@@ -168,6 +173,10 @@ for(i in 1:2){
   minDOY <- min(PhenoSite_trail$DOY); maxDOY <- max(PhenoSite_trail$DOY)
   season <- seq(minDOY, maxDOY)
   nobsseason <- season
+  
+  #Set figure for tiff  
+  tiff(file=paste("output/figures/",filenames[i], sep=""), 
+       width=6, height=4, units="in", res=600)
   
   #Make a dummy plot to add points to
   par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
@@ -220,8 +229,12 @@ for(i in 1:2){
     }
     nobsseason <- cbind(nobsseason, nobsseasontmp)
   }
-  if(i==1){RL_nobs <- nobsseason; dimnames(RL_nobs)[[2]]<-c("DOY", seq(yr1,yr2))}
-  if(i==2){GB_nobs <- nobsseason; dimnames(GB_nobs)[[2]]<-c("DOY", seq(yr1,yr2))}
+  if(i==1){RL_nobs <- nobsseason
+           dimnames(RL_nobs)[[2]] <-c("DOY", seq(yr1,yr2))}
+  if(i==2){GB_nobs <- nobsseason; 
+          dimnames(GB_nobs)[[2]] <- c("DOY", seq(yr1,yr2))}
+  
+  dev.off()
 }
 
 ##Reflection Lakes
@@ -360,7 +373,7 @@ write.csv(PhenoSite_7, "cleandata/PhenoSite_Clean.csv", quote=TRUE,
 ```
 
 
-#Make a graph for all species with a histograms of the distance between yes observations, with the cutoff, and # observations excluded
+#Make a graph for all species with a histograms of the distance between yes observations, with the cutoff, and # observations excluded. This is supplemental Figure E1.
 ```{r}
 # Read in data with distyes / distno
 PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
@@ -379,6 +392,9 @@ nsp <- length(species)
 
 # Figure out max
 mxy <- max(PhenoSite_7$distyes[PhenoSite_7$Flower==1])
+
+#set parameters for figure  
+tiff(file="output/figures/FigE1.tif", width=6, height=5, units="in", res=600)
 
 par(mfrow=c(1,1), omi=c(0,0.75,0,0.75), mai=c(0.5,0.5,0.5,0.4), 
     tck=-0.01, mgp=c(1.1,0.35,0))
@@ -409,6 +425,8 @@ for(i in 1:length(species)){
   text((mxy*1.2), i, labels=paste(nout,"/",ntotF, sep=""), 
        cex=0.75, adj=1)
 }
+
+dev.off()
 
      
 ```
