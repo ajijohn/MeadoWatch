@@ -202,7 +202,6 @@ Yeardat$WTA <- c(WTAyear_5[-c(1:2),1], WTAyear_5[,2])
 #NPS means
 month_num <- match(NPS_visits$month, month.abb)
 NPS_visits$month_num <- month_num 
-#NPS_visits$month_num <- (month_num*30) - 15 
 NPS_visits_n <- NPS_visits
 NPS_visits_n$mnprod <- NPS_visits_n$n*NPS_visits_n$month_num
 NPS_totalyear <- tapply(NPS_visits_n$n, NPS_visits_n$year, sum)
@@ -210,7 +209,7 @@ NPS_mnprodsumyear <- tapply(NPS_visits_n$mnprod, NPS_visits_n$year, sum)
 NPS_monthvisit <- NPS_mnprodsumyear / NPS_totalyear
 
 #add to yeardat, ReflLakes
-Yeardat$NPS <- c(rep(NA, times=5),((NPS_monthvisit)*30))
+Yeardat$NPS <- c(rep(NA, times=5),((NPS_monthvisit*30)-15))
 #Yeardat$NPS <- c(rep(NA, times=5),NPS_monthvisit)
 
 #Create a second data frame (Yeardat2), for analysis
@@ -350,7 +349,13 @@ NPStest <- lm(Yeardat$NPS~Yeardat$SDD)
 testall <- lm(Timing~SDD*TimingType, data=Yeardat2)
 
 #report out results
-summary(Flwrtest); summary(WTAtest); summary(NPStest)
+print("flowering")
+summary(Flwrtest)
+print("WTA")
+summary(WTAtest)
+print("NPS")
+summary(NPStest)
+print("test with all data")
 summary(testall); anova(testall)
 
 
@@ -633,7 +638,7 @@ for(i in 1:(dim(sentiments_recode)[2]-1)){
   mtext(lbl[i], side=3, line=-1.1, cex=0.75, adj=0.025)
   
   #find sample size
-  sampsize <- tapply(tot,ind,length)
+  sampsize <- tapply(tot,ind,length); print(sampsize)
   
   for(j in 1:4){
     post <- (0.25*j)-0.125
@@ -661,6 +666,10 @@ rf.imp <- importance(rf.recode)
 rf.imp <- rf.imp[order(rf.imp[,1]),]
 rf.names <- c("bugs","weather","trails","wildflowers","views")
 
+#print
+print(rf.imp)
+
+#plot
 ypos <- c(1,2,3,4,5)
 xmx <- 1.2*max(rf.imp[,1])
 plot(rf.imp[,1], ypos, xlim =c(0,xmx), ylim=c(0.5,5.5), 

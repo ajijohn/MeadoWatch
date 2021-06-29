@@ -1,7 +1,7 @@
 ---
 title: "MeadoWatch Data Wrangling"
 author: "Janneke Hille Ris Lambers, Aji John, Meera Sethi, Elli Theobald"
-date: "12/15/2020"
+date: "06/27/2021"
 output: html_document
 ---
 
@@ -24,7 +24,7 @@ library(boot)
 #Read in data, reconfigure
 1. Read in raw data, remove NA's
 2. Remove unneeded columns
-3. Calculate and add Julian day (DOY) to data
+3. Calculate and add Day of Year (DOY) to data
 4. Rename to PhenoSite
 
 ```{r}
@@ -40,7 +40,7 @@ PhenoSite_0 <- PhenoDat[,c("Year", "Transect","Site_Code",
                            "Date", "Observer","QA.QC",
                            "Species","Snow","Flower")]
 
-# Calculate Julian Days of observations
+# Calculate Day of Year (DOY) for each observations
 PhenoSite_0 <- PhenoSite_0[order(PhenoSite_0$Year),] #order by year
 yrs <- unique(PhenoSite_0$Year);
 DOY <- c()
@@ -68,7 +68,7 @@ Add information to PhenoSite to allow for outlier detection
 1. Calculate total observations per plot / year / species
 2. Filter out plots with too little data (see below for parameters that can be modified)
    + *totobs* (min # observations for fitting, currently set at 30)
-   + *totyesobs* (min # observations of flowering, currently set at 5)
+   + *totyesobs* (min # yes observations of flowering, currently set at 5)
 
 ```{r}
 #Calculate total number of observations
@@ -97,10 +97,10 @@ dimnames(PhenoSite_3)[[2]][(ncols_P3 -1):ncols_P3] <- c("Nobs","NobsY")
 
 #Filter out plots with fewer than totobs, totyesobs observations
 totobs <- 30
-totyesobs <- 4
+totyesobs <- 5
 
 PhenoSite_4 <- PhenoSite_3[PhenoSite_3$Nobs>=totobs &
-                          PhenoSite_3$NobsY>totyesobs,]
+                          PhenoSite_3$NobsY>=totyesobs,]
 head(PhenoSite_4)
      
 ```
@@ -109,7 +109,7 @@ head(PhenoSite_4)
 Calculate for each observation the closest 'yes' flowering and the closest 'no' flowering observation. We will use this to detect outliers (i.e. 'yes' observations that are more than a certain number of days separated from other yes observations).
 ```{r}
 #For each observation, calculate nearest yes, no observation
-#TODO this takes a LONG time - should try to optimize
+#Note - this takes a long time, there's probably a way to shorten
 distyes <- rep(NA, times=dim(PhenoSite_4)[1])
 distno <- rep(NA, times=dim(PhenoSite_4)[1])
 PhenoSite_5 <- cbind(PhenoSite_4, distyes, distno)
@@ -175,8 +175,8 @@ for(i in 1:2){
   nobsseason <- season
   
   #Set figure for tiff  
-  tiff(file=paste("output/figures/",filenames[i], sep=""), 
-       width=6, height=4, units="in", res=600)
+  #tiff(file=paste("output/figures/",filenames[i], sep=""), 
+  #     width=6, height=4, units="in", res=600)
   
   #Make a dummy plot to add points to
   par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
@@ -208,7 +208,6 @@ for(i in 1:2){
     points(ObsDOY$DOY, obsy, pch=21, bg="grey")
 
     # y axis labels
-
     xposlab <- 135 - (285-135)*1/15
     text(xposlab,posy,labels=j,cex=0.5, adj=1, xpd=NA)
     
@@ -234,7 +233,8 @@ for(i in 1:2){
   if(i==2){GB_nobs <- nobsseason; 
           dimnames(GB_nobs)[[2]] <- c("DOY", seq(yr1,yr2))}
   
-  dev.off()
+  #uncomment if you want to make a tif figure
+  #dev.off()
 }
 
 ##Reflection Lakes
@@ -255,8 +255,8 @@ print("Reflection Lakes; min and max # observations per week")
 apply(RL_nobs[,-1],2,min, na.rm = TRUE)
 apply(RL_nobs[,-1],2,max, na.rm=TRUE)
 
-print("Reflection Lakes; days with 1 week gap")
 for(i in 2:dim(RL_nobs)[2]){
+  if(i==2){print("Reflection Lakes; days with 1 week gap")}
   ndaysgap <- sum(na.omit(RL_nobs[,i])==0)
   print(paste(dimnames(RL_nobs)[[2]][i],"-",ndaysgap), sep="")
 }
@@ -279,8 +279,8 @@ print("Glacier Basin; min and max # observations per week")
 apply(GB_nobs[,-1],2,min, na.rm = TRUE)
 apply(GB_nobs[,-1],2,max, na.rm=TRUE)
 
-print("Glacier Basin; days with 1 week gap")
 for(i in 2:dim(GB_nobs)[2]){
+  if(i==2){print("Glacier Basin; days with 1 week gap")}
   ndaysgap <- sum(na.omit(GB_nobs[,i])==0)
   print(paste(dimnames(GB_nobs)[[2]][i],"-",ndaysgap), sep="")
 }
@@ -291,13 +291,13 @@ for(i in 2:dim(GB_nobs)[2]){
 
 
 #Examine outliers, eliminate, write clean data file
-Make graphs for each species to examine outliers, and eliminate those at certain thresholds. 
+Make graphs for each species & plot to examine outliers and eliminate those at certain thresholds (distance between yes observations). This is set by out_thresh (currently set at 21 days, 3 weeks). 
 ```{r}
 # Read in data with distyes / distno
 PhenoSite_6 <- read.csv("data/PhenoSite_Dirty.csv", header=TRUE)
 
 # Define threshold (max distance between yes observations)
-out_thresh <- 20
+out_thresh <- 21
 
 # Create plots of outliers
 species <- unique(PhenoSite_6$Species)
@@ -312,7 +312,7 @@ for(i in 1:length(species)){
   #assess number of obs, outlier obs
   nobsyes_sp <- dim(PhenoSite_Species[PhenoSite_Species$Flower==1,])[1]
   noutliers_sp <- dim(PhenoSite_Species[PhenoSite_Species$Flower==1 
-                      & PhenoSite_Species$distyes>out_thresh,])[1]
+                      & PhenoSite_Species$distyes>=out_thresh,])[1]
   
   #Make a dummy plot to add points to
   namegraph <- paste("figs/",species[i],"_outliers.png", sep="", collapse=NULL)
@@ -352,13 +352,6 @@ outliercheck <- PhenoSite_6[PhenoSite_6$Flower==1
 filename <- paste("output/outliers","-",(out_thresh+1),".csv", sep="")
 write.csv(outliercheck, file=filename, quote = FALSE, row.names=FALSE)
 
-Nobs <- dim(PhenoSite_6)[1]
-Nobsyes <- dim(PhenoSite_6[PhenoSite_6$Flower==1,])[1]
-Noutliers <- dim(outliercheck)[1]
-
-print("Total, Total Yes, Total outliers")
-print(c(Nobs, Nobsyes, Noutliers))
-
 # identify outliers as defined by out_tresh
 outlierid <- rep(0, length=dim(PhenoSite_6)[1])
 outlierid[PhenoSite_6$distyes>out_thresh&PhenoSite_6$Flower==1] <- 1
@@ -369,7 +362,15 @@ PhenoSite_7 <- PhenoSite_6[outlierid==0,]
 # Write clean data file
 write.csv(PhenoSite_7, "cleandata/PhenoSite_Clean.csv", quote=TRUE,
           row.names=FALSE)
-     
+
+# Observations
+Nobs <- dim(PhenoSite_7)[1]
+Nobsyes <- dim(PhenoSite_7[PhenoSite_7$Flower==1,])[1]
+Noutliers <- dim(outliercheck)[1]
+
+# Print out observations - note this is for all species (some spp eliminated)
+print("Total (all species), Total Yes, Total outliers")
+print(c(Nobs, Nobsyes, Noutliers))     
 ```
 
 
@@ -388,14 +389,16 @@ PhenoSite_7 <- PhenoSite_6[PhenoSite_6$Species!="ANAR"&
 
 species <- unique(PhenoSite_7$Species)
 species <- species[order(species, decreasing = TRUE)]
+species <- species[species[]!="MIAL"]
 nsp <- length(species)
 
 # Figure out max
 mxy <- max(PhenoSite_7$distyes[PhenoSite_7$Flower==1])
 
-#set parameters for figure  
-tiff(file="output/figures/FigE1.tif", width=6, height=5, units="in", res=600)
+#set parameters for figure if writing to tiff 
+#tiff(file="output/figures/FigE1.tif", width=6, height=5, units="in", res=600)
 
+#set graph
 par(mfrow=c(1,1), omi=c(0,0.75,0,0.75), mai=c(0.5,0.5,0.5,0.4), 
     tck=-0.01, mgp=c(1.1,0.35,0))
 
@@ -426,7 +429,8 @@ for(i in 1:length(species)){
        cex=0.75, adj=1)
 }
 
-dev.off()
+# uncomment below if writing to tiff file
+#dev.off()
 
      
 ```

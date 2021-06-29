@@ -71,6 +71,10 @@ species <- c("ANOC", "ARLA", "ASLE", "CAMI", "CAPA", "ERMO", "ERGR", "ERPE",
 specieskeep <- PhenoSite$Species %in% species
 PhenoSite_Focal <- PhenoSite[specieskeep,]
 
+# Print out total number of observations
+Nobs <- dim(PhenoSite_Focal)[1]
+print("total observations"); print(Nobs)
+
 # Determine how many years of data, how many species, etc
 yrs <- unique(PhenoSite_Focal$Year)
 nyrs <- length(yrs)

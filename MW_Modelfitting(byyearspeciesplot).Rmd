@@ -14,10 +14,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 options(stringsAsFactors = FALSE)
 library(tidyverse)
-library(leaflet)
-library(lubridate)
+#library(leaflet)
+#library(lubridate)
 library(boot)
-library(readr) 
+#library(readr) 
 ```
 
 
@@ -402,7 +402,7 @@ for(i in 1:nyrs){ # First for loop: runs through years
     if(length(spinplt)==0){next} #break if focal spp not in plot
     
     #Nested for loop for each species
-    for(k in 1:length(spinplt)){ #Third for loop: each species in the pot
+    for(k in 1:length(spinplt)){ #Third for loop: each species in the plot
 
       #Extract data for the species in question      
       PhenoSite_yps <- PhenoSite_YearPlot[PhenoSite_YearPlot$Species
@@ -517,6 +517,7 @@ for(i in 1:length(species)){
 #QAQC graph - peak flowering comparison volunteer vs. professional. This is Supplemental Figure E2.
 ```{r}
 
+# Uncomment this if you want to plot the tiff file
 tiff(file="output/figures/FigE2.tif", width=5, height=5, units="in", res=600)
 
 #set up plot
@@ -525,7 +526,7 @@ par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.5),
 
 #remove species not considered: MEPA, ANAR, LICA
 pars_QAQC2 <- pars_QAQC[pars_QAQC$species!="ANAR"&pars_QAQC$species!="LICA"&
-                        pars_QAQC$species!="MEPA",]
+                        pars_QAQC$species!="MEPA"&pars_QAQC$species!="MIAL",]
 species2 <- unique(pars_QAQC2$species); species2 <- species2[order(species2)]
 
 spcols <- c("yellowgreen","gold3","pink","orange","magenta","yellow",
@@ -566,7 +567,7 @@ dev.off()
 ```
 
 ###########
-ODDS AND ENDS BELOW (mostly figures)
+ODDS AND ENDS BELOW (mostly figures for other purposes)
 
 
 
