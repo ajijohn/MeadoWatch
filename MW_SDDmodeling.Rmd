@@ -40,7 +40,7 @@ EJT_SDD <- EJT_SDD[EJT_SDD$Year>2012,]
 ```
 
 #Create model of SDD vs year and plot
-This code chunk fits a simple linear regression to the SDD data, relating the SDD observations to location and year.
+This code chunk fits a simple linear regression to the SDD data, relating the SDD observations to location and year. Includes creation of Fig B1 (appendix)
 ```{r}
 # Now merge data
 Site_Loc <- as.factor(c(MW_SDD_obs$Site_Loc, FD_SDD$Site_Loc, 
@@ -98,6 +98,8 @@ legend(x="bottomright", legend=c("Mwatch","ForestDemo","MLS","EJT"),
        cex = 0.75, pt.cex = 1)
 
 # Graph of predicted vs. observed; color by year (Fig B1 in Appendix B)
+tiff(file="output/figures/FigC1.tif", width=5, height=5, units="in", res=600)
+
 par(omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.4), tck=-0.02, 
     pty="s", mgp=c(1.2,0.35,0))
 plot(SDDModel$fitted.values, SDD, pch=21, bg=yrcol,
@@ -108,6 +110,7 @@ legend(x="bottomright", legend=c(seq(2013,2020)), title="Year",
        pch=21, pt.bg=c("yellowgreen", "navyblue", "orange", "darkgreen",
                        "pink", "lightblue", "purple", "red"),
        cex = 0.75, pt.cex = 1)
+dev.off()
 
 
 ```

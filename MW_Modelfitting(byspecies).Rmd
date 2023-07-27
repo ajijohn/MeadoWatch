@@ -71,6 +71,10 @@ species <- c("ANOC", "ARLA", "ASLE", "CAMI", "CAPA", "ERMO", "ERGR", "ERPE",
 specieskeep <- PhenoSite$Species %in% species
 PhenoSite_Focal <- PhenoSite[specieskeep,]
 
+# Print out total number of observations
+Nobs <- dim(PhenoSite_Focal)[1]
+print("total observations"); print(Nobs)
+
 # Determine how many years of data, how many species, etc
 yrs <- unique(PhenoSite_Focal$Year)
 nyrs <- length(yrs)
@@ -258,16 +262,17 @@ for(i in 1:length(species)){
 }
 
 ```
-#Appendix F: One figure, multi-panel of the same results (for Appendix G)
+#Appendix F: One figure, multi-panel of the same results (for Appendix F)
 
 ```{r}
 #Read in per plot model fits, so individual plot fits can be used
 pars_yrpltsp <- read.csv("output/Parameters_plotmodel.csv", header=TRUE) 
 
-#extract species
-#species <- pars_spp_peak$species
-par(mfrow=c(4,4), omi=c(0,0,0,0), mai=c(0.25,0.25,0.25,0.1), 
-      tck=-0.02, mgp=c(1.0,0.2,0), din=c(5,5), pty="s")
+#set up plot
+tiff(file="output/figures/FigF1.tif", width=5, height=7, units="in", res=600)
+
+par(mfrow=c(5,3), omi=c(0,0,0,0), mai=c(0.2,0.2,0.20,0.1), 
+      tck=-0.01, mgp=c(0.7,0.1,0), pty="s")
   
 ##Plot SDD vs. peak per species
 for(i in 1:length(species)){
@@ -275,8 +280,9 @@ for(i in 1:length(species)){
 
   #Plot points showing plot SDD and plot level peak fits
   plot(sp_pars$SDD, sp_pars$peak, pch=21, bg="grey",
-       xlab="SDDDOY", ylab="Peak flower")
-  title(species[i])
+       xlab="SDDDOY", ylab="Peak flower",
+       cex.axis=0.6, cex.lab=0.8)
+  title(species[i], line=0.25)
   
   #add line showing modeled relationship between SDD and peak
   intSDD <- pars_spp$peakint[pars_spp$species==species[i]]
@@ -284,6 +290,103 @@ for(i in 1:length(species)){
   abline(intSDD, slSDD)
   
 }
+
+dev.off()
+
+```
+
+#Make figures for methods supplement
++Vasi: one example plot (yes / no)
++Vasi: SDDOY vs. peak flowering
+```{r}
+
+##############
+# Fig. H1 Time vs. Yes / No
+
+sppplot <- "VASI" #pick species to plot; check 'species' for possibilities
+phenoplot <- "flwr" #pick phenophase; check 'phenocats'
+yearplot <- 2017
+plotplot <- "RL2"
+
+#extract raw data
+SppDat <- PhenoSite_Focal[PhenoSite_Focal$Year==yearplot 
+                          & PhenoSite_Focal$Species==sppplot 
+                          & PhenoSite_Focal$Site_Code == plotplot, ]
+
+#First SDD vs yes / no relationship
+days <- SppDat$DOY
+phenophase <- SppDat$Flower
+days <- days[is.na(phenophase)==FALSE]; 
+phenophase <- phenophase[is.na(phenophase)==FALSE]
+param <- c(mean(days),-0.001, 0)
+model1 <- optim(param, curvefit_perplot, control = list(maxit = 20000))
+
+#Model prediction (for line)
+time <- seq(180,285, by=0.25)
+peakp <- model1$par[1]
+rangep <- model1$par[2]
+maxp <- model1$par[3]
+probf <- inv.logit(rangep * (time - peakp)^2 + maxp)
+
+#Now plot
+tiff(file="output/figures/FigH1.tif", 
+     width=4, height=3.75, units="in", res=600)
+
+par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.5,0.5,0.5), mgp=c(1.1,0.3,0),
+    tck=-0.02, xpd="TRUE")
+
+plot(time, probf, ylim=c(0,1), xlim=c(180,285), 
+    type="l", col="grey", lwd=2, xlab="", ylab="Flowers Observed", 
+     xaxp=c(180,240,2), xaxt="n", yaxt="n")
+
+points(SppDat$DOY, SppDat$Flower, pch=21, bg="grey", cex=1.5)
+text(c(195,225,255,285),-0.075,labels=c("June","July","Aug","Sept"))
+text(172.5,c(0.025,0.975),labels=c("No","Yes"), srt=90)
+
+dev.off
+
+
+##############
+# Fig. H2 SDDOY vs. peak flowering fits
+#Read in per plot model fits, so individual plot fits can be used
+pars_yrpltsp <- read.csv("output/Parameters_plotmodel.csv", header=TRUE) 
+
+#extract species
+sp_pars <- pars_yrpltsp[pars_yrpltsp$species=="VASI",]
+
+#Plot points showing plot SDD and plot level peak fits
+tiff(file="output/figures/FigH2.tif", 
+     width=5, height=5, units="in", res=600)
+
+par(mfrow=c(1,1), omi=c(0,0,0,0), mai=c(0.5,0.6,0.5,0.5), 
+      tck=-0.02, mgp=c(1.1,0.5,0), xpd="NA")
+
+#for line showing modeled relationship between SDD and peak
+intSDD <- pars_spp$peakint[pars_spp$species==species[i]]
+slSDD <- pars_spp$peakSDDslope[pars_spp$species==species[i]]
+xs <- c(90,210)
+ys <- intSDD + slSDD*xs
+
+#Now plot
+plot(xs,ys,type="l", bg="grey", lwd=2,
+       cex.lab=1.25, xlim=c(90,210),ylim=c(150,240),
+       xaxp=c(90,210,4), yaxp=c(150,240,3), xaxt="n",yaxt="n",
+       xlab="Date of Snowmelt", ylab="Peak Flowering")
+
+#add points
+points(sp_pars$SDD, sp_pars$peak,pch=21, bg="grey", cex=1.5)
+
+#add text for months, name of species
+text(c(105,135,165,195),143.5,labels=c("April","May","June","July"))
+text(82.5, c(165,195,225),labels=c("June","July","August"),srt=90)
+
+title("Sitka Valerian", line=-1, adj=0.05)
+
+
+
+dev.off() 
+
+
 
 ```
 
