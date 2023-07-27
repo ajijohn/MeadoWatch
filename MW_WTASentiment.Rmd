@@ -172,7 +172,7 @@ head(MR_Visitation_reshaped)
 
 ```{r }
 MR_Visitation_reshaped %>% 
-  filter(Year %in% c(2015:2019)) %>%
+  filter(Year %in% c(2015:2019)) %>% 
   ggplot() + geom_point(aes(Month,Visitation, color=as.factor(Year))) +
    scale_x_discrete(limits=c('JAN','FEB','MAR','APR','MAY',
                              'JUN','JUL','AUG','SEP','OCT','NOV','DEC')) +

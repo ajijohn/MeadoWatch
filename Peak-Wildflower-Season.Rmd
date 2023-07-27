@@ -625,19 +625,272 @@ Returns
 
 Row # 7 and 8 is what we use to find the difference which is greater than 7 
 
-#TODO I suggest making pdif a variable we can play around with
+# Figure out the flowering day by year
+```{r}
+
+qual_col_pals = RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+cols_need=sample(col_vector, 17)
+
+PhenoSite%>% 
+  filter (Flower == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
+  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+  filter (pdiff > 7) %>% 
+  ggplot( aes(x = Site_Code, y = DOY,fill=Species,color=Species)) +
+   geom_jitter() +
+    facet_grid(Transect~Year)    +
+    scale_color_manual(values = cols_need)+
+ # scale_fill_viridis_c(colours = cols_need,name = "Species") +
+  #scale_fill_distiller(type="seq",palette = "Spectral")
+    labs(title = '',
+       subtitle = 'Flowering', 
+         x = "Site Code") +
+  theme_minimal(base_size = 28) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 35, vjust = 0.5, hjust=1))
+
+PhenoDat%>% 
+  filter (Flower == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
+#  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+ # filter (pdiff > 7) %>% 
+  ggplot( aes(x = Year, y = doy,fill=Species,color=Species)) +
+   geom_jitter() +
+    facet_grid(.~Transect)    +
+  scale_color_manual(values = cols_need)+
+
+ # scale_fill_viridis_c(colours = cols_need,name = "Species") +
+  #scale_fill_distiller(type="seq",palette = "Spectral")
+    labs(title = '',
+       subtitle = 'Flowering', 
+         x = "", y= "Day of year") +
+  theme_minimal(base_size = 28) + theme(axis.text.x = element_text(angle = 35, vjust = 0.5, hjust=1))
+
+ggsave("figs/casestudy-flowering.png",dpi=300, dev='png',  height=10, width=12,units="in")
+
+case_study_d <- PhenoSite%>% 
+  filter (Flower == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
+  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+  filter (pdiff > 7) %>% 
+  ggplot( aes(x = Site_Code, y = DOY,fill=Species,color=Species)) +
+   geom_jitter() +
+    facet_grid(Transect~Year)    +
+    scale_color_manual(values = cols_need)+
+ # scale_fill_viridis_c(colours = cols_need,name = "Species") +
+  #scale_fill_distiller(type="seq",palette = "Spectral")
+    labs(title = '',
+       subtitle = 'Flowering', 
+         x = "Site Code") +
+  theme_minimal(base_size = 14) + theme(axis.title.y = element_blank(),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+case_study_d_r1 <- PhenoSite%>% 
+  filter (Flower == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
+  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+  #filter (pdiff > 7) %>% 
+  ggplot( aes(x = Year, y = DOY,fill=Species,color=Species)) +
+   geom_jitter() +
+    facet_grid(.~Transect)    +
+    scale_color_manual(values = cols_need)+
+ # scale_fill_viridis_c(colours = cols_need,name = "Species") +
+  #scale_fill_distiller(type="seq",palette = "Spectral")
+    labs(title = '',
+       subtitle = 'Flowering', 
+         x = "Year",y= "Day of year") +
+  theme_minimal(base_size = 14) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+# Figure out the flowering day by year
+```{r}
+
+
+
+PhenoDat%>% 
+  filter (Bud == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
+#  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+ # filter (pdiff > 7) %>% 
+  ggplot( aes(x = Year, y = doy,fill=Species,color=Species)) +
+   geom_jitter() +
+    facet_grid(.~Transect)    +
+  scale_color_manual(values = cols_need)+
+
+ # scale_fill_viridis_c(colours = cols_need,name = "Species") +
+  #scale_fill_distiller(type="seq",palette = "Spectral")
+    labs(title = '',
+       subtitle = 'Bud breaks', 
+         x = "", y= "Day of year") +
+  theme_minimal(base_size = 28) + theme(axis.text.x = element_text(angle = 35, vjust = 0.5, hjust=1))
+
+ggsave("figs/casestudy-budbreaks.png",dpi=300, dev='png',  height=10, width=12,units="in")
+
+case_study_c <- PhenoDat%>% 
+  filter (Bud == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
+#  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+ # filter (pdiff > 7) %>% 
+  ggplot( aes(x = Year, y = doy,fill=Species,color=Species)) +
+   geom_jitter() +
+    facet_grid(.~Transect)    +
+  scale_color_manual(values = cols_need)+
+
+ # scale_fill_viridis_c(colours = cols_need,name = "Species") +
+  #scale_fill_distiller(type="seq",palette = "Spectral")
+    labs(title = '',
+       subtitle = 'Bud breaks', 
+         x = "Year", y= "Day of year") +
+  theme_minimal(base_size = 28) + theme(axis.title.x=element_blank(),axis.ticks.x=element_blank(),  axis.text.x=element_blank())
+
+```
+
+
+# Figure out the presence of snow
+```{r}
+
+qual_col_pals = RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+cols_need=sample(col_vector, 17)
+
+PhenoDat%>% 
+  filter (Snow == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
+#  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+ # filter (pdiff > 7) %>% 
+  ggplot( aes(x = Year, y = doy)) +
+   geom_jitter() +
+    facet_grid(.~Transect)    +
+ # scale_fill_viridis_c(colours = cols_need,name = "Species") +
+  #scale_fill_distiller(type="seq",palette = "Spectral")
+    labs(title = '',
+       subtitle = 'Presence of snow', 
+         x = "Year", y= "Day of year") +
+  theme_minimal(base_size = 28) + theme(axis.text.x = element_text(angle = 35, vjust = 0.5, hjust=1))
+ggsave("figs/casestudy-snow.png",dpi=300, dev='png',  height=10, width=12,units="in")
+
+case_study_b <- PhenoDat%>% 
+  filter (Snow == 1) %>% 
+  mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
+#  mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
+ # filter (pdiff > 7) %>% 
+  ggplot( aes(x = Year, y = doy)) +
+   geom_jitter() +
+    facet_grid(.~Transect)    +
+ # scale_fill_viridis_c(colours = cols_need,name = "Species") +
+  #scale_fill_distiller(type="seq",palette = "Spectral")
+    labs(title = '',
+       subtitle = 'Presence of snow', 
+         x = "Year", y= "Day of year") +
+  theme_minimal(base_size = 14) + theme(axis.title.x=element_blank(),axis.ticks.x=element_blank(),  axis.text.x=element_blank())
+```
+
+```{r }
+library(readr)
+MW_PhenoSite_2013_2018 <- read_csv("data/MW_SiteDat_2013_2018.csv")
+head(MW_PhenoSite_2013_2018)
+```
+
+
+```{r }
+library(raster)
+library(leaflet)
+library(ggrepel)
+Sites_2013 <- MW_PhenoSite_2013_2018 %>% 
+  filter(Year == 2013 & Transect== "Reflection Lakes") %>% 
+  as.data.frame()
+
+AllSites_2018 <- MW_PhenoSite_2013_2018 %>% 
+  filter(Year == 2018 & Transect %in% c( "Reflection Lakes","Glacier Basin")) %>% 
+  as.data.frame()
+
+xy <- cbind(x=Sites_2013$longitude+0.008, 
+            y=Sites_2013$latitude-0.005)
+S <- SpatialPoints(xy)
+bbox(S)
+
+
+library(ggmap)
+pp_stamen <- get_stamenmap(bbox = bbox(S),
+                                zoom = 13)
+pp_stamen
+ggmap(pp_stamen) +
+  geom_point(data = Sites_2013,
+             mapping = aes(x = Sites_2013$longitude,
+                            y = Sites_2013$latitude,color=as.factor(Site_Num))) 
+
+
+
+```
+
+```{r }
+
+xy <- cbind(x=AllSites_2018$longitude, 
+            y=AllSites_2018$latitude)
+S <- SpatialPoints(xy)
+bbox(S)
+
+
+library(ggmap)
+pp_stamen <- get_stamenmap(bbox = bbox(S),
+                                zoom = 12)
+pp_stamen
+ggmap(pp_stamen) +
+  geom_point(data = AllSites_2018,
+             mapping = aes(x = AllSites_2018$longitude,
+                            y = AllSites_2018$latitude,color=as.factor(Site_Num))) +
+  labs(color="", x="Longitude",y="Latitude") +
+  theme_minimal(base_size = 18) +
+  theme(legend.position =  "none" , axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+case_study_a <- ggmap(pp_stamen) +
+  geom_point(data = AllSites_2018,
+             mapping = aes(x = AllSites_2018$longitude,
+                            y = AllSites_2018$latitude,color=as.factor(Site_Num))) +
+  labs(color="", x="Longitude",y="Latitude") +
+  theme_minimal(base_size = 18) +
+  theme(legend.position =  "none" , axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+```{r , echo=FALSE}
+library(patchwork)
+layout <- "
+A
+B
+C"
+
+  case_study_b+ 
+  case_study_c +
+  case_study_d_r1 +
+  plot_layout(design = layout,guides = "collect") +
+  plot_annotation(tag_levels = 'A', title = '',
+  subtitle = '',
+  caption = '') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave("figs/casestudy.png",dpi=300, dev='png',  height=10, width=12,units="in")
+```
+
+
 #Question - does this only look at the difference between each observation and a previous flowering observation, or also the difference between previous and next? In the latter case, what happens to the first observation of flowering (no previous observation?)
 
 ```{r}
-PhenoSite_Focal %>% 
+PhenoSite%>% 
   filter (Flower == 1) %>% 
   mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect.x,Year,Site_Code,Species) %>%
+  group_by(Transect,Year,Site_Code,Species) %>%
   mutate(pdiff = doy -lag(doy, default = doy[1])) %>%
   filter (pdiff > 7) %>% 
   ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
    geom_jitter() +
-    facet_grid(Transect.x~Year)    +
+    facet_grid(Transect~Year)    +
   scale_fill_viridis_c(name = "Difference in DOY") +
     labs(title = 'Pairwise differences',
        subtitle = 'All species', 
@@ -651,13 +904,13 @@ PhenoSite_Focal %>%
 # Plot pairwise for RL only, looks like 128 observations for RL (no jitter)
 
 ```{r}
-PhenoSite_Focal %>% 
-  filter (Transect.x== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
+PhenoSite %>% 
+  filter (Transect== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
   mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect.x,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
+  group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
   filter (pdiff > 7) %>% ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
    geom_point() +
-    facet_grid(Transect.x~Year)    +
+    facet_grid(Transect~Year)    +
   scale_fill_viridis_c(name = "Difference in DOY") +
     labs(title = 'Pairwise differences',
        subtitle = 'All species', 
@@ -668,14 +921,14 @@ PhenoSite_Focal %>%
 
 #Plot pairwise for RL only, looks like 128 observations for RL (with jitter)
 ```{r}
-PhenoSite_Focal %>% 
-  filter (Transect.x== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
+PhenoSite %>% 
+  filter (Transect== 'Reflection Lakes' & Flower == 1 & Species %in% species) %>%
   mutate (doy = lubridate::yday(as.Date(Date, "%m/%d/%Y"))  ) %>%
-  group_by(Transect.x,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
+  group_by(Transect,Year,Site_Code,Species) %>% mutate(pdiff = doy -     lag(doy, default = doy[1])) %>%
   filter (pdiff > 7) %>% 
   ggplot( aes(x = Site_Code, y = Species,fill=pdiff)) +
    geom_jitter() +
-    facet_grid(Transect.x~Year)    +
+    facet_grid(Transect~Year)    +
   scale_fill_viridis_c(name = "Difference in DOY") +
     labs(title = 'Pairwise differences',
        subtitle = 'All species (jittered)', 
